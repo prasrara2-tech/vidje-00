@@ -480,7 +480,7 @@
         .play-btn-overlay { position: absolute; bottom: 8px; right: 8px; width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-red); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 8px rgba(0,0,0,0.3); opacity: 0; transform: translateY(8px); transition: all 0.3s ease; z-index: 5;}
         .song-card:hover .play-btn-overlay { opacity: 1; transform: translateY(0); }
         .card-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-desc { font-size: 14px; color: var(--text-gray); }
+        .card-desc { font-size: 14px; color: var(--text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* FIXED ALIGNMENT FOR SONG LIST */
         .song-list-header { 
@@ -511,8 +511,9 @@
             box-shadow: inset 4px 0 0 var(--primary-red);
             background: linear-gradient(90deg, rgba(229,9,20,0.04), transparent 60%);
         }
-        .song-info { display: flex; align-items: center; gap: 12px; }
-        .song-info img { width: 40px; height: 40px; border-radius: 4px; }
+        .song-info { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+        .song-info img { width: 40px; height: 40px; border-radius: 4px; flex-shrink: 0; }
+        .song-info > div { display: flex; flex-direction: column; min-width: 0; flex: 1; }
         .song-title-text {
             color: var(--text-white);
             font-size: 16px;
@@ -1349,8 +1350,8 @@
         .chat-shared-card:hover { background: rgba(255,255,255,0.05); }
         .chat-shared-img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
         .chat-shared-info { display: flex; flex-direction: column; }
-        .chat-shared-title { font-size: 13px; font-weight: 600; color: white; }
-        .chat-shared-sub { font-size: 11px; color: #ccc; }
+        .chat-shared-title { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-shared-sub { font-size: 11px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .chat-footer {
             padding: 15px;
@@ -2384,6 +2385,7 @@ input:checked + .toggle-slider:before {
         gap: 6px;
         align-items: center;
         min-width: 0;
+        flex: 1;
     }
 
     .song-info img {
@@ -2391,6 +2393,13 @@ input:checked + .toggle-slider:before {
         height: 36px;
         border-radius: 3px;
         flex-shrink: 0;
+    }
+
+    .song-info > div {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex: 1;
     }
 
     .song-title-text {
