@@ -4074,9 +4074,10 @@ console.log('✅ Supabase initialized');
         loadPublicPlaylists();
 
         const userRef = ref(db, 'users/' + user.uid);
-        onValue(userRef, async (snapshot) => { // ← TAMBAHKAN async
-                    if (data) {
-                        currentUserData = data;
+        onValue(userRef, async (snapshot) => {
+            const data = snapshot.val(); // ✅ Ambil data dari snapshot
+            if (data) {
+                currentUserData = data;
                         document.getElementById('header-username').innerText = data.username;
                         document.getElementById('header-avatar').src = data.profile_picture || "https://picsum.photos/50/50";
                         
@@ -7460,7 +7461,7 @@ function cleanSongTitle(filename) {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(' ');
 }
-```
+
   
     </script>
 </body>
