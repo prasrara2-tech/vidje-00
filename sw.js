@@ -1,45 +1,33 @@
-// Service Worker untuk Vidje
-const CACHE_NAME = 'vidje-cache-v2';
-const urlsToCache = [
-  'index.html',
-  'manifest.json',
-  'assets/vidje-icon.jpg',
-  // Tambahkan assets penting lainnya di sini
-];
+// Service Worker untuk Vidje - Simple Cache Strategy
+const CACHE_NAME = 'vidje-v1';
 
-// Install Service Worker
+// Install event - cache essential files
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Service Worker...');
+  console.log('SW: Installing...');
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Caching app shell');
-        return cache.addAll(urlsToCache).catch(err => {
-          console.warn('[SW] Cache addAll error (some files may not exist):', err);
-          // Don't fail installation if some files are missing
-          return Promise.resolve();
-        });
-      })
-      .then(() => {
-        console.log('[SW] Install complete, skipping waiting');
-        self.skipWaiting();
-      })
-      .catch(err => {
-        console.error('[SW] Install failed:', err);
-        throw err;
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('SW: Caching assets');
+      return cache.addAll([
+        './',
+        './index.html',
+        './manifest.json'
+      ]).catch(err => {
+        console.warn('SW: Cache addAll error (some files may not exist)', err);
+      });
+    })
   );
 });
 
-// Activate Service Worker
+// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Service Worker...');
+  console.log('SW: Activating...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
+        cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
+            console.log('SW: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -48,113 +36,46 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Strategy: Network First, fallback to Cache
+// Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
-  
-  // Skip Firebase requests
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('firebaseapp')) {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Only handle http/https GET requests
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Skip firebase and external requests
+  if (url.hostname.includes('firebase') || url.hostname.includes('supabase')) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Clone response sebelum disimpan ke cache
-        const responseToCache = response.clone();
-        
-        // Cache response untuk request yang berhasil
-        if (response.status === 200) {
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+    fetch(request)
+      .then(response => {
+        // Don't cache non-200 responses
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
         }
-        
+
+        // Clone and cache
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(request, responseToCache);
+        });
+
         return response;
       })
       .catch(() => {
-        // Jika network gagal, ambil dari cache
-        return caches.match(event.request);
+        // Network failed, try cache
+        return caches.match(request).then(cached => {
+          if (cached) {
+            return cached;
+          }
+          // Return offline page if needed
+          return new Response('Offline - No cached response', { status: 503 });
+        });
       })
-  );
-});
-
-// Handle messages from main app
-self.addEventListener('message', (event) => {
-  console.log('[SW] Message received:', event.data);
-  
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  
-  // Handle media session updates
-  if (event.data && event.data.type === 'UPDATE_MEDIA_SESSION') {
-    updateMediaSession(event.data.metadata);
-  }
-});
-
-// Update Media Session (untuk notifikasi)
-function updateMediaSession(metadata) {
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: metadata.title || 'Pilih Lagu',
-      artist: metadata.artist || 'Vidje',
-      album: metadata.album || 'Music Platform',
-      artwork: [
-        { src: metadata.cover || '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
-        { src: metadata.cover || '/icons/icon-128x128.png', sizes: '128x128', type: 'image/png' },
-        { src: metadata.cover || '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-        { src: metadata.cover || '/icons/icon-256x256.png', sizes: '256x256', type: 'image/png' },
-        { src: metadata.cover || '/icons/icon-384x384.png', sizes: '384x384', type: 'image/png' },
-        { src: metadata.cover || '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' }
-      ]
-    });
-  }
-}
-
-// Sync background (untuk future features)
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background sync:', event.tag);
-  
-  if (event.tag === 'sync-playback') {
-    event.waitUntil(syncPlayback());
-  }
-});
-
-async function syncPlayback() {
-  // Implementasi sync playback state di sini
-  console.log('[SW] Syncing playback state...');
-}
-
-// Push Notifications (untuk future features)
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'Notifikasi baru dari Vidje',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    }
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification('Vidje', options)
-  );
-});
-
-// Notification Click Handler
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification click received');
-  
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.openWindow('/')
   );
 });
