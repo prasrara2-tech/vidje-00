@@ -42,6 +42,38 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* --- BACK BUTTON STYLE --- */
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            transition: color 0.2s ease;
+            padding: 8px 8px;
+            width: 44px;
+            height: 44px;
+        }
+        
+        .back-button:hover {
+            color: var(--primary-red);
+        }
+        
+        .back-button-text {
+            display: none;
+        }
+
+        /* Mobile back button positioning */
+        @media (max-width: 768px) {
+            .back-button[style*="position: absolute"] {
+                top: 8px !important;
+            }
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-black);
@@ -226,6 +258,47 @@
         }
         .logo i { font-size: 32px; color: var(--primary-red); }
         .logo span { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -1px; }
+
+        /* Language Switcher */
+        .language-switcher {
+            display: flex;
+            gap: 3px;
+            padding: 6px 12px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        /* Hide language switcher on mobile */
+        @media (max-width: 768px) {
+            .language-switcher {
+                display: none;
+            }
+        }
+        
+        .lang-btn {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: var(--text-gray);
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+        .lang-btn:hover {
+            color: var(--primary-red);
+            border-color: var(--primary-red);
+            background: rgba(229, 9, 20, 0.1);
+        }
+        .lang-btn.active {
+            background: var(--primary-red);
+            color: white;
+            border-color: var(--primary-red);
+            font-weight: 700;
+        }
 
         .nav-links { list-style: none; display: flex; flex-direction: column; gap: 8px; }
         .nav-item {
@@ -790,12 +863,11 @@
             display: flex; 
             align-items: flex-end; 
             gap: 24px; 
-            padding: 32px 32px 40px 32px; 
+            padding: 60px 32px 40px 32px; 
             background: linear-gradient(180deg, #530000 0%, var(--bg-dark) 100%); 
             border-radius: 0;
             transition: background 0.5s ease;
         }
-        .playlist-cover-wrap { position: relative; }
         .playlist-cover-big { 
             width: 232px; height: 232px; 
             border-radius: 8px;
@@ -1484,6 +1556,50 @@
         margin-top: 8px;
     }
     
+    /* Mobile Language Dropdown */
+    .language-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #1a1a1a;
+        border: 1px solid var(--primary-red);
+        border-radius: 8px;
+        margin-top: 8px;
+        z-index: 100;
+    }
+    
+    .language-dropdown.active {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .language-dropdown button {
+        padding: 12px 16px;
+        border: none;
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        text-align: left;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+    
+    .language-dropdown button:hover {
+        background: rgba(229, 9, 20, 0.2);
+    }
+    
+    .language-dropdown button.active {
+        color: var(--primary-red);
+        background: rgba(229, 9, 20, 0.1);
+    }
+    
+    /* Show mobile language section only on mobile */
+    .mobile-language-section {
+        display: block !important;
+    }
+    
     .logo .app-logo {
         display: none !important;
     }
@@ -1491,6 +1607,17 @@
     .logo span {
         font-size: 18px;
         margin-left: 0 !important;
+    }
+
+    /* Language Switcher Mobile */
+    .language-switcher {
+        padding: 5px 8px;
+        margin-bottom: 12px;
+        gap: 2px;
+    }
+    .lang-btn {
+        padding: 5px 8px;
+        font-size: 10px;
     }
 
     /* --- 1. ATURAN UMUM PLAYER BAR --- */
@@ -1636,63 +1763,114 @@
 /* === LISTEN TOGETHER OVERLAY === */
 #listen-together-overlay {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
     background: rgba(0,0,0,0.9);
-    z-index: 30000; /* Ensure overlay is above player bar */
+    z-index: 999999;
     display: none;
     justify-content: center;
     align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
-#listen-together-overlay.active { display: flex; }
+#listen-together-overlay.active { 
+    display: flex; 
+}
+
+/* Hide Listen Together on desktop - AGGRESSIVE */
+@media (min-width: 769px) {
+    #listen-together-overlay,
+    #listen-together-overlay.active {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        position: fixed !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+    }
+    
+    #btn-open-listen-together {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+    }
+}
 
 .lt-container {
     background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-    padding: 40px;
+    padding: 30px;
     border-radius: 20px;
+    width: 100%;
     max-width: 500px;
-    width: 90%;
     border: 2px solid var(--primary-red);
     box-shadow: 0 20px 60px rgba(229,9,20,0.3);
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+@media (min-width: 769px) {
+    .lt-container {
+        max-width: 950px;
+        padding: 40px;
+    }
 }
 
 .lt-header {
     text-align: center;
-    margin-bottom: 30px;
-}
-
-/* Desktop: make Listen Together overlay wider and layout-friendly */
-@media (min-width: 769px) {
-    .lt-container {
-        max-width: 1000px;
-        width: 90%;
-        padding: 36px;
-        display: grid;
-        grid-template-columns: 1fr 360px;
-        gap: 28px;
-        align-items: start;
-    }
-    .lt-header { grid-column: 1 / -1; }
+    margin-bottom: 0;
 }
 
 .lt-header h2 {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 900;
     color: white;
-    margin-bottom: 10px;
+    margin: 0 0 10px 0;
 }
 
 .lt-header p {
     color: #aaa;
-    font-size: 14px;
+    font-size: 13px;
+    margin: 0;
+}
+
+#lt-mode-section,
+#lt-host-section,
+#lt-join-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+#lt-host-section.hidden,
+#lt-join-section.hidden,
+#lt-mode-section.hidden {
+    display: none !important;
+}
+
+@media (min-width: 769px) {
+    #lt-host-section {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+    }
 }
 
 .lt-mode-selector {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    margin-bottom: 30px;
+    width: 100%;
 }
 
 .lt-mode-btn {
@@ -1721,8 +1899,9 @@
     padding: 20px;
     border-radius: 12px;
     text-align: center;
-    margin-bottom: 20px;
     border: 1px solid #333;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .lt-code-display {
@@ -1746,7 +1925,7 @@
     letter-spacing: 4px;
     font-weight: 700;
     text-transform: uppercase;
-    margin-bottom: 15px;
+    box-sizing: border-box;
 }
 
 .lt-input:focus {
@@ -1765,6 +1944,30 @@
     font-size: 16px;
     cursor: pointer;
     transition: 0.2s;
+    box-sizing: border-box;
+}
+
+@media (min-width: 769px) {
+    #lt-host-section .lt-session-code {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 25px;
+    }
+    
+    #lt-host-section > .lt-btn:nth-of-type(2) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    #lt-host-section .lt-participants {
+        grid-column: 2;
+        grid-row: 1 / 4;
+    }
+    
+    #lt-host-section > .lt-btn:nth-of-type(3) {
+        grid-column: 1;
+        grid-row: 3;
+    }
 }
 
 .lt-btn:hover {
@@ -1802,6 +2005,16 @@
 
 .session-badge.active { display: flex; }
 
+/* Hide session badge on desktop */
+@media (min-width: 769px) {
+    .session-badge,
+    .session-badge.active {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+}
+
 @keyframes pulse {
     0%, 100% { box-shadow: 0 4px 15px rgba(229,9,20,0.4); }
     50% { box-shadow: 0 4px 25px rgba(229,9,20,0.8); }
@@ -1825,9 +2038,27 @@
     background: #1a1a1a;
     padding: 15px;
     border-radius: 12px;
-    margin-top: 20px;
     max-height: 200px;
     overflow-y: auto;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: column;
+    border: 1px solid #333;
+}
+
+@media (min-width: 769px) {
+    .lt-participants {
+        padding: 20px;
+        min-height: 350px;
+        border: 2px solid var(--primary-red);
+        max-height: none;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
 }
 
 .lt-participant {
@@ -1835,8 +2066,8 @@
     align-items: center;
     gap: 10px;
     padding: 8px;
-    margin-bottom: 5px;
     border-radius: 6px;
+    width: 100%;
 }
 
 .lt-participant:hover {
@@ -1856,7 +2087,36 @@
     font-size: 10px;
     font-weight: 700;
     margin-left: auto;
+    color: white;
 }
+
+.lt-participants p {
+    color: #666;
+    text-align: center;
+    font-size: 13px;
+    margin: 0;
+}
+
+#lt-join-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (min-width: 769px) {
+    #lt-join-section {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+#lt-join-section p {
+    color: #aaa;
+    font-size: 12px;
+    text-align: center;
+    margin: 0;
+}
+
 #toast-container {
     position: fixed;
     bottom: 100px;
@@ -3249,28 +3509,28 @@ input:checked + .toggle-slider:before {
         <div class="auth-container">
             <div class="auth-box" id="login-box">
                 <div class="auth-logo"><i class="ph-fill ph-play-circle"></i></div>
-                <h2>Masuk ke Vidje</h2>
-                <p>Musik untuk semua orang.</p>
-                <p class="error-msg" id="login-error">Email atau password salah.</p>
+                <h2 data-i18n="login-title"></h2>
+                <p data-i18n="login-subtitle"></p>
+                <p class="error-msg" id="login-error" data-i18n="login-error-default"></p>
                 <input type="email" id="login-email" class="auth-input" placeholder="Email">
                 <input type="password" id="login-password" class="auth-input" placeholder="Password">
-                <button class="auth-btn" onclick="window.handleLogin()">Masuk</button>
+                <button class="auth-btn" onclick="window.handleLogin()" data-i18n="login-button"></button>
                 <div class="auth-switch">
-                    Belum punya akun? <span onclick="window.toggleAuthMode('signup')">Daftar Sekarang</span>
+                    <span data-i18n="login-no-account"></span> <span onclick="window.toggleAuthMode('signup')" data-i18n="login-link"></span>
                 </div>
             </div>
 
             <div class="auth-box" id="signup-box" style="display: none;">
                 <div class="auth-logo"><i class="ph-fill ph-user-plus"></i></div>
-                <h2>Daftar Akun</h2>
-                <p>Bergabunglah dengan Vidje.</p>
-                <p class="error-msg" id="signup-error">Gagal mendaftar.</p>
-                <input type="text" id="signup-name" class="auth-input" placeholder="Nama Lengkap">
+                <h2 data-i18n="signup-title"></h2>
+                <p data-i18n="signup-subtitle"></p>
+                <p class="error-msg" id="signup-error" data-i18n="signup-error-default"></p>
+                <input type="text" id="signup-name" class="auth-input" placeholder="Nama Lengkap" data-i18n-placeholder="signup-fullname">
                 <input type="email" id="signup-email" class="auth-input" placeholder="Email">
                 <input type="password" id="signup-password" class="auth-input" placeholder="Password">
-                <button class="auth-btn" onclick="window.handleSignup()">Daftar</button>
+                <button class="auth-btn" onclick="window.handleSignup()" data-i18n="signup-button"></button>
                 <div class="auth-switch">
-                    Sudah punya akun? <span onclick="window.toggleAuthMode('login')">Masuk</span>
+                    <span data-i18n="signup-have-account"></span> <span onclick="window.toggleAuthMode('login')" data-i18n="signup-link"></span>
                 </div>
             </div>
         </div>
@@ -3289,26 +3549,32 @@ input:checked + .toggle-slider:before {
                     <img src="assets/vidje-icon.jpg" alt="VIDJE" class="app-logo">
                     <span style="font-family: 'Montserrat', sans-serif; font-weight:700; font-size:20px; margin-left:8px;">VIDJE</span>
                 </div>
+
+                <!-- Language Switcher -->
+                <div class="language-switcher">
+                    <button class="lang-btn active" data-lang="id" onclick="window.switchLanguage('id')">ID</button>
+                    <button class="lang-btn" data-lang="en" onclick="window.switchLanguage('en')">ENG</button>
+                </div>
                 
                 <ul class="nav-links">
-                    <li><a href="#" onclick="window.switchView('home')" id="nav-home" class="nav-item active"><i class="ph ph-house"></i><span>Beranda</span></a></li>
-                    <li><a href="#" onclick="window.switchView('search')" id="nav-search" class="nav-item"><i class="ph ph-magnifying-glass"></i><span>Cari</span></a></li>
-                    <li><a href="#" onclick="window.switchView('liked')" id="nav-liked" class="nav-item"><i class="ph ph-heart"></i><span>Lagu Disukai</span></a></li>
+                    <li><a href="#" onclick="window.switchView('home')" id="nav-home" class="nav-item active"><i class="ph ph-house"></i><span data-i18n="nav-home">Home</span></a></li>
+                    <li><a href="#" onclick="window.switchView('search')" id="nav-search" class="nav-item"><i class="ph ph-magnifying-glass"></i><span data-i18n="nav-search">Search</span></a></li>
+                    <li><a href="#" onclick="window.switchView('liked')" id="nav-liked" class="nav-item"><i class="ph ph-heart"></i><span data-i18n="nav-liked">Liked Songs</span></a></li>
                 </ul>
 
                 <div class="divider"></div>
 
                 <div class="playlist-scroll">
-                    <div class="playlist-title">Playlist Anda</div>
+                    <div class="playlist-title" data-i18n="playlist-title">Your Playlists</div>
                     
                     <div class="create-playlist-btn" onclick="window.openCreatePlaylistModal()">
                         <i class="ph ph-plus-square" style="font-size: 24px;"></i>
-                        <span>Buat Playlist</span>
+                        <span data-i18n="create-playlist">Create Playlist</span>
                     </div> 
 
                     <div class="import-music-btn" onclick="window.openImportMusicModal()">
                         <i class="ph ph-upload-simple" style="font-size: 24px;"></i>
-                        <span>Impor Musik</span>
+                        <span data-i18n="import-music">Import Music</span>
                     </div>
 
 
@@ -3317,17 +3583,17 @@ input:checked + .toggle-slider:before {
 
                     <!-- --- FITUR PERTEMANAN (SIDEBAR) --- -->
                     <div class="friend-section">
-                        <div class="playlist-title">Teman</div>
+                        <div class="playlist-title" data-i18n="sidebar-friends">Friends</div>
                         
                         <div class="friend-search-container">
-                            <input type="text" id="friend-search-input" class="friend-search-input" placeholder="Cari teman (Nama/User ID)..." autocomplete="off">
+                            <input type="text" id="friend-search-input" class="friend-search-input" data-i18n-placeholder="search-friends-placeholder" placeholder="Search friends (Name/User ID)..." autocomplete="off">
                             <div id="friend-search-dropdown" class="friend-search-dropdown"></div>
                         </div>
 
-                        <div class="playlist-title" style="font-size: 10px; margin-top: 10px;">Permintaan Pertemanan</div>
+                        <div class="playlist-title" style="font-size: 10px; margin-top: 10px;" data-i18n="friend-requests"></div>
                         <div id="friend-requests-container" style="margin-bottom: 10px;"></div>
 
-                        <div class="playlist-title" style="font-size: 10px; margin-top: 10px;">Daftar Teman</div>
+                        <div class="playlist-title" style="font-size: 10px; margin-top: 10px;" data-i18n="friend-list"></div>
                         <div id="friend-list-container"></div>
                     </div>
                 </div>
@@ -3352,23 +3618,23 @@ input:checked + .toggle-slider:before {
                     <!-- VIEW: BERANDA (HOME) -->
                     <div id="view-home" class="view-section active">
                         <!-- SEDANG TREN -->
-                        <h2>Playlist Saya</h2>
+                        <h2 data-i18n="my-playlists-section">Playlist Saya</h2>
                         <div class="card-grid" id="trending-container"></div>
 
                         <!-- BAND POPULER INDONESIA -->
-                        <h2>Band Populer Indonesia</h2>
+                        <h2 data-i18n="popular-indonesian-bands">Band Populer Indonesia</h2>
                         <div class="card-grid" id="popular-bands-container"></div>
 
                         <!-- PENYANYI POPULER INDONESIA -->
-                        <h2>Penyanyi Populer Indonesia</h2>
+                        <h2 data-i18n="popular-indonesian-artists">Penyanyi Populer Indonesia</h2>
                         <div class="card-grid" id="popular-artists-container"></div>
 
                         <!-- NEW: PENYANYI ASING POPULER -->
-                        <h2>Penyanyi Asing Populer</h2>
+                        <h2 data-i18n="popular-foreign-artists">Penyanyi Asing Populer</h2>
                         <div class="card-grid" id="foreign-solo-container"></div>
 
                         <!-- NEW: BAND ASING POPULER -->
-                        <h2>Band Asing Populer</h2>
+                        <h2 data-i18n="popular-foreign-bands">Band Asing Populer</h2>
                         <div class="card-grid" id="foreign-bands-container"></div>
 
                         <br><br><br>
@@ -3378,17 +3644,17 @@ input:checked + .toggle-slider:before {
 <div id="view-search" class="view-section">
     <div class="search-container">
         <i class="ph ph-magnifying-glass search-icon-placeholder"></i>
-        <input type="text" class="search-input" id="search-input" placeholder="Apa yang ingin diputar?" oninput="window.handleSearch(this.value)">
+        <input type="text" class="search-input" id="search-input" placeholder="Search songs, artists, playlists..." data-i18n-placeholder="search" oninput="window.handleSearch(this.value)">
     </div>
 
     <!-- Search Results Wrapper (Hidden by default, shown when typing) -->
     <div id="search-results-wrapper">
-        <h3 class="results-section-title">Hasil Pencarian</h3>
+        <h3 class="results-section-title" data-i18n="search-results">Hasil Pencarian</h3>
         <!-- Bands/Artists Grid -->
         <div id="search-bands-container" class="card-grid" style="margin-bottom: 30px;"></div>
 
         <!-- Public Playlists Grid -->
-        <h3 id="search-playlists-title" style="display:none; margin-bottom: 10px; font-size: 18px; font-weight: 700;">Playlist Publik</h3>
+        <h3 id="search-playlists-title" style="display:none; margin-bottom: 10px; font-size: 18px; font-weight: 700;" data-i18n="public-playlists">Playlist Publik</h3>
         <div id="search-playlists-container" class="card-grid" style="margin-bottom: 30px;"></div>
         
         <!-- Songs List -->
@@ -3397,7 +3663,7 @@ input:checked + .toggle-slider:before {
 
     <!-- History Wrapper (Visible by default, hidden when typing) -->
     <div id="search-history-wrapper">
-        <h3 class="history-section-title" id="search-history-title">Baru Diputar</h3>
+        <h3 class="history-section-title" id="search-history-title" data-i18n="recently-played"></h3>
         <div id="search-history-container"></div>
     </div>
 </div>
@@ -3406,7 +3672,10 @@ input:checked + .toggle-slider:before {
 
 
 <div id="view-playlist" class="view-section">
-    <div class="playlist-header-view" id="playlist-header-bg">
+    <div class="playlist-header-view" id="playlist-header-bg" style="position: relative;">
+        <button onclick="window.goBack()" class="back-button" title="Kembali" style="position: absolute; top: 8px; left: 12px; z-index: 10; background: rgba(0,0,0,0.5); border-radius: 50%; width: 44px; height: 44px;">
+            <i class="ph ph-arrow-left"></i>
+        </button>
         <div class="playlist-cover-wrap">
             <img src="https://picsum.photos/seed/playlist/300/300" class="playlist-cover-big" id="playlist-cover-view">
             <button class="edit-cover-btn" onclick="document.getElementById('playlist-cover-input').click()">
@@ -3443,7 +3712,7 @@ input:checked + .toggle-slider:before {
 <div id="playlist-settings-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <div class="modal-title">Pengaturan Playlist</div>
+            <div class="modal-title" data-i18n="playlist-settings">Pengaturan Playlist</div>
             <button class="close-modal-btn" onclick="window.closeModal('playlist-settings-modal')">
                 <i class="ph ph-x"></i>
             </button>
@@ -3487,6 +3756,13 @@ input:checked + .toggle-slider:before {
 
                     <!-- VIEW: DETAIL ALBUM (GHANI'S ALBUM) -->
                     <div id="view-ghani-album" class="view-section">
+                        <div style="padding: 16px 20px 0 20px;">
+                            <button onclick="window.goBack()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:0.2s;" onmouseover="this.style.color='#e50914'" onmouseout="this.style.color='white'">
+                                <i class="ph ph-arrow-left"></i>
+                                <span style="font-size:14px;">Kembali</span>
+                            </button>
+                        </div>
+                        
                         <div class="playlist-header-view" id="ghani-header-bg">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/ghani.jpg" class="playlist-cover-big" id="ghani-cover-view">
@@ -3519,6 +3795,13 @@ input:checked + .toggle-slider:before {
 
                     <!-- VIEW: DETAIL ALBUM (REVAN'S ALBUM) -->
                     <div id="view-revan-album" class="view-section">
+                        <div style="padding: 16px 20px 0 20px;">
+                            <button onclick="window.goBack()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:0.2s;" onmouseover="this.style.color='#e50914'" onmouseout="this.style.color='white'">
+                                <i class="ph ph-arrow-left"></i>
+                                <span style="font-size:14px;">Kembali</span>
+                            </button>
+                        </div>
+                        
                         <div class="playlist-header-view" id="revan-header-bg">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/revan.jpg" class="playlist-cover-big" id="revan-cover-view">
@@ -3551,7 +3834,10 @@ input:checked + .toggle-slider:before {
 
                     <!-- HANUNG'S ALBUM -->
                     <div id="view-hanung-album" class="view-section">
-                        <div class="playlist-header-view" id="hanung-header-bg">
+                        <div class="playlist-header-view" id="hanung-header-bg" style="position: relative;">
+                            <button onclick="window.goBack()" class="back-button" title="Kembali" style="position: absolute; top: 8px; left: 12px; z-index: 10; background: rgba(0,0,0,0.5); border-radius: 50%; width: 44px; height: 44px;">
+                                <i class="ph ph-arrow-left"></i>
+                            </button>
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/pras.jpg" class="playlist-cover-big" id="hanung-cover-view">
                             </div>
@@ -3583,7 +3869,10 @@ input:checked + .toggle-slider:before {
 
                     <!-- RARA'S ALBUM -->
                     <div id="view-rara-album" class="view-section">
-                        <div class="playlist-header-view" id="rara-header-bg">
+                        <div class="playlist-header-view" id="rara-header-bg" style="position: relative;">
+                            <button onclick="window.goBack()" class="back-button" title="Kembali" style="position: absolute; top: 8px; left: 12px; z-index: 10; background: rgba(0,0,0,0.5); border-radius: 50%; width: 44px; height: 44px;">
+                                <i class="ph ph-arrow-left"></i>
+                            </button>
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/rara.jpg" class="playlist-cover-big" id="rara-cover-view">
                             </div>
@@ -3616,7 +3905,7 @@ input:checked + .toggle-slider:before {
                     <!-- --- BAND POPULER INDONESIA VIEWS --- -->
                     <!-- 1. PERUNGGU -->
                     <div id="view-perunggu-album" class="view-section">
-                        <div class="playlist-header-view" id="perunggu-header-bg">
+                        <div class="playlist-header-view" id="perunggu-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg" class="playlist-cover-big" id="perunggu-cover-view">
                             </div>
@@ -3646,7 +3935,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 2. NOAH / PETERPAN -->
                     <div id="view-noah-album" class="view-section">
-                        <div class="playlist-header-view" id="noah-header-bg">
+                        <div class="playlist-header-view" id="noah-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/noah.jpg" class="playlist-cover-big" id="noah-cover-view">
                             </div>
@@ -3676,7 +3965,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 3. DEWA 19 -->
                     <div id="view-dewa-album" class="view-section">
-                        <div class="playlist-header-view" id="dewa-header-bg">
+                        <div class="playlist-header-view" id="dewa-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/dewa19.png" class="playlist-cover-big" id="dewa-cover-view">
                             </div>
@@ -3706,7 +3995,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 4. SHEILA ON 7 -->
                     <div id="view-sheila-album" class="view-section">
-                        <div class="playlist-header-view" id="sheila-header-bg">
+                        <div class="playlist-header-view" id="sheila-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/so7.jpg" class="playlist-cover-big" id="sheila-cover-view">
                             </div>
@@ -3736,7 +4025,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 5. KAHITNA -->
                     <div id="view-kahitna-album" class="view-section">
-                        <div class="playlist-header-view" id="kahitna-header-bg">
+                        <div class="playlist-header-view" id="kahitna-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kahitna.jpeg" class="playlist-cover-big" id="kahitna-cover-view">
                             </div>
@@ -3766,7 +4055,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 6. HINDIA -->
                     <div id="view-hindia-album" class="view-section">
-                        <div class="playlist-header-view" id="hindia-header-bg">
+                        <div class="playlist-header-view" id="hindia-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/hindia.jpg" class="playlist-cover-big" id="hindia-cover-view">
                             </div>
@@ -3798,7 +4087,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 7. ASTRID -->
                     <div id="view-astrid-album" class="view-section">
-                        <div class="playlist-header-view" id="astrid-header-bg">
+                        <div class="playlist-header-view" id="astrid-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/astrid.webp" class="playlist-cover-big" id="astrid-cover-view">
                             </div>
@@ -3828,7 +4117,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 8. AFGAN -->
                     <div id="view-afgan-album" class="view-section">
-                        <div class="playlist-header-view" id="afgan-header-bg">
+                        <div class="playlist-header-view" id="afgan-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/afgan.png" class="playlist-cover-big" id="afgan-cover-view">
                             </div>
@@ -3858,7 +4147,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 9. TULUS -->
                     <div id="view-tulus-album" class="view-section">
-                        <div class="playlist-header-view" id="tulus-header-bg">
+                        <div class="playlist-header-view" id="tulus-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tulus.jpg" class="playlist-cover-big" id="tulus-cover-view">
                             </div>
@@ -3888,7 +4177,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 10. MAHALINI -->
                     <div id="view-mahalini-album" class="view-section">
-                        <div class="playlist-header-view" id="mahalini-header-bg">
+                        <div class="playlist-header-view" id="mahalini-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/mahalini.jpg" class="playlist-cover-big" id="mahalini-cover-view">
                             </div>
@@ -3918,7 +4207,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- 11. TENXI -->
                     <div id="view-tenxi-album" class="view-section">
-                        <div class="playlist-header-view" id="tenxi-header-bg">
+                        <div class="playlist-header-view" id="tenxi-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tenxi.jpg" class="playlist-cover-big" id="tenxi-cover-view">
                             </div>
@@ -3950,7 +4239,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- Taylor Swift -->
                     <div id="view-taylor-album" class="view-section">
-                        <div class="playlist-header-view" id="taylor-header-bg">
+                        <div class="playlist-header-view" id="taylor-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg" class="playlist-cover-big" id="taylor-cover-view">
                             </div>
@@ -3980,7 +4269,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- Justin Bieber -->
                     <div id="view-justin-album" class="view-section">
-                        <div class="playlist-header-view" id="justin-header-bg">
+                        <div class="playlist-header-view" id="justin-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/justin.jpg" class="playlist-cover-big" id="justin-cover-view">
                             </div>
@@ -4010,7 +4299,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- Ed Sheeran -->
                     <div id="view-ed-album" class="view-section">
-                        <div class="playlist-header-view" id="ed-header-bg">
+                        <div class="playlist-header-view" id="ed-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/ed.jpg" class="playlist-cover-big" id="ed-cover-view">
                             </div>
@@ -4040,7 +4329,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- Bruno Mars -->
                     <div id="view-bruno-album" class="view-section">
-                        <div class="playlist-header-view" id="bruno-header-bg">
+                        <div class="playlist-header-view" id="bruno-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bruno.jpg" class="playlist-cover-big" id="bruno-cover-view">
                             </div>
@@ -4070,7 +4359,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- Daniel Caesar -->
                     <div id="view-daniel-album" class="view-section">
-                        <div class="playlist-header-view" id="daniel-header-bg">
+                        <div class="playlist-header-view" id="daniel-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/daniel.jpg" class="playlist-cover-big" id="daniel-cover-view">
                             </div>
@@ -4102,7 +4391,7 @@ input:checked + .toggle-slider:before {
 
                     <!-- Coldplay -->
                     <div id="view-coldplay-album" class="view-section">
-                        <div class="playlist-header-view" id="coldplay-header-bg">
+                        <div class="playlist-header-view" id="coldplay-header-bg" style="position: relative;">
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/coldplay.jpg" class="playlist-cover-big" id="coldplay-cover-view">
                             </div>
@@ -4262,10 +4551,10 @@ input:checked + .toggle-slider:before {
                                 <input type="file" id="liked-cover-input" style="display: none;" accept="image/*" onchange="window.handleLikedCoverUpload(this)">
                             </div>
                             <div class="playlist-info-big">
-                                <span>DISUKAI</span>
-                                <h1 id="liked-title-view">Disukai</h1>
+                                <span data-i18n="liked-header">Liked</span>
+                                <h1 id="liked-title-view" data-i18n="liked-header">Liked</h1>
                                 <div class="playlist-meta">
-                                    <span style="color: white;">Koleksi Lagu</span> • <span id="liked-count">0 lagu</span>
+                                    <span style="color: white;" data-i18n="song-collection">Song Collection</span> • <span id="liked-count">0 <span data-i18n="songs-label">songs</span></span>
                                 </div>
                             </div>
                         </div>
@@ -4289,10 +4578,13 @@ input:checked + .toggle-slider:before {
 
                     <!-- --- NEW: PROFILE VIEW (SPOTIFY STYLE) --- -->
                     <div id="view-profile" class="view-section">
-                        <div class="profile-hero-section" id="profile-hero-section">
+                        <div class="profile-hero-section" id="profile-hero-section" style="position: relative;">
+                            <button onclick="window.goBack()" class="back-button" title="Kembali" style="position: absolute; top: 8px; left: 12px; z-index: 10; background: rgba(0,0,0,0.5); border-radius: 50%; width: 44px; height: 44px;">
+                                <i class="ph ph-arrow-left"></i>
+                            </button>
                             <img src="" alt="Profile Avatar" class="profile-avatar-lg" id="profile-avatar-display">
                             <div class="profile-hero-content">
-                                <div class="profile-type-label">Profil</div>
+                                <div class="profile-type-label" data-i18n="profile-label">Profile</div>
                                 <h1 class="profile-name-large" id="profile-name-display">Nama User</h1>
                                 
                                 <!-- USER ID DISPLAY -->
@@ -4301,15 +4593,31 @@ input:checked + .toggle-slider:before {
                                     <i class="ph ph-copy copy-id-icon"></i>
                                 </div>
 
-                                <p class="profile-bio-display" id="profile-bio-display">Bio user akan muncul di sini.</p>
+                                <p class="profile-bio-display" id="profile-bio-display" data-i18n="profile-bio-placeholder"></p>
                             </div>
                         </div>
 
                         <div class="profile-actions">
                             <div class="btn-circle-blue"><i class="ph ph-check"></i></div> <!-- Mock Verified Icon -->
                             <button class="btn-pill" onclick="window.toggleProfileEdit()">
-                                <i class="ph ph-pencil-simple"></i> Edit Profil
+                                <i class="ph ph-pencil-simple"></i> <span data-i18n="edit-profile">Edit Profile</span>
                             </button>
+                        </div>
+
+                        <!-- Mobile Language Selector -->
+                        <div style="padding: 16px 24px; position: relative; display: none;" id="mobile-language-section" class="mobile-language-section">
+                            <button class="btn-pill" style="width: 100%; justify-content: space-between;" onclick="window.toggleLanguageDropdown()">
+                                <span data-i18n="setting-language">Setting Language</span>
+                                <i class="ph ph-caret-down"></i>
+                            </button>
+                            <div class="language-dropdown" id="language-dropdown">
+                                <button onclick="window.switchLanguage('id'); window.toggleLanguageDropdown();" class="active" id="lang-id-btn">
+                                    <i class="ph ph-check" style="margin-right: 8px;"></i> Bahasa Indonesia
+                                </button>
+                                <button onclick="window.switchLanguage('en'); window.toggleLanguageDropdown();" id="lang-en-btn">
+                                    <i class="ph ph-check" style="margin-right: 8px; opacity: 0;"></i> English
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Edit Form Panel -->
@@ -4324,21 +4632,23 @@ input:checked + .toggle-slider:before {
                                 <input type="file" id="profile-avatar-input" style="display: none;" accept="image/*" onchange="window.handleProfileAvatarUpload(this)">
                                 
                                 <div class="edit-form">
-                                    <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">Nama</label>
+                                    <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;" data-i18n="profile-name-label">Name</label>
                                     <input type="text" id="edit-profile-name" class="edit-input">
                                     <small style="color: #aaa; font-size: 12px;">ID User akan otomatis mengikuti nama baru.</small>
+                                                                        <small style="color: #aaa; font-size: 12px;" data-i18n="profile-id-note">User ID will automatically follow the new name.</small>
                                     
                                     <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">Bio</label>
+                                                                        <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;" data-i18n="profile-bio-label">Bio</label>
                                     <textarea id="edit-profile-bio" class="edit-input" rows="3"></textarea>
                                 </div>
                             </div>
                             <div class="edit-actions-row">
                                 <button class="btn-cancel" onclick="window.toggleProfileEdit()">Batal</button>
-                                <button class="btn-save" onclick="window.saveProfileChanges()">Simpan</button>
+                                <button class="btn-save" onclick="window.saveProfileChanges()" data-i18n="save">Save</button>
                             </div>
                         </div>
 
-                        <div class="section-title-profile">Playlist Publik</div>
+                        <div class="section-title-profile" data-i18n="public-playlists"></div>
                         <div class="playlist-modal-grid-profile" id="profile-public-playlists">
                             <!-- Playlists generated by JS -->
                         </div>
@@ -4378,7 +4688,7 @@ input:checked + .toggle-slider:before {
                     </div>
                 </div>
                 <div class="artist-band-overlay-right">
-                    <div class="artist-band-overlay-songs-title">Lagu Populer</div>
+                    <div class="artist-band-overlay-songs-title" data-i18n="popular-songs">Lagu Populer</div>
                     <div class="artist-band-overlay-songs" id="artist-band-overlay-songs">
                         <!-- Songs will be rendered here by JS -->
                     </div>
@@ -4391,7 +4701,7 @@ input:checked + .toggle-slider:before {
             <div class="player-left">
                 <img src="https://picsum.photos/seed/music/60/60" alt="Album Art" class="current-art" id="player-art">
                 <div class="current-info">
-                    <div class="current-title" id="player-title">Pilih Lagu</div>
+                    <div class="current-title" id="player-title" data-i18n="select-song">Pilih Lagu</div>
                     <div class="current-artist" id="player-artist">...</div>
                 </div>
                 <button class="like-btn" id="like-btn" onclick="window.toggleCurrentSongLike()">
@@ -4432,27 +4742,27 @@ input:checked + .toggle-slider:before {
         <nav class="mobile-bottom-nav" aria-label="Navigasi bawah">
             <a href="#" class="mb-nav-item" id="mb-nav-home" onclick="event.preventDefault(); window.switchView('home')">
                 <i class="ph ph-house"></i>
-                <span>Beranda</span>
+                <span data-i18n="nav-home">Home</span>
             </a>
             <a href="#" class="mb-nav-item" id="mb-nav-search" onclick="event.preventDefault(); window.switchView('search')">
                 <i class="ph ph-magnifying-glass"></i>
-                <span>Cari</span>
+                <span data-i18n="nav-search">Search</span>
             </a>
             <a href="#" class="mb-nav-item" id="mb-nav-liked" onclick="event.preventDefault(); window.switchView('liked')">
                 <i class="ph ph-heart"></i>
-                <span>Disukai</span>
+                <span data-i18n="nav-liked">Liked</span>
             </a>
         </nav>
 
         <!-- QUEUE OVERLAY -->
         <div id="queue-overlay">
             <div class="queue-header">
-                <div class="queue-title">Antrian</div>
+                <div class="queue-title" data-i18n="queue-title">Queue</div>
                 <button class="queue-close-btn" onclick="window.toggleQueueOverlay()"><i class="ph ph-x"></i></button>
             </div>
             <div class="queue-list" id="queue-list-container">
                 <!-- Queue items rendered here -->
-                <div style="padding:20px; text-align:center; color:#666;">Antrian kosong.</div>
+                <div style="padding:20px; text-align:center; color:#666;" data-i18n="queue-empty">Queue is empty.</div>
             </div>
         </div>
 
@@ -4515,7 +4825,7 @@ input:checked + .toggle-slider:before {
             </div>
         </div>
         <div class="artist-profile-content">
-             <h3 class="artist-profile-section-title">Lagu Populer</h3>
+             <h3 class="artist-profile-section-title" data-i18n="popular-songs">Lagu Populer</h3>
              <div id="artist-profile-songs"></div>
         </div>
     </div>
@@ -4533,10 +4843,10 @@ input:checked + .toggle-slider:before {
                 <p style="color: #b3b3b3; font-size: 14px;">Gambar cover default akan diberikan secara otomatis.</p>
             </div>
             <div style="margin-bottom: 20px;">
-                <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">Nama Playlist</label>
-                <input type="text" id="new-playlist-name" class="modal-input" placeholder="Contoh: Lagu Santai" style="margin-top: 8px;">
+                <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;" data-i18n="playlist-name-label"></label>
+                <input type="text" id="new-playlist-name" class="modal-input" placeholder="Contoh: Lagu Santai" data-i18n-placeholder="playlist-name-example" style="margin-top: 8px;">
             </div>
-            <button class="modal-btn" onclick="window.submitCreatePlaylist()">Buat</button>
+            <button class="modal-btn" onclick="window.submitCreatePlaylist()" data-i18n="create-button"></button>
         </div>
     </div>
 
@@ -4544,7 +4854,7 @@ input:checked + .toggle-slider:before {
 <div id="import-music-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
-            <div class="modal-title">Impor Musik</div>
+            <div class="modal-title" data-i18n="import-music">Import Music</div>
             <button class="close-modal-btn" onclick="window.closeModal('import-music-modal')">
                 <i class="ph ph-x"></i>
             </button>
@@ -4557,11 +4867,11 @@ input:checked + .toggle-slider:before {
                      class="import-cover-preview" 
                      id="import-cover-preview">
                 <div class="import-file-info">
-                    <div class="import-file-name" id="import-file-name">
-                        Belum ada file dipilih
+                    <div class="import-file-name" id="import-file-name" data-i18n="no-file-selected">
+                        <span data-i18n="no-file-selected">No file selected</span>
                     </div>
                     <div class="import-file-size" id="import-file-size">
-                        Pilih file MP3
+                        <span data-i18n="choose-mp3">Choose MP3 file</span>
                     </div>
                 </div>
                 <input type="file" 
@@ -4571,45 +4881,48 @@ input:checked + .toggle-slider:before {
                        onchange="window.handleMusicFileSelect(this)">
                 <button class="file-upload-btn" 
                         onclick="document.getElementById('import-music-file').click()">
-                    <i class="ph ph-file-audio"></i> Pilih MP3
+                    <i class="ph ph-file-audio"></i> <span data-i18n="choose-mp3-btn">Choose MP3</span>
                 </button>
             </div>
 
             <!-- Song Info -->
             <div>
                 <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">
-                    Nama Lagu
+                    <span data-i18n="song-title-label">Song Title</span>
                 </label>
                 <input type="text" 
                        id="import-song-title" 
                        class="modal-input" 
-                       placeholder="Contoh: Beautiful Day">
+                       data-i18n-placeholder="song-title-placeholder" 
+                       placeholder="e.g. Beautiful Day">
             </div>
 
             <div>
                 <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">
-                    Penyanyi
+                    <span data-i18n="artist-label">Artist</span>
                 </label>
                 <input type="text" 
                        id="import-song-artist" 
                        class="modal-input" 
-                       placeholder="Contoh: John Doe">
+                       data-i18n-placeholder="artist-placeholder" 
+                       placeholder="e.g. John Doe">
             </div>
 
             <div>
                 <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">
-                    Album
+                    <span data-i18n="album-label">Album</span>
                 </label>
                 <input type="text" 
                        id="import-song-album" 
                        class="modal-input" 
-                       placeholder="Contoh: Greatest Hits">
+                       data-i18n-placeholder="album-placeholder" 
+                       placeholder="e.g. Greatest Hits">
             </div>
 
             <!-- Cover Photo Upload -->
             <div>
                 <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">
-                    Foto Album (Opsional)
+                    <span data-i18n="cover-label">Album Cover (Optional)</span>
                 </label>
                 <input type="file" 
                        id="import-cover-file" 
@@ -4619,7 +4932,7 @@ input:checked + .toggle-slider:before {
                 <button class="file-upload-btn" 
                         onclick="document.getElementById('import-cover-file').click()" 
                         style="width: 100%; margin-top: 8px;">
-                    <i class="ph ph-image"></i> Pilih Foto
+                    <i class="ph ph-image"></i> <span data-i18n="choose-photo">Choose Photo</span>
                 </button>
             </div>
 
@@ -4628,8 +4941,9 @@ input:checked + .toggle-slider:before {
                 <label>
                     <i class="ph ph-lock-key" id="privacy-icon" style="margin-right: 5px;"></i>
                     <span id="privacy-label">Privat</span>
+                                        <span id="privacy-label" data-i18n="privacy-label">Private</span>
                     <p style="font-size: 11px; color: #888; margin-top: 3px;">
-                        Hanya Anda yang bisa mendengarkan
+                        <span data-i18n="privacy-desc">Only you can listen</span>
                     </p>
                 </label>
                 <label class="toggle-switch">
@@ -4642,7 +4956,7 @@ input:checked + .toggle-slider:before {
 
             <!-- Submit Button -->
             <button class="modal-btn" onclick="window.submitImportMusic()">
-                <i class="ph ph-upload-simple"></i> Impor Musik
+                <i class="ph ph-upload-simple"></i> <span data-i18n="import-music">Import Music</span>
             </button>
         </div>
     </div>
@@ -4663,11 +4977,11 @@ input:checked + .toggle-slider:before {
     <div id="share-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Bagikan ke Teman</div>
+                <div class="modal-title" data-i18n="share-to-friends"></div>
                 <button class="close-modal-btn" onclick="window.closeModal('share-modal')"><i class="ph ph-x"></i></button>
             </div>
             <div class="playlist-select-list" id="share-friend-list" style="max-height: 300px;"></div>
-            <p id="share-loading" style="text-align:center; color: #888; display:none;">Memuat daftar teman...</p>
+            <p id="share-loading" style="text-align:center; color: #888; display:none;"><span data-i18n="loading"></span></p>
         </div>
     </div>
 
@@ -4680,7 +4994,7 @@ input:checked + .toggle-slider:before {
             <div class="chat-friend-info" onclick="window.openFriendProfileFromChat()">
                 <img src="" class="chat-friend-avatar" id="chat-friend-avatar-display">
                 <div>
-                    <div class="chat-friend-name" id="chat-friend-name-display">Nama Teman</div>
+                    <div class="chat-friend-name" id="chat-friend-name-display" data-i18n="friend-name"></div>
                     <div class="chat-status">Online</div>
                 </div>
             </div>
@@ -4697,7 +5011,8 @@ input:checked + .toggle-slider:before {
         type="text" 
         class="chat-input" 
         id="chat-input-box" 
-        placeholder="Ketik pesan..." 
+        placeholder="Type a message..." 
+        data-i18n-placeholder="chat-placeholder"
         onkeypress="if(event.key === 'Enter') window.sendChatMessage()"
         autocomplete="off"
     >
@@ -4713,23 +5028,21 @@ input:checked + .toggle-slider:before {
     <!-- Friend Profile Overlay -->
     <div id="friend-profile-overlay">
         <div style="padding: 24px;">
-            <button onclick="window.closeFriendProfile()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer; margin-bottom:20px;"><i class="ph ph-arrow-left"></i> Kembali</button>
-            
+            <button onclick="window.closeFriendProfile()" style="background:none; border:none; color:white; font-size:20px; cursor:pointer; margin-bottom:20px;"><i class="ph ph-arrow-left"></i> <span data-i18n="back">Back</span></button>
             <div class="profile-hero-section" id="friend-hero-section">
                 <img src="" alt="Friend Avatar" class="profile-avatar-lg" id="friend-profile-avatar-display">
                 <div class="profile-hero-content">
-                    <div class="profile-type-label">Profil Teman</div>
-                    <h1 class="profile-name-large" id="friend-profile-name-display">Nama Teman</h1>
+                    <div class="profile-type-label" data-i18n="friend-profile-label">Friend Profile</div>
+                    <h1 class="profile-name-large" id="friend-profile-name-display">Friend Name</h1>
                     <!-- Friend ID Display -->
                     <div class="profile-userid-display" onclick="window.copyFriendUserId()" style="cursor:default;">
                         <span id="friend-profile-userid-text">Friend#0000</span>
                         <i class="ph ph-copy copy-id-icon"></i>
                     </div>
-                    <p class="profile-bio-display" id="friend-profile-bio-display">Bio teman.</p>
+                    <p class="profile-bio-display" id="friend-profile-bio-display" data-i18n="friend-bio-placeholder"></p>
                 </div>
             </div>
-
-            <div class="section-title-profile">Playlist Publik</div>
+            <div class="section-title-profile" data-i18n="public-playlists">Public Playlists</div>
             <div class="playlist-modal-grid-profile" id="friend-public-playlists">
                 <!-- Friend Playlists -->
             </div>
@@ -4739,65 +5052,62 @@ input:checked + .toggle-slider:before {
     <!-- Context Menu -->
     <div id="context-menu">
         <div class="ctx-item" onclick="window.ctxAction('copy')">Salin</div>
+            <div class="ctx-item" onclick="window.ctxAction('copy')" data-i18n="context-copy">Copy</div>
         <div class="ctx-item" onclick="window.ctxAction('reply')">Balas</div>
+            <div class="ctx-item" onclick="window.ctxAction('reply')" data-i18n="context-reply">Reply</div>
         <div class="ctx-separator"></div>
         <div class="ctx-item" onclick="window.ctxAction('delete')" style="color: var(--primary-red);">Hapus</div>
+        <div class="ctx-item" onclick="window.ctxAction('delete')" style="color: var(--primary-red);" data-i18n="context-delete">Delete</div>
     </div>
 
     <audio id="audio-player"></audio>
 
     <!-- Listen Together Overlay (Moved to Body End) -->
-    <div id="listen-together-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:999999; display:none;">
+    <div id="listen-together-overlay">
         <button class="lt-close" onclick="window.closeListenTogether()"><i class="ph ph-x"></i></button>
-        
         <div class="lt-container">
             <div class="lt-header">
-                <h2>🎵 Dengar Bareng</h2>
-                <p>Nikmati musik bersama teman secara real-time</p>
+                <h2 data-i18n="listen-together-title">🎵 Listen Together</h2>
+                <p data-i18n="listen-together-desc">Enjoy music with friends in real-time</p>
             </div>
-
             <!-- Mode Selection -->
             <div id="lt-mode-section">
                 <div class="lt-mode-selector">
                     <button class="lt-mode-btn" onclick="window.selectLTMode('host')">
                         <i class="ph ph-broadcast" style="font-size:32px; display:block; margin-bottom:10px;"></i>
-                        Buat Session
+                        <span data-i18n="listen-together-create">Create Session</span>
                     </button>
                     <button class="lt-mode-btn" onclick="window.selectLTMode('join')">
                         <i class="ph ph-sign-in" style="font-size:32px; display:block; margin-bottom:10px;"></i>
-                        Gabung Session
+                        <span data-i18n="listen-together-join">Join Session</span>
                     </button>
                 </div>
             </div>
-
             <!-- Host Section -->
-            <div id="lt-host-section" style="display:none;">
+            <div id="lt-host-section">
                 <div class="lt-session-code">
-                    <p style="color:#aaa; font-size:12px;">Kode Session Anda:</p>
+                    <p style="color:#aaa; font-size:12px; margin:0 0 10px 0;" data-i18n="listen-together-your-code">Your Session Code:</p>
                     <div class="lt-code-display" id="lt-session-code">----</div>
-                    <p style="color:#aaa; font-size:12px;">Bagikan kode ini ke teman</p>
+                    <p style="color:#aaa; font-size:12px; margin:10px 0 0 0;" data-i18n="listen-together-share-code">Share this code with friends</p>
                 </div>
                 <button class="lt-btn" onclick="window.copySessionCode()">
-                    <i class="ph ph-copy"></i> Salin Kode
+                    <i class="ph ph-copy"></i> <span data-i18n="listen-together-copy">Copy Code</span>
                 </button>
-                
                 <div class="lt-participants" id="lt-participants-list">
-                    <p style="color:#666; text-align:center; font-size:13px;">Menunggu teman bergabung...</p>
+                    <p style="color:#666; text-align:center; font-size:13px; margin:0;" data-i18n="waiting-friends">Waiting for friends to join...</p>
                 </div>
-                
-                <button class="lt-btn" style="background:#444; margin-top:15px;" onclick="window.endListenTogether()">
-                    Akhiri Session
+                <button class="lt-btn" style="background:#444;" onclick="window.endListenTogether()">
+                    <span data-i18n="listen-together-end">End Session</span>
                 </button>
             </div>
-
             <!-- Join Section -->
-            <div id="lt-join-section" style="display:none;">
-                <input type="text" class="lt-input" id="lt-join-code" placeholder="XXXX" maxlength="4">
+            <div id="lt-join-section">
+                <input type="text" class="lt-input" id="lt-join-code" data-i18n-placeholder="listen-together-code-placeholder" placeholder="XXXX" maxlength="4">
                 <button class="lt-btn" onclick="window.joinListenTogether()">
-                    <i class="ph ph-arrow-right"></i> Gabung
+                    <i class="ph ph-arrow-right"></i> <span data-i18n="listen-together-join-btn">Join</span>
                 </button>
-                <p style="color:#aaa; font-size:12px; text-align:center; margin-top:15px;">
-                    Masukkan kode 4 digit dari host
+                <p style="color:#aaa; font-size:12px; text-align:center; margin:0;" data-i18n="listen-together-join-desc">
+                    Enter the 4-digit code from the host
                 </p>
             </div>
         </div>
@@ -4806,7 +5116,7 @@ input:checked + .toggle-slider:before {
     <!-- Active Session Badge -->
     <div class="session-badge" id="session-badge" style="z-index:999998;">
         <div class="session-badge-icon"></div>
-        <span id="session-badge-text">Dengar Bareng Aktif</span>
+        <span id="session-badge-text" data-i18n="listen-together-active">Listen Together Active</span>
     </div>
 
     <!-- FIREBASE & LOGIC -->
@@ -5570,7 +5880,7 @@ console.log('✅ Supabase initialized');
     const errorMsg = document.getElementById('signup-error');
 
     if (!name || !email || !password) {
-        errorMsg.innerText = "Mohon lengkapi semua kolom.";
+        errorMsg.innerText = window.t('fill-all-fields');
         errorMsg.style.display = 'block';
         return;
     }
@@ -5626,7 +5936,7 @@ console.log('✅ Supabase initialized');
             signInWithEmailAndPassword(auth, email, password)
                 .then(() => {})
                 .catch((error) => {
-                    errorMsg.innerText = "Email atau password salah.";
+                    errorMsg.innerText = window.t('email-password-wrong');
                     errorMsg.style.display = 'block';
                 });
         }
@@ -5775,7 +6085,7 @@ console.log('✅ Supabase initialized');
             }));
             
             if(playlistArray.length === 0) {
-                container.innerHTML = '<div style="padding: 10px 12px; color: #666; font-size: 13px;">Belum ada playlist.</div>';
+                container.innerHTML = '<div style="padding: 10px 12px; color: #666; font-size: 13px;">' + window.t('no-playlists') + '</div>';
                 return;
             }
 
@@ -5852,7 +6162,7 @@ function setupFriendListeners() {
                 </div>
             `;
         });
-        if(!html) html = '<div style="padding:10px; color:#666; font-size:12px;">Tidak ada permintaan baru.</div>';
+        if(!html) html = '<div style="padding:10px; color:#666; font-size:12px;">' + window.t('no-requests') + '</div>';
         container.innerHTML = html;
     });
 
@@ -5875,7 +6185,7 @@ function setupFriendListeners() {
             `;
         });
         
-        if(!html) html = '<div style="padding:10px; color:#666; font-size:12px;">Belum ada teman.</div>';
+        if(!html) html = `<div style="padding:10px; color:#666; font-size:12px;">${window.t('no-friends-message')}</div>`;
         container.innerHTML = html;
         
         // Fetch friend details
@@ -5907,7 +6217,7 @@ function setupFriendListeners() {
             }
 
             // Tampilkan loading state
-            resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">Mencari...</div>';
+            resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">' + window.t('searching') + '</div>';
             resContainer.style.display = 'block';
 
             // Debouncing: tunggu 500ms setelah user berhenti mengetik
@@ -5999,14 +6309,14 @@ window.openChat = openChat;
                 // Check if already friends
                 const friendSnap = await get(ref(db, `users/${myUid}/friends/${targetUid}`));
                 if(friendSnap.exists()) { 
-                    showToast("Sudah berteman dengan pengguna ini.", "error"); 
+                    showToast(window.t('already-friends'), "error"); 
                     return; 
                 }
                 
                 // Check if request already sent
                 const reqSnap = await get(ref(db, `users/${targetUid}/friendRequests/${myUid}`));
                 if(reqSnap.exists()) { 
-                    showToast("Permintaan sudah terkirim sebelumnya.", "error"); 
+                    showToast(window.t('request-already-sent'), "error"); 
                     return; 
                 }
 
@@ -6020,7 +6330,7 @@ window.openChat = openChat;
                 // Record sent request
                 await set(ref(db, `users/${myUid}/sentRequests/${targetUid}`), true);
                 
-                showToast("✅ Permintaan pertemanan berhasil dikirim!");
+                showToast("✅ " + window.t('friend-request-sent'));
                 
                 // Clear search
                 document.getElementById('friend-search-dropdown').style.display = 'none';
@@ -6038,9 +6348,9 @@ window.openChat = openChat;
         // ✅ GUNAKAN set() UNTUK NILAI BOOLEAN
         await set(ref(db, `users/${myUid}/friends/${senderUid}`), true);
         await set(ref(db, `users/${senderUid}/friends/${myUid}`), true);
-        showToast("Teman ditambahkan!", "success");
+        showToast(window.t('friend-added'), "success");
     } else {
-        showToast("Permintaan ditolak.", "error");
+        showToast(window.t('request-declined'), "error");
     }
     // Remove request
     await remove(ref(db, `users/${myUid}/friendRequests/${senderUid}`));
@@ -6057,7 +6367,7 @@ window.openChat = openChat;
                 const users = snapshot.val() || {};
                 
                 if(!users || Object.keys(users).length === 0) {
-                    resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">Tidak ada pengguna ditemukan.</div>';
+                    resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">' + window.t('no-users') + '</div>';
                     return;
                 }
 
@@ -6067,7 +6377,7 @@ window.openChat = openChat;
                 );
 
                 if(matchedUserIds.length === 0) {
-                    resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">Tidak ditemukan.</div>';
+                    resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">' + window.t('no-results') + '</div>';
                     return;
                 }
 
@@ -6095,7 +6405,7 @@ window.openChat = openChat;
 
                 // Render hasil
                 if(userDetails.length === 0) {
-                    resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">Tidak ada hasil.</div>';
+                    resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#888;">' + window.t('no-results') + '</div>';
                     return;
                 }
 
@@ -6119,7 +6429,7 @@ window.openChat = openChat;
                 
             } catch (error) {
                 console.error('Error searching friends:', error);
-                resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#ff4444;">Error saat mencari.</div>';
+                resContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#ff4444;">' + window.t('error-search') + '</div>';
             }
         }
 
@@ -6347,7 +6657,7 @@ window.openChat = openChat;
                 loading.style.display = 'none';
                 const friends = snap.val() || {};
                 if(!Object.keys(friends).length) {
-                    list.innerHTML = '<div style="text-align:center; padding:20px; color:#888">Anda belum punya teman.</div>';
+                    list.innerHTML = '<div style="text-align:center; padding:20px; color:#888">' + window.t('no-you-have-friends') + '</div>';
                     return;
                 }
 
@@ -6464,13 +6774,13 @@ function renderFriendPlaylists(playlists) {
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
                     <div class="card-title">${pl.name}</div>
-                    <div class="card-desc">Playlist Publik</div>
+                    <div class="card-desc">${window.t('public-playlists')}</div>
                 </div>
             `;
         }
     });
 
-    if(!html) html = '<div style="padding:0 32px; color:#666;">Teman ini tidak memiliki playlist publik.</div>';
+    if(!html) html = `<div style="padding:0 32px; color:#666;">${window.t('no-public-playlists')}</div>`;
     container.innerHTML = html;
 }
    
@@ -6511,7 +6821,7 @@ function renderFriendPlaylists(playlists) {
             })
             .filter(s => s);
 
-        document.getElementById('playlist-count').innerText = songDetails.length + ' lagu';
+        document.getElementById('playlist-count').innerText = songDetails.length + ' ' + window.t('songs-label');
         renderSongList(songDetails, 'playlist-songs-container');
         
         const shareBtn = document.querySelector('#view-playlist .playlist-actions .share-btn');
@@ -6590,6 +6900,11 @@ function renderFriendPlaylists(playlists) {
                 targetView.classList.add('active');
                 document.querySelector('.main-content').scrollTop = 0;
                 
+                // Track history for non-main navigation views
+                if (viewName === 'playlist' || viewName === 'profile' || viewName.includes('album')) {
+                    pushToHistory(viewName);
+                }
+                
                 if (viewName === 'profile') {
                     window.loadProfileData();
                 }
@@ -6614,6 +6929,387 @@ function renderFriendPlaylists(playlists) {
         }
 
         window.switchView = switchView;
+
+        // --- LANGUAGE SYSTEM ---
+        let currentLanguage = localStorage.getItem('appLanguage') || 'id';
+        
+        const translations = {
+            id: {
+                // Navbar
+                'nav-home': 'Beranda',
+                'nav-search': 'Cari',
+                'nav-liked': 'Lagu Disukai',
+                // Sidebar
+                'playlist-title': 'Playlist Anda',
+                'create-playlist': 'Buat Playlist',
+                'import-music': 'Impor Musik',
+                // Main content
+                'no-history': 'Belum ada riwayat',
+                'recently-played': 'Baru Diputar',
+                'all-artists': 'Semua Artis',
+                'play': 'Putar',
+                'pause': 'Jeda',
+                'liked-songs': 'Lagu Disukai',
+                'profile': 'Profil',
+                'logout': 'Keluar',
+                'back': 'Kembali',
+                'album': 'Album',
+                'artist': 'Artis',
+                'playlist': 'Playlist',
+                'songs': 'Lagu',
+                'search': 'Cari lagu, artis, playlist...',
+                'home': 'Beranda',
+                'liked': 'Lagu Disukai',
+                'ok': 'OK',
+                'cancel': 'Batal',
+                'save': 'Simpan',
+                'delete': 'Hapus',
+                'edit': 'Edit',
+                'add': 'Tambah',
+                'remove': 'Hapus',
+                'share': 'Bagikan',
+                'loading': 'Memuat...',
+                'no-playlists': 'Belum ada playlist',
+                'all-playlists': 'Semua Playlist',
+                'my-playlists': 'Playlist Saya',
+                'public-playlists': 'Playlist Publik',
+                'by': 'Oleh',
+                'songs-count': 'lagu',
+                'no-songs': 'Belum ada lagu',
+                'add-to-playlist': 'Tambah ke Playlist',
+                'remove-from-playlist': 'Hapus dari Playlist',
+                'no-file-selected': 'Belum ada file dipilih',
+                'no-friends': 'Belum ada teman',
+                'no-results': 'Tidak ada hasil',
+                'no-users': 'Tidak ada pengguna ditemukan',
+                'no-songs-found': 'Tidak ada lagu ditemukan',
+                'searching': 'Mencari...',
+                'error-search': 'Error saat mencari',
+                'empty-queue': 'Antrian kosong',
+                'no-requests': 'Tidak ada permintaan baru',
+                'no-public-playlists': 'Tidak ada playlist publik. Atur privasi di sidebar',
+                'waiting-friends': 'Menunggu teman bergabung...',
+                'waiting': 'Menunggu...',
+                'no-active-playlist': 'Tidak ada playlist yang aktif',
+                'no-you-have-friends': 'Anda belum punya teman',
+                // Home page
+                'my-playlists-section': 'Playlist Saya',
+                'popular-indonesian-bands': 'Band Populer Indonesia',
+                'popular-indonesian-artists': 'Penyanyi Populer Indonesia',
+                'popular-foreign-artists': 'Penyanyi Asing Populer',
+                'popular-foreign-bands': 'Band Asing Populer',
+                'search-results': 'Hasil Pencarian',
+                'public-playlists': 'Playlist Publik',
+                'playlist-settings': 'Pengaturan Playlist',
+                'share-to-friends': 'Bagikan ke Teman',
+                'select-song': 'Pilih Lagu',
+                'song-collection': 'Koleksi Lagu',
+                'popular-songs': 'Lagu Populer',
+                'owner': 'Owner',
+                'songs-label': 'lagu',
+                'sidebar-friends': 'Teman',
+                'search-friends-placeholder': 'Cari teman (Nama/ID Pengguna)...',
+                'friend-requests': 'Permintaan Pertemanan',
+                'friend-list': 'Daftar Teman',
+                'recently-played': 'Baru Diputar',
+                'no-public-playlists': 'Teman ini tidak memiliki playlist publik.',
+                'already-friends': 'Sudah berteman dengan pengguna ini.',
+                'request-already-sent': 'Permintaan sudah terkirim sebelumnya.',
+                'friend-request-sent': 'Permintaan pertemanan berhasil dikirim!',
+                'friend-added': 'Teman ditambahkan!',
+                'request-declined': 'Permintaan ditolak.',
+                'no-friends-message': 'Belum ada teman.',
+                'band-popular-indonesia': 'Band Populer Indonesia',
+                'artist-popular-indonesia': 'Penyanyi Populer Indonesia',
+                'artist-foreign-popular': 'Penyanyi Asing Populer',
+                'band-foreign-popular': 'Band Asing Populer',
+                'my-playlists': 'Playlist Kamu',
+                'friend-name': 'Nama Teman',
+                'login-title': 'Masuk ke Vidje',
+                'login-subtitle': 'Musik untuk semua orang.',
+                'login-error-default': 'Email atau password salah.',
+                'signup-title': 'Daftar Akun',
+                'signup-subtitle': 'Bergabunglah dengan Vidje.',
+                'signup-error-default': 'Gagal mendaftar.',
+                'signup-fullname': 'Nama Lengkap',
+                'signup-button': 'Daftar',
+                'login-button': 'Masuk',
+                'signup-have-account': 'Sudah punya akun?',
+                'signup-link': 'Masuk',
+                'login-no-account': 'Belum punya akun?',
+                'login-link': 'Daftar Sekarang',
+                'chat-placeholder': 'Ketik pesan...',
+                'playlist-name-label': 'Nama Playlist',
+                'playlist-name-example': 'Contoh: Lagu Santai',
+                'create-button': 'Buat',
+                'fill-all-fields': 'Mohon lengkapi semua kolom.',
+                'email-password-wrong': 'Email atau password salah.',
+                'settings-playlist-name': 'Nama Playlist',
+                'profile-label': 'Profil',
+                'profile-bio-placeholder': 'Bio pengguna akan muncul di sini.',
+                'edit-profile': 'Edit Profil',
+                'setting-language': 'Setting Bahasa',
+                'friend-profile-label': 'Profil Teman',
+                'friend-bio-placeholder': 'Bio teman akan muncul di sini.'
+            },
+            en: {
+                // Navbar
+                'nav-home': 'Home',
+                'nav-search': 'Search',
+                'nav-liked': 'Liked Songs',
+                // Sidebar
+                'playlist-title': 'Your Playlists',
+                'create-playlist': 'Create Playlist',
+                'import-music': 'Import Music',
+                // Main content
+                'no-history': 'No history',
+                'recently-played': 'Recently Played',
+                'all-artists': 'All Artists',
+                'play': 'Play',
+                'pause': 'Pause',
+                'liked-songs': 'Liked Songs',
+                'profile': 'Profile',
+                'logout': 'Logout',
+                'back': 'Back',
+                'album': 'Album',
+                'artist': 'Artist',
+                'playlist': 'Playlist',
+                'songs': 'Songs',
+                'search': 'Search songs, artists, playlists...',
+                'home': 'Home',
+                'liked': 'Liked Songs',
+                'ok': 'OK',
+                'cancel': 'Cancel',
+                'save': 'Save',
+                'delete': 'Delete',
+                'edit': 'Edit',
+                'add': 'Add',
+                'remove': 'Remove',
+                'share': 'Share',
+                'loading': 'Loading...',
+                'no-playlists': 'No playlists yet',
+                'all-playlists': 'All Playlists',
+                'my-playlists': 'My Playlists',
+                'public-playlists': 'Public Playlists',
+                'by': 'By',
+                'songs-count': 'songs',
+                'no-songs': 'No songs',
+                'add-to-playlist': 'Add to Playlist',
+                'remove-from-playlist': 'Remove from Playlist',
+                'no-file-selected': 'No file selected',
+                'no-friends': 'No friends yet',
+                'no-results': 'No results',
+                'no-users': 'No users found',
+                'no-songs-found': 'No songs found',
+                'searching': 'Searching...',
+                'error-search': 'Error searching',
+                'empty-queue': 'Queue is empty',
+                'no-requests': 'No new requests',
+                'no-public-playlists': 'No public playlists. Adjust privacy in sidebar',
+                'waiting-friends': 'Waiting for friends to join...',
+                'waiting': 'Waiting...',
+                'no-active-playlist': 'No active playlist',
+                'no-you-have-friends': 'You don\'t have any friends yet',
+                // Home page
+                'my-playlists-section': 'My Playlists',
+                'popular-indonesian-bands': 'Popular Indonesian Bands',
+                'popular-indonesian-artists': 'Popular Indonesian Artists',
+                'popular-foreign-artists': 'Popular Foreign Artists',
+                'popular-foreign-bands': 'Popular Foreign Bands',
+                'search-results': 'Search Results',
+                'public-playlists': 'Public Playlists',
+                'playlist-settings': 'Playlist Settings',
+                'share-to-friends': 'Share to Friends',
+                'select-song': 'Select Song',
+                'song-collection': 'Song Collection',
+                'popular-songs': 'Popular Songs',
+                'owner': 'Owner',
+                'songs-label': 'songs',
+                'sidebar-friends': 'Friends',
+                'search-friends-placeholder': 'Search friends (Name/User ID)...',
+                'friend-requests': 'Friend Requests',
+                'friend-list': 'Friend List',
+                'recently-played': 'Recently Played',
+                'no-public-playlists': 'This friend has no public playlists.',
+                'already-friends': 'Already friends with this user.',
+                'request-already-sent': 'Friend request already sent.',
+                'friend-request-sent': 'Friend request sent successfully!',
+                'friend-added': 'Friend added!',
+                'request-declined': 'Friend request declined.',
+                'no-friends-message': 'No friends yet.',
+                'band-popular-indonesia': 'Popular Indonesian Bands',
+                'artist-popular-indonesia': 'Popular Indonesian Artists',
+                'artist-foreign-popular': 'Popular Foreign Artists',
+                'band-foreign-popular': 'Popular Foreign Bands',
+                'my-playlists': 'My Playlists',
+                'friend-name': 'Friend Name',
+                'login-title': 'Login to Vidje',
+                'login-subtitle': 'Music for everyone.',
+                'login-error-default': 'Email or password is incorrect.',
+                'signup-title': 'Create Account',
+                'signup-subtitle': 'Join Vidje.',
+                'signup-error-default': 'Sign up failed.',
+                'signup-fullname': 'Full Name',
+                'signup-button': 'Sign Up',
+                'login-button': 'Login',
+                'signup-have-account': 'Already have an account?',
+                'signup-link': 'Login',
+                'login-no-account': 'Don\'t have an account?',
+                'login-link': 'Sign Up Now',
+                'chat-placeholder': 'Type a message...',
+                'playlist-name-label': 'Playlist Name',
+                'playlist-name-example': 'e.g. Chill Songs',
+                'create-button': 'Create',
+                'fill-all-fields': 'Please fill in all fields.',
+                'email-password-wrong': 'Email or password is incorrect.',
+                'settings-playlist-name': 'Playlist Name',
+                'profile-label': 'Profile',
+                'profile-bio-placeholder': 'User bio will appear here.',
+                'edit-profile': 'Edit Profile',
+                'setting-language': 'Setting Language',
+                'friend-profile-label': 'Friend Profile',
+                'friend-bio-placeholder': 'Friend bio will appear here.'
+            }
+        };
+        
+        function switchLanguage(lang) {
+            if (!translations[lang]) lang = 'id'; // Fallback to Indonesian if invalid
+            currentLanguage = lang;
+            localStorage.setItem('appLanguage', lang);
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            const activeLangBtn = document.querySelector(`[data-lang="${lang}"]`);
+            if (activeLangBtn) activeLangBtn.classList.add('active');
+            
+            // Update mobile language dropdown state
+            window.updateLanguageDropdownState(lang);
+            
+            // Update all text elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    if (el.tagName === 'INPUT') {
+                        el.placeholder = translations[lang][key];
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                }
+            });
+            
+            // Update placeholder for search input
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.placeholder = translations[lang]['search'] || 'Search...';
+            }
+            
+            // Update friend requests container text
+            const friendReqsContainer = document.getElementById('friend-requests-container');
+            if (friendReqsContainer && friendReqsContainer.textContent.includes('color:#666')) {
+                // If empty state is showing, update the text
+                friendReqsContainer.innerHTML = '<div style="padding:10px; color:#666; font-size:12px;">' + window.t('no-requests') + '</div>';
+            }
+        }
+        
+        window.switchLanguage = switchLanguage;
+        
+        // Toggle language dropdown (mobile)
+        window.toggleLanguageDropdown = function() {
+            const dropdown = document.getElementById('language-dropdown');
+            if(dropdown) {
+                dropdown.classList.toggle('active');
+            }
+        };
+        
+        // Update language dropdown button active state
+        window.updateLanguageDropdownState = function(lang) {
+            const langIdBtn = document.getElementById('lang-id-btn');
+            const langEnBtn = document.getElementById('lang-en-btn');
+            
+            if(lang === 'id') {
+                if(langIdBtn) langIdBtn.classList.add('active');
+                if(langEnBtn) langEnBtn.classList.remove('active');
+            } else {
+                if(langIdBtn) langIdBtn.classList.remove('active');
+                if(langEnBtn) langEnBtn.classList.add('active');
+            }
+        };
+        
+        // Helper function to get translated text
+        function t(key) {
+            if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                return translations[currentLanguage][key];
+            }
+            if (translations['id'] && translations['id'][key]) {
+                return translations['id'][key];
+            }
+            return key;
+        }
+        
+        window.t = t;
+        
+        // Initialize with saved language
+        window.addEventListener('DOMContentLoaded', () => {
+            switchLanguage(currentLanguage);
+        });
+        
+        // If DOM is already loaded, call switchLanguage immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => switchLanguage(currentLanguage));
+        } else {
+            switchLanguage(currentLanguage);
+        }
+
+        // --- NAVIGATION HISTORY FOR BACK BUTTON ---
+        let navigationHistory = ['home']; // Start with home
+        
+        function pushToHistory(viewName) {
+            if (navigationHistory[navigationHistory.length - 1] !== viewName) {
+                navigationHistory.push(viewName);
+            }
+        }
+        
+        function goBack() {
+            if (navigationHistory.length > 1) {
+                navigationHistory.pop(); // Remove current
+                const previousView = navigationHistory[navigationHistory.length - 1];
+                switchView(previousView);
+            } else {
+                switchView('home');
+            }
+        }
+        
+        window.goBack = goBack;
+        window.pushToHistory = pushToHistory;
+        
+        // --- INITIALIZE BACK BUTTONS ON ALBUM VIEWS ---
+        function initializeAlbumBackButtons() {
+            const albumViewIds = [
+                'view-perunggu-album', 'view-noah-album', 'view-dewa-album', 'view-sheila-album',
+                'view-kahitna-album', 'view-hindia-album', 'view-astrid-album', 'view-afgan-album',
+                'view-tulus-album', 'view-mahalini-album', 'view-tenxi-album', 'view-taylor-album',
+                'view-justin-album', 'view-ed-album', 'view-bruno-album', 'view-daniel-album', 'view-coldplay-album'
+            ];
+            
+            albumViewIds.forEach(viewId => {
+                const view = document.getElementById(viewId);
+                if (view) {
+                    const headerView = view.querySelector('.playlist-header-view');
+                    if (headerView && !headerView.querySelector('.back-button')) {
+                        const backBtn = document.createElement('button');
+                        backBtn.onclick = function() { window.goBack(); };
+                        backBtn.className = 'back-button';
+                        backBtn.title = 'Kembali';
+                        backBtn.style.cssText = 'position: absolute; top: 8px; left: 12px; z-index: 10; background: rgba(0,0,0,0.5); border-radius: 50%; width: 44px; height: 44px;';
+                        backBtn.innerHTML = '<i class="ph ph-arrow-left"></i>';
+                        headerView.insertBefore(backBtn, headerView.firstChild);
+                    }
+                }
+            });
+        }
+        
+        // Call when DOM is ready
+        window.addEventListener('load', initializeAlbumBackButtons);
 
         // --- RECENTLY PLAYED LOGIC ---
         function addToRecentlyPlayed(type, data) {
@@ -6729,7 +7425,7 @@ function renderFriendPlaylists(playlists) {
         
         renderSongListCustom(matchedSongs, 'search-songs-list-inner', false);
     } else {
-        songsContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Tidak ada lagu ditemukan</div>';
+        songsContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">' + window.t('no-songs-found') + '</div>';
     }
 }
         window.handleSearch = handleSearch;
@@ -6808,7 +7504,7 @@ function renderFriendPlaylists(playlists) {
         function renderSongListCustom(data, containerId, isHistoryMode) {
             const container = document.getElementById(containerId);
             if(!data || data.length === 0) {
-                if(containerId) container.innerHTML = '<div style="padding:20px; color:#666;">Tidak ada lagu.</div>';
+                if(containerId) container.innerHTML = '<div style="padding:20px; color:#666;">' + window.t('no-songs') + '</div>';
                 return;
             }
 
@@ -6876,7 +7572,7 @@ function renderFriendPlaylists(playlists) {
         function renderSongList(data, containerId) {
     const container = document.getElementById(containerId);
     if(!data || data.length === 0) {
-        if(containerId) container.innerHTML = '<div style="padding:20px; color:#666;">Tidak ada lagu.</div>';
+        if(containerId) container.innerHTML = '<div style="padding:20px; color:#666;">' + window.t('no-songs') + '</div>';
         return;
     }
 
@@ -6929,7 +7625,7 @@ function renderFriendPlaylists(playlists) {
     }));
     
     if(playlistArray.length === 0) {
-        container.innerHTML = '<div style="padding: 10px 12px; color: #666; font-size: 13px;">Belum ada playlist.</div>';
+        container.innerHTML = '<div style="padding: 10px 12px; color: #666; font-size: 13px;">' + window.t('no-playlists') + '</div>';
         return;
     }
 
@@ -6958,7 +7654,7 @@ function renderFriendPlaylists(playlists) {
         function renderTrending() {
             const container = document.getElementById('trending-container');
             if (!currentUserData || !currentUserData.playlists) {
-                container.innerHTML = '<div style="padding:20px; color:#888;">Belum ada playlist. Buat playlist baru yuk!</div>';
+                container.innerHTML = '<div style="padding:20px; color:#888;">' + window.t('no-playlists') + '. Buat playlist baru yuk!</div>';
                 return;
             }
             
@@ -6972,7 +7668,7 @@ function renderFriendPlaylists(playlists) {
             const topPlaylists = playlists.slice(0, 4);
             
             if (topPlaylists.length === 0) {
-                container.innerHTML = '<div style="padding:20px; color:#888;">Belum ada playlist. Buat playlist baru yuk!</div>';
+                container.innerHTML = '<div style="padding:20px; color:#888;">' + window.t('no-playlists') + '. Buat playlist baru yuk!</div>';
                 return;
             }
 
@@ -6983,7 +7679,7 @@ function renderFriendPlaylists(playlists) {
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
                     <div class="card-title">${pl.name}</div>
-                    <div class="card-desc">Playlist Kamu</div>
+                    <div class="card-desc">${window.t('my-playlists')}</div>
                 </div>
             `).join('');
             
@@ -7007,7 +7703,7 @@ function renderFriendPlaylists(playlists) {
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
                     <div class="card-title">${band.name}</div>
-                    <div class="card-desc">Band Populer Indonesia</div>
+                    <div class="card-desc">${window.t('band-popular-indonesia')}</div>
                 </div>
             `).join('');
             container.innerHTML = html;
@@ -7029,7 +7725,7 @@ function renderFriendPlaylists(playlists) {
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
                     <div class="card-title">${artist.name}</div>
-                    <div class="card-desc">Penyanyi Populer Indonesia</div>
+                    <div class="card-desc">${window.t('artist-popular-indonesia')}</div>
                 </div>
             `).join('');
             container.innerHTML = html;
@@ -7052,7 +7748,7 @@ function renderFriendPlaylists(playlists) {
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
                     <div class="card-title">${artist.name}</div>
-                    <div class="card-desc">Penyanyi Asing Populer</div>
+                    <div class="card-desc">${window.t('artist-foreign-popular')}</div>
                 </div>
             `).join('');
             container.innerHTML = html;
@@ -7074,7 +7770,7 @@ function renderFriendPlaylists(playlists) {
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
                     <div class="card-title">${band.name}</div>
-                    <div class="card-desc">Band Asing Populer</div>
+                    <div class="card-desc">${window.t('band-foreign-popular')}</div>
                 </div>
             `).join('');
             container.innerHTML = html;
@@ -7105,7 +7801,7 @@ function renderFriendPlaylists(playlists) {
                 document.getElementById(bgElemId).style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
             }
 
-            document.getElementById(countElemId).innerText = `${songList.length} lagu`;
+            document.getElementById(countElemId).innerText = `${songList.length} ${window.t('songs-label')}`;
             renderSongList(songList, containerId);
             switchView(viewName);
         }
@@ -7161,7 +7857,7 @@ function renderFriendPlaylists(playlists) {
                 })
                 .filter(song => song !== undefined); 
 
-            document.getElementById('playlist-count').innerText = `${validSongDetails.length} lagu`;
+            document.getElementById('playlist-count').innerText = `${validSongDetails.length} ${window.t('songs-label')}`;
             renderSongList(validSongDetails, 'playlist-songs-container');
             
             // Add to recently played
@@ -7198,7 +7894,7 @@ function renderFriendPlaylists(playlists) {
                 document.getElementById('ghani-header-bg').style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
             };
             
-            document.getElementById('ghani-count').innerText = `${ghaniSongs.length} lagu`;
+            document.getElementById('ghani-count').innerText = `${ghaniSongs.length} ${window.t('songs-label')}`;
             renderSongList(ghaniSongs, 'ghani-songs-container');
             switchView('ghani-album');
         }
@@ -7217,7 +7913,7 @@ function renderFriendPlaylists(playlists) {
                 document.getElementById('revan-header-bg').style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
             };
             
-            document.getElementById('revan-count').innerText = `${revanSongs.length} lagu`;
+            document.getElementById('revan-count').innerText = `${revanSongs.length} ${window.t('songs-label')}`;
             renderSongList(revanSongs, 'revan-songs-container');
             switchView('revan-album');
         }
@@ -7237,7 +7933,7 @@ function renderFriendPlaylists(playlists) {
                 document.getElementById('hanung-header-bg').style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
             };
             
-            document.getElementById('hanung-count').innerText = `${hanungSongs.length} lagu`;
+            document.getElementById('hanung-count').innerText = `${hanungSongs.length} ${window.t('songs-label')}`;
             renderSongList(hanungSongs, 'hanung-songs-container');
             switchView('hanung-album');
         };
@@ -7255,7 +7951,7 @@ function renderFriendPlaylists(playlists) {
                 document.getElementById('rara-header-bg').style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
             };
             
-            document.getElementById('rara-count').innerText = `${raraSongs.length} lagu`;
+            document.getElementById('rara-count').innerText = `${raraSongs.length} ${window.t('songs-label')}`;
             renderSongList(raraSongs, 'rara-songs-container');
             switchView('rara-album');
         };
@@ -7391,7 +8087,7 @@ function renderFriendPlaylists(playlists) {
         // --- LIKED SONGS LOGIC ---
         function openLikedView() {
             const likedSongsList = songs.filter(s => likedSongs.includes(s.id));
-            document.getElementById('liked-title-view').innerText = "Disukai";
+            document.getElementById('liked-title-view').innerText = window.t('liked');
             const coverEl = document.getElementById('liked-cover-view');
             
             // Use custom liked cover if exists
@@ -7409,7 +8105,7 @@ function renderFriendPlaylists(playlists) {
                 document.getElementById('liked-header-bg').style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
             };
             
-            document.getElementById('liked-count').innerText = `${likedSongsList.length} lagu`;
+            document.getElementById('liked-count').innerText = `${likedSongsList.length} ${window.t('songs-label')}`;
             renderSongList(likedSongsList, 'liked-songs-container');
         }
         
@@ -7418,7 +8114,7 @@ function renderFriendPlaylists(playlists) {
             if(likedSongs.length > 0) {
                 window.playSpecificSong(likedSongs[0]);
             } else {
-                alert("Belum ada lagu yang disukai.");
+                alert(window.t('no-songs'));
             }
         };
 
@@ -7475,7 +8171,7 @@ function renderProfilePublicPlaylists() {
     });
     
     if (html === '') {
-        html = '<p style="color:#666; font-style:italic; padding: 0 32px;">Tidak ada playlist publik. Atur privasi di sidebar.</p>';
+        html = '<p style="color:#666; font-style:italic; padding: 0 32px;">' + window.t('no-public-playlists') + '</p>';
     }
 
     container.innerHTML = html;
@@ -7560,7 +8256,7 @@ function renderProfilePublicPlaylists() {
                     <div>${pl.name}</div>
                 </div>`;
             });
-            if(Object.keys(playlists).length === 0) html = '<p style="text-align:center;color:#888">Belum ada playlist.</p>';
+            if(Object.keys(playlists).length === 0) html = '<p style="text-align:center;color:#888">' + window.t('no-playlists') + '</p>';
             list.innerHTML = html;
             document.getElementById('add-song-modal').classList.add('open');
         }
@@ -7752,7 +8448,7 @@ function renderProfilePublicPlaylists() {
         function renderQueue() {
             const container = document.getElementById('queue-list-container');
             if(songQueue.length === 0) {
-                container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">Antrian kosong.</div>';
+                container.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">' + window.t('empty-queue') + '</div>';
                 return;
             }
 
@@ -8477,7 +9173,36 @@ if (isMobileDevice) {
     });
 }
 
-
+// === DISABLE LISTEN TOGETHER KHUSUS DESKTOP ===
+if(window.innerWidth > 768) {
+    // Hide overlay immediately
+    const ltOverlay = document.getElementById('listen-together-overlay');
+    if(ltOverlay) {
+        ltOverlay.style.display = 'none !important';
+        ltOverlay.style.visibility = 'hidden';
+        ltOverlay.style.position = 'fixed';
+        ltOverlay.style.width = '0';
+        ltOverlay.style.height = '0';
+    }
+    
+    // Hide button immediately
+    const ltBtn = document.getElementById('btn-open-listen-together');
+    if(ltBtn) {
+        ltBtn.style.display = 'none !important';
+        ltBtn.style.visibility = 'hidden';
+        ltBtn.style.width = '0';
+        ltBtn.style.height = '0';
+    }
+    
+    // Hide session badge immediately
+    const sessionBadge = document.getElementById('session-badge');
+    if(sessionBadge) {
+        sessionBadge.style.display = 'none !important';
+        sessionBadge.style.visibility = 'hidden';
+        sessionBadge.style.width = '0';
+        sessionBadge.style.height = '0';
+    }
+}
 
 // === LISTEN TOGETHER STATE ===
 let listenTogetherSession = {
@@ -8489,9 +9214,13 @@ let listenTogetherSession = {
 
 // === OPEN LISTEN TOGETHER (PERBAIKAN: NO REGENERATE) ===
 window.openListenTogether = function() {
+    // Disable completely on desktop
+    if(window.innerWidth > 768) {
+        return;
+    }
+    
     try {
         console.log('Open Listen Together Clicked');
-        // alert('Debug: Tombol Dengar Bareng Ditekan (Cek Overlay)'); // Debug visual
         const overlay = document.getElementById('listen-together-overlay');
         
         if(!overlay) {
@@ -8499,8 +9228,7 @@ window.openListenTogether = function() {
             return;
         }
 
-        // Force styling to ensure visibility
-        overlay.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; z-index: 2147483647 !important; top: 0; left: 0; position: fixed; width: 100%; height: 100%;';
+        // Show overlay using classList
         overlay.classList.add('active');
 
         // Reset sections
@@ -8509,9 +9237,9 @@ window.openListenTogether = function() {
         const joinSec = document.getElementById('lt-join-section');
 
         // Default state: Show Mode, Hide others
-        if(modeSec) modeSec.style.display = 'block';
-        if(hostSec) hostSec.style.display = 'none';
-        if(joinSec) joinSec.style.display = 'none';
+        if(modeSec) modeSec.classList.remove('hidden');
+        if(hostSec) hostSec.classList.add('hidden');
+        if(joinSec) joinSec.classList.add('hidden');
 
         // Safety check for session object
         if(typeof listenTogetherSession === 'undefined') {
@@ -8521,16 +9249,16 @@ window.openListenTogether = function() {
 
         if(listenTogetherSession.active) {
             // JIKA SUDAH ADA SESI
-            if(modeSec) modeSec.style.display = 'none'; // Hide mode selection
+            if(modeSec) modeSec.classList.add('hidden'); // Hide mode selection
             
             if(listenTogetherSession.isHost) {
-                if(hostSec) hostSec.style.display = 'block';
+                if(hostSec) hostSec.classList.remove('hidden');
                 const codeEl = document.getElementById('lt-session-code');
                 if(codeEl) codeEl.innerText = listenTogetherSession.sessionCode;
             } else {
                 // Guest: Show Join/Mode options
-                if(modeSec) modeSec.style.display = 'block';
-                if(joinSec) joinSec.style.display = 'block';
+                if(modeSec) modeSec.classList.remove('hidden');
+                if(joinSec) joinSec.classList.remove('hidden');
             }
         }
     } catch (e) {
@@ -8543,18 +9271,20 @@ window.closeListenTogether = function() {
     const overlay = document.getElementById('listen-together-overlay');
     if(overlay) {
         overlay.classList.remove('active');
-        overlay.style.display = ''; // Reset inline style
     }
 };
 
 // === SELECT MODE ===
 window.selectLTMode = function(mode) {
-    document.getElementById('lt-mode-section').style.display = 'none';
+    document.getElementById('lt-mode-section').classList.add('hidden');
+    document.getElementById('lt-host-section').classList.remove('hidden');
+    document.getElementById('lt-join-section').classList.remove('hidden');
     
     if(mode === 'host') {
+        document.getElementById('lt-join-section').classList.add('hidden');
         startHostSession();
     } else {
-        document.getElementById('lt-join-section').style.display = 'block';
+        document.getElementById('lt-host-section').classList.add('hidden');
     }
 };
 
@@ -8562,7 +9292,7 @@ window.selectLTMode = function(mode) {
 function startHostSession() {
     // Cek apakah sudah ada sesi aktif? Kalau iya, jangan generate code baru
     if(listenTogetherSession.active && listenTogetherSession.isHost) {
-        document.getElementById('lt-host-section').style.display = 'block';
+        document.getElementById('lt-host-section').classList.remove('hidden');
         document.getElementById('lt-session-code').innerText = listenTogetherSession.sessionCode;
         return;
     }
@@ -8573,7 +9303,7 @@ function startHostSession() {
     listenTogetherSession.active = true;
     
     document.getElementById('lt-session-code').innerText = code;
-    document.getElementById('lt-host-section').style.display = 'block';
+    document.getElementById('lt-host-section').classList.remove('hidden');
     
     // Save to Firebase
     set(ref(db, `sessions/${code}`), {
@@ -8729,7 +9459,7 @@ function listenToParticipants(code) {
             `;
         });
         
-        list.innerHTML = html || '<p style="color:#666; text-align:center;">Menunggu...</p>';
+        list.innerHTML = html || '<p style="color:#666; text-align:center;">' + window.t('waiting') + '</p>';
     });
 }
 
@@ -8748,9 +9478,9 @@ window.endListenTogether = function() {
     closeListenTogether();
     
     // Reset UI
-    document.getElementById('lt-mode-section').style.display = 'block';
-    document.getElementById('lt-host-section').style.display = 'none';
-    document.getElementById('lt-join-section').style.display = 'none';
+    document.getElementById('lt-mode-section').classList.remove('hidden');
+    document.getElementById('lt-host-section').classList.add('hidden');
+    document.getElementById('lt-join-section').classList.add('hidden');
 };
 
 // === COPY SESSION CODE ===
@@ -8809,7 +9539,7 @@ window.openImportMusicModal = function() {
     // Reset form
     selectedMusicFile = null;
     selectedCoverFile = null;
-    document.getElementById('import-file-name').innerText = 'Belum ada file dipilih';
+    document.getElementById('import-file-name').innerText = window.t('no-file-selected');
     document.getElementById('import-file-size').innerText = 'Pilih file MP3';
     document.getElementById('import-song-title').value = '';
     document.getElementById('import-song-artist').value = '';
@@ -9272,7 +10002,7 @@ if ('serviceWorker' in navigator) {
 // SHARE CURRENT PLAYLIST
 window.shareCurrentPlaylist = function() {
     if(!currentPlaylistId) {
-        showToast('❌ Tidak ada playlist yang aktif', 'error');
+        showToast('❌ ' + window.t('no-active-playlist'), 'error');
         return;
     }
     window.openShareModal('playlist', currentPlaylistId);
