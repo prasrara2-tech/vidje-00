@@ -1400,7 +1400,25 @@
 /* === PERBAIKAN CSS PLAYER BAR MOBILE (REPLACE SEMUA MEDIA QUERY MOBILE ANDA) === */
 /* --- PERBAIKAN PLAYER BAR MOBILE (FULL FITUR) --- */
 @media (max-width: 768px) {
+    /* --- SIDEBAR MOBILE STYLES --- */
+    .logo {
+        justify-content: center;
+        flex-direction: column;
+        gap: 6px;
+        padding: 12px;
+        margin-bottom: 16px;
+        margin-top: 8px;
+    }
     
+    .logo .app-logo {
+        display: none !important;
+    }
+    
+    .logo span {
+        font-size: 18px;
+        margin-left: 0 !important;
+    }
+
     /* --- 1. ATURAN UMUM PLAYER BAR --- */
     .player-bar {
         height: 90px; /* Pastikan tinggi konsisten */
@@ -1928,7 +1946,7 @@ input:checked + .toggle-slider:before {
 }
 
 /* === ULTRA MOBILE: iPhone 12 Mini & Small Devices (max-width: 390px) === */
-@media (max-width: 390px) {
+@media (max-width: 414px) {
     /* Root adjustments */
     :root {
         --sidebar-width: 240px;
@@ -2834,38 +2852,70 @@ input:checked + .toggle-slider:before {
 /* === ARTIST/BAND PROFILE OVERLAY (DESKTOP ONLY) === */
 #artist-band-profile-overlay {
     position: fixed;
-    top: 0;
-    left: var(--sidebar-width);
-    right: 0;
-    width: calc(100% - var(--sidebar-width));
-    height: 100%;
+    top: 50%;
+    left: calc(var(--sidebar-width) + 20px);
+    transform: translateY(-50%) translateX(0);
+    width: calc(100% - var(--sidebar-width) - 40px);
+    max-width: 1000px;
+    height: auto;
+    max-height: 85vh;
     background: var(--bg-dark);
-    z-index: 15000;
+    z-index: 5000;
     display: none;
     flex-direction: column;
     overflow-y: auto;
+    border-radius: 12px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
 }
 
 #artist-band-profile-overlay.active {
     display: flex;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Backdrop semi-transparent */
+#artist-band-profile-overlay::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    cursor: pointer;
+    border-radius: 0;
 }
 
 /* Only show on desktop (laptop) */
 @media (max-width: 768px) {
     #artist-band-profile-overlay {
+        left: 10px !important;
+        right: 10px !important;
+        width: calc(100% - 20px) !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        max-width: none !important;
+    }
+    
+    #artist-band-profile-overlay::before {
         left: 0 !important;
-        width: 100% !important;
-        display: none !important;
+        right: 0 !important;
     }
 }
 
 .artist-band-overlay-header {
     display: flex;
     align-items: flex-end;
-    padding: 32px;
+    padding: 20px 24px;
     background: linear-gradient(180deg, #530000 0%, var(--bg-dark) 100%);
-    gap: 24px;
+    gap: 16px;
     border-bottom: none;
+    flex-shrink: 0;
 }
 
 .artist-band-overlay-back {
@@ -2890,34 +2940,38 @@ input:checked + .toggle-slider:before {
 
 .artist-band-overlay-title {
     flex: 1;
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 900;
     color: white;
 }
 
 .artist-band-overlay-content {
     flex: 1;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 0;
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 280px 1fr;
     gap: 0;
     background: var(--bg-dark);
+    max-height: calc(85vh - 100px);
 }
 
 .artist-band-overlay-left {
-    padding: 32px;
+    padding: 24px;
     border-right: 1px solid var(--border-color);
     background: var(--bg-dark);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    overflow-y: auto;
+    max-height: calc(85vh - 100px);
 }
 
 .artist-band-overlay-right {
-    padding: 32px;
+    padding: 24px;
     background: var(--bg-dark);
     overflow-y: auto;
+    max-height: calc(85vh - 100px);
 }
 
 .artist-band-overlay-cover {
@@ -2925,14 +2979,14 @@ input:checked + .toggle-slider:before {
     aspect-ratio: 1/1;
     border-radius: 8px;
     object-fit: cover;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .artist-band-overlay-info h2 {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 900;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     color: var(--text-white);
     word-break: break-word;
 }
@@ -2945,9 +2999,9 @@ input:checked + .toggle-slider:before {
 
 .artist-band-overlay-stats {
     display: flex;
-    gap: 24px;
-    margin: 20px 0 0 0;
-    padding-top: 20px;
+    gap: 16px;
+    margin: 12px 0 0 0;
+    padding-top: 12px;
     border-top: 1px solid var(--border-color);
 }
 
@@ -2958,7 +3012,7 @@ input:checked + .toggle-slider:before {
 }
 
 .artist-band-overlay-stat-value {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 900;
     color: var(--text-white);
 }
@@ -2970,9 +3024,9 @@ input:checked + .toggle-slider:before {
 }
 
 .artist-band-overlay-songs-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     color: var(--text-gray);
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -2982,19 +3036,19 @@ input:checked + .toggle-slider:before {
     display: flex;
     flex-direction: column;
     gap: 0;
-    max-height: calc(100vh - 300px);
+    max-height: 100%;
     overflow-y: auto;
 }
 
 .artist-band-song-item {
     display: grid;
-    grid-template-columns: 50px 4fr 3fr 1fr 120px;
-    padding: 10px 16px;
+    grid-template-columns: 45px 4fr 3fr 1fr 160px;
+    padding: 8px 12px;
     border-radius: 4px;
     cursor: pointer;
     align-items: center;
     color: var(--text-gray);
-    font-size: 14px;
+    font-size: 13px;
     transition: 0.2s;
 }
 
@@ -3002,10 +3056,28 @@ input:checked + .toggle-slider:before {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.artist-band-song-item:hover button {
+    color: var(--text-white) !important;
+}
+
+.artist-band-song-item:hover .overlay-like-btn.liked {
+    color: var(--primary-red) !important;
+}
+
 .artist-band-song-item.playing {
     color: var(--primary-red);
     box-shadow: inset 4px 0 0 var(--primary-red);
     background: linear-gradient(90deg, rgba(229, 9, 20, 0.04), transparent 60%);
+}
+
+/* Overlay Like Button */
+.overlay-like-btn {
+    color: var(--text-gray) !important;
+    transition: 0.2s !important;
+}
+
+.overlay-like-btn.liked {
+    color: var(--primary-red) !important;
 }
 
 .artist-band-song-index {
@@ -3026,15 +3098,15 @@ input:checked + .toggle-slider:before {
 }
 
 .artist-band-song-cover {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
 }
 
 .artist-band-song-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-white);
     white-space: nowrap;
@@ -3043,7 +3115,7 @@ input:checked + .toggle-slider:before {
 }
 
 .artist-band-song-artist {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-gray);
     white-space: nowrap;
     overflow: hidden;
@@ -3059,7 +3131,7 @@ input:checked + .toggle-slider:before {
 }
 
 .artist-band-song-duration {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
     margin-top: 2px;
 }
@@ -7128,214 +7200,109 @@ function renderFriendPlaylists(playlists) {
 
         // Bands Indonesia (Using Generic Helper for consistency)
         window.openPerungguAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 30 && s.id <= 39);
-                window.openArtistBandOverlay({ name: "Perunggu", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg", category: "Band Populer Indonesia",}, songsList);
-            } else {
-                setupGenericAlbumView("Perunggu", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg", 30, 39, "perunggu-album", "perunggu-title-view", "perunggu-cover-view", "perunggu-header-bg", "perunggu-count", "perunggu-songs-container");
-            }
+            setupGenericAlbumView("Perunggu", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg", 30, 39, "perunggu-album", "perunggu-title-view", "perunggu-cover-view", "perunggu-header-bg", "perunggu-count", "perunggu-songs-container");
         };
         window.playFirstSongOfPerunggu = () => window.playSpecificSong(30);
 
         window.openNoahAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 42 && s.id <= 51);
-                window.openArtistBandOverlay({ name: "NOAH / Peterpan", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/noah.jpg", category: "Band Populer Indonesia", description: "Band rock Indonesia" }, songsList);
-            } else {
-                setupGenericAlbumView("NOAH / Peterpan", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/noah.jpg", 42, 51, "noah-album", "noah-title-view", "noah-cover-view", "noah-header-bg", "noah-count", "noah-songs-container");
-            }
+            setupGenericAlbumView("NOAH / Peterpan", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/noah.jpg", 42, 51, "noah-album", "noah-title-view", "noah-cover-view", "noah-header-bg", "noah-count", "noah-songs-container");
         };
         window.playFirstSongOfNoah = () => window.playSpecificSong(42);
 
         window.openDewaAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 57 && s.id <= 68);
-                window.openArtistBandOverlay({ name: "Dewa 19", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/dewa19.png", category: "Band Populer Indonesia",}, songsList);
-            } else {
-                setupGenericAlbumView("Dewa 19", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/dewa19.png", 57, 68, "dewa-album", "dewa-title-view", "dewa-cover-view", "dewa-header-bg", "dewa-count", "dewa-songs-container");
-            }
+            setupGenericAlbumView("Dewa 19", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/dewa19.png", 57, 68, "dewa-album", "dewa-title-view", "dewa-cover-view", "dewa-header-bg", "dewa-count", "dewa-songs-container");
         };
         window.playFirstSongOfDewa = () => window.playSpecificSong(57);
 
         window.openSheilaAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 72 && s.id <= 83);
-                window.openArtistBandOverlay({ name: "Sheila On 7", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/so7.jpg", category: "Band Populer Indonesia", }, songsList);
-            } else {
-                setupGenericAlbumView("Sheila On 7", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/so7.jpg", 72, 83, "sheila-album", "sheila-title-view", "sheila-cover-view", "sheila-header-bg", "sheila-count", "sheila-songs-container");
-            }
+            setupGenericAlbumView("Sheila On 7", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/so7.jpg", 72, 83, "sheila-album", "sheila-title-view", "sheila-cover-view", "sheila-header-bg", "sheila-count", "sheila-songs-container");
         };
         window.playFirstSongOfSheila = () => window.playSpecificSong(72);
 
         window.openKahitnaAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 87 && s.id <= 97);
-                window.openArtistBandOverlay({ name: "Kahitna", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kahitna.jpeg", category: "Band Populer Indonesia", }, songsList);
-            } else {
-                setupGenericAlbumView("Kahitna", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kahitna.jpeg", 87, 97, "kahitna-album", "kahitna-title-view", "kahitna-cover-view", "kahitna-header-bg", "kahitna-count", "kahitna-songs-container");
-            }
+            setupGenericAlbumView("Kahitna", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kahitna.jpeg", 87, 97, "kahitna-album", "kahitna-title-view", "kahitna-cover-view", "kahitna-header-bg", "kahitna-count", "kahitna-songs-container");
         };
         window.playFirstSongOfKahitna = () => window.playSpecificSong(87);
 
         window.openHindiaAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 100 && s.id <= 110);
-                window.openArtistBandOverlay({ name: "Hindia", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/hindia.jpg", category: "Band Populer Indonesia", }, songsList);
-            } else {
-                setupGenericAlbumView("Hindia", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/hindia.jpg", 100, 110, "hindia-album", "hindia-title-view", "hindia-cover-view", "hindia-header-bg", "hindia-count", "hindia-songs-container");
-            }
+            setupGenericAlbumView("Hindia", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/hindia.jpg", 100, 110, "hindia-album", "hindia-title-view", "hindia-cover-view", "hindia-header-bg", "hindia-count", "hindia-songs-container");
         };
         window.playFirstSongOfHindia = () => window.playSpecificSong(100);
 
         // Artists Indonesia
         window.openAstridAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 112 && s.id <= 116);
-                window.openArtistBandOverlay({ name: "Astrid", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/astrid.webp", category: "Penyanyi Populer Indonesia", description: "Penyanyi Indonesia" }, songsList);
-            } else {
-                setupGenericAlbumView("Astrid", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/astrid.webp", 112, 116, "astrid-album", "astrid-title-view", "astrid-cover-view", "astrid-header-bg", "astrid-count", "astrid-songs-container");
-            }
+            setupGenericAlbumView("Astrid", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/astrid.webp", 112, 116, "astrid-album", "astrid-title-view", "astrid-cover-view", "astrid-header-bg", "astrid-count", "astrid-songs-container");
         };
         window.playFirstSongOfAstrid = () => window.playSpecificSong(112);
 
         window.openAfganAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 122 && s.id <= 129);
-                window.openArtistBandOverlay({ name: "Afgan", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/afgan.png", category: "Penyanyi Populer Indonesia", description: "Penyanyi Indonesia" }, songsList);
-            } else {
-                setupGenericAlbumView("Afgan", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/afgan.png", 122, 129, "afgan-album", "afgan-title-view", "afgan-cover-view", "afgan-header-bg", "afgan-count", "afgan-songs-container");
-            }
+            setupGenericAlbumView("Afgan", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/afgan.png", 122, 129, "afgan-album", "afgan-title-view", "afgan-cover-view", "afgan-header-bg", "afgan-count", "afgan-songs-container");
         };
         window.playFirstSongOfAfgan = () => window.playSpecificSong(122);
 
         window.openTulusAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 132 && s.id <= 141);
-                window.openArtistBandOverlay({ name: "Tulus", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tulus.jpg", category: "Penyanyi Populer Indonesia", description: "Penyanyi Indonesia" }, songsList);
-            } else {
-                setupGenericAlbumView("Tulus", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tulus.jpg", 132, 141, "tulus-album", "tulus-title-view", "tulus-cover-view", "tulus-header-bg", "tulus-count", "tulus-songs-container");
-            }
+            setupGenericAlbumView("Tulus", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tulus.jpg", 132, 141, "tulus-album", "tulus-title-view", "tulus-cover-view", "tulus-header-bg", "tulus-count", "tulus-songs-container");
         };
         window.playFirstSongOfTulus = () => window.playSpecificSong(132);
 
         window.openMahaliniAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 142 && s.id <= 149);
-                window.openArtistBandOverlay({ name: "Mahalini", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/mahalini.jpg", category: "Penyanyi Populer Indonesia", description: "Penyanyi Indonesia" }, songsList);
-            } else {
-                setupGenericAlbumView("Mahalini", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/mahalini.jpg", 142, 149, "mahalini-album", "mahalini-title-view", "mahalini-cover-view", "mahalini-header-bg", "mahalini-count", "mahalini-songs-container");
-            }
+            setupGenericAlbumView("Mahalini", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/mahalini.jpg", 142, 149, "mahalini-album", "mahalini-title-view", "mahalini-cover-view", "mahalini-header-bg", "mahalini-count", "mahalini-songs-container");
         };
         window.playFirstSongOfMahalini = () => window.playSpecificSong(142);
 
         window.openTenxiAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 152 && s.id <= 156);
-                window.openArtistBandOverlay({ name: "Tenxi", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tenxi.jpg", category: "Penyanyi Populer Indonesia", description: "Penyanyi Indonesia" }, songsList);
-            } else {
-                setupGenericAlbumView("Tenxi", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tenxi.jpg", 152, 156, "tenxi-album", "tenxi-title-view", "tenxi-cover-view", "tenxi-header-bg", "tenxi-count", "tenxi-songs-container");
-            }
+            setupGenericAlbumView("Tenxi", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tenxi.jpg", 152, 156, "tenxi-album", "tenxi-title-view", "tenxi-cover-view", "tenxi-header-bg", "tenxi-count", "tenxi-songs-container");
         };
         window.playFirstSongOfTenxi = () => window.playSpecificSong(152);
 
         // Foreign Artists & Bands
         window.openTaylorAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 157 && s.id <= 164);
-                window.openArtistBandOverlay({ name: "Taylor Swift", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg", category: "Penyanyi Asing Populer", description: "Singer Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Taylor Swift", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg", 157, 164, "taylor-album", "taylor-title-view", "taylor-cover-view", "taylor-header-bg", "taylor-count", "taylor-songs-container");
-            }
+            setupGenericAlbumView("Taylor Swift", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg", 157, 164, "taylor-album", "taylor-title-view", "taylor-cover-view", "taylor-header-bg", "taylor-count", "taylor-songs-container");
         };
         window.playFirstSongOfTaylor = () => window.playSpecificSong(157);
 
         window.openJustinAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 167 && s.id <= 176);
-                window.openArtistBandOverlay({ name: "Justin Bieber", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/justin.jpg", category: "Penyanyi Asing Populer", description: "Singer Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Justin Bieber", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/justin.jpg", 167, 176, "justin-album", "justin-title-view", "justin-cover-view", "justin-header-bg", "justin-count", "justin-songs-container");
-            }
+            setupGenericAlbumView("Justin Bieber", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/justin.jpg", 167, 176, "justin-album", "justin-title-view", "justin-cover-view", "justin-header-bg", "justin-count", "justin-songs-container");
         };
         window.playFirstSongOfJustin = () => window.playSpecificSong(167);
 
         window.openEdAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 177 && s.id <= 186);
-                window.openArtistBandOverlay({ name: "Ed Sheeran", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/ed.jpg", category: "Penyanyi Asing Populer", description: "Singer Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Ed Sheeran", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/ed.jpg", 177, 186, "ed-album", "ed-title-view", "ed-cover-view", "ed-header-bg", "ed-count", "ed-songs-container");
-            }
+            setupGenericAlbumView("Ed Sheeran", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/ed.jpg", 177, 186, "ed-album", "ed-title-view", "ed-cover-view", "ed-header-bg", "ed-count", "ed-songs-container");
         };
         window.playFirstSongOfEd = () => window.playSpecificSong(177);
 
         window.openBrunoAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 187 && s.id <= 196);
-                window.openArtistBandOverlay({ name: "Bruno Mars", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bruno.jpg", category: "Penyanyi Asing Populer", description: "Singer Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Bruno Mars", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bruno.jpg", 187, 196, "bruno-album", "bruno-title-view", "bruno-cover-view", "bruno-header-bg", "bruno-count", "bruno-songs-container");
-            }
+            setupGenericAlbumView("Bruno Mars", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bruno.jpg", 187, 196, "bruno-album", "bruno-title-view", "bruno-cover-view", "bruno-header-bg", "bruno-count", "bruno-songs-container");
         };
         window.playFirstSongOfBruno = () => window.playSpecificSong(187);
 
         window.openDanielAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 197 && s.id <= 206);
-                window.openArtistBandOverlay({ name: "Daniel Caesar", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/daniel.jpg", category: "Penyanyi Asing Populer", description: "Singer Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Daniel Caesar", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/daniel.jpg", 197, 206, "daniel-album", "daniel-title-view", "daniel-cover-view", "daniel-header-bg", "daniel-count", "daniel-songs-container");
-            }
+            setupGenericAlbumView("Daniel Caesar", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/daniel.jpg", 197, 206, "daniel-album", "daniel-title-view", "daniel-cover-view", "daniel-header-bg", "daniel-count", "daniel-songs-container");
         };
         window.playFirstSongOfDaniel = () => window.playSpecificSong(197);
 
         window.openColdplayAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 207 && s.id <= 216);
-                window.openArtistBandOverlay({ name: "Coldplay", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/coldplay.jpg", category: "Band Asing Populer", description: "Band Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Coldplay", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/coldplay.jpg", 207, 216, "coldplay-album", "coldplay-title-view", "coldplay-cover-view", "coldplay-header-bg", "coldplay-count", "coldplay-songs-container");
-            }
+            setupGenericAlbumView("Coldplay", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/coldplay.jpg", 207, 216, "coldplay-album", "coldplay-title-view", "coldplay-cover-view", "coldplay-header-bg", "coldplay-count", "coldplay-songs-container");
         };
         window.playFirstSongOfColdplay = () => window.playSpecificSong(207);
 
         window.openOnedirectionAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 217 && s.id <= 226);
-                window.openArtistBandOverlay({ name: "One Direction", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/onedirection.jpg", category: "Band Asing Populer", description: "Band Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("One Direction", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/onedirection.jpg", 217, 226, "onedirection-album", "onedirection-title-view", "onedirection-cover-view", "onedirection-header-bg", "onedirection-count", "onedirection-songs-container");
-            }
+            setupGenericAlbumView("One Direction", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/onedirection.jpg", 217, 226, "onedirection-album", "onedirection-title-view", "onedirection-cover-view", "onedirection-header-bg", "onedirection-count", "onedirection-songs-container");
         };
         window.playFirstSongOfOnedirection = () => window.playSpecificSong(217);
 
         window.openGreendayAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 227 && s.id <= 236);
-                window.openArtistBandOverlay({ name: "Green Day", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/greenday.jpg", category: "Band Asing Populer", description: "Band Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Green Day", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/greenday.jpg", 227, 236, "greenday-album", "greenday-title-view", "greenday-cover-view", "greenday-header-bg", "greenday-count", "greenday-songs-container");
-            }
+            setupGenericAlbumView("Green Day", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/greenday.jpg", 227, 236, "greenday-album", "greenday-title-view", "greenday-cover-view", "greenday-header-bg", "greenday-count", "greenday-songs-container");
         };
         window.playFirstSongOfGreenday = () => window.playSpecificSong(227);
 
         window.openOasisAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 237 && s.id <= 246);
-                window.openArtistBandOverlay({ name: "Oasis", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/oasis.jpg", category: "Band Asing Populer", description: "Band Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Oasis", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/oasis.jpg", 237, 246, "oasis-album", "oasis-title-view", "oasis-cover-view", "oasis-header-bg", "oasis-count", "oasis-songs-container");
-            }
+            setupGenericAlbumView("Oasis", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/oasis.jpg", 237, 246, "oasis-album", "oasis-title-view", "oasis-cover-view", "oasis-header-bg", "oasis-count", "oasis-songs-container");
         };
         window.playFirstSongOfOasis = () => window.playSpecificSong(237);
 
         window.openRadioheadAlbum = () => {
-            if (window.innerWidth >= 769) {
-                const songsList = songs.filter(s => s.id >= 247 && s.id <= 256);
-                window.openArtistBandOverlay({ name: "Radiohead", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg", category: "Band Asing Populer", description: "Band Internasional" }, songsList);
-            } else {
-                setupGenericAlbumView("Radiohead", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg", 247, 256, "radiohead-album", "radiohead-title-view", "radiohead-cover-view", "radiohead-header-bg", "radiohead-count", "radiohead-songs-container");
-            }
+            setupGenericAlbumView("Radiohead", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg", 247, 256, "radiohead-album", "radiohead-title-view", "radiohead-cover-view", "radiohead-header-bg", "radiohead-count", "radiohead-songs-container");
         };
         window.playFirstSongOfRadiohead = () => window.playSpecificSong(247);
 
@@ -7576,6 +7543,7 @@ function renderProfilePublicPlaylists() {
         }
 
         function updateListLikeIcon(id) {
+            // Update list-like button
             const btn = document.getElementById(`list-like-${id}`);
             if(btn) {
                 const icon = btn.querySelector('i');
@@ -7587,6 +7555,19 @@ function renderProfilePublicPlaylists() {
                     if(icon) icon.className = 'ph ph-heart';
                     btn.classList.remove('liked');
                     btn.style.color = 'var(--text-gray)';
+                }
+            }
+            
+            // Update overlay-like button
+            const overlayBtn = document.getElementById(`overlay-like-${id}`);
+            if(overlayBtn) {
+                const overlayIcon = overlayBtn.querySelector('i');
+                if(likedSongs.includes(id)) {
+                    if(overlayIcon) overlayIcon.className = 'ph-fill ph-heart';
+                    overlayBtn.classList.add('liked');
+                } else {
+                    if(overlayIcon) overlayIcon.className = 'ph ph-heart';
+                    overlayBtn.classList.remove('liked');
                 }
             }
         }
@@ -7764,6 +7745,18 @@ function openArtistBandOverlay(artistData, songsList) {
         return;
     }
 
+    // ✅ CRITICAL DEBUG: Check what's being passed
+    console.log('%c===== CRITICAL DEBUG =====', 'background: red; color: white; font-weight: bold; font-size: 14px;');
+    console.log('Artist:', artistData.name);
+    console.log('songsList param length:', songsList.length);
+    console.log('songsList[0]:', songsList[0]);
+    console.log('songsList[songsList.length-1]:', songsList[songsList.length-1]);
+    console.log('Global songs.length:', songs.length);
+    console.log('Global songs[0]:', songs[0]);
+    console.log('Global songs[29]:', songs[29]);
+    console.log('Global songs[30]:', songs[30]);
+    console.log('%c=====  =====', 'background: red; color: white; font-weight: bold; font-size: 14px;');
+
     // ✅ DEKLARASI OVERLAY DI AWAL
     const overlay = document.getElementById('artist-band-profile-overlay');
     
@@ -7774,15 +7767,17 @@ function openArtistBandOverlay(artistData, songsList) {
     document.getElementById('artist-band-overlay-song-count').innerText = songsList.length;
     document.getElementById('artist-band-overlay-description').innerText = artistData.description || '';
 
-    // Render songs using grid layout matching song-row
+    // Render songs - SIMPLE APPROACH FIRST
     const songsContainer = document.getElementById('artist-band-overlay-songs');
     songsContainer.innerHTML = '';
+    
     songsList.forEach((song, index) => {
+        console.log(`Rendering song ${index}:`, song);
         const songEl = document.createElement('div');
         songEl.className = 'artist-band-song-item';
         songEl.id = `overlay-song-${song.id}`;
         
-        // ✅ TAMBAHKAN VISUALIZER HTML
+        // ✅ SIMPLE RENDER - use song directly without reconstruction
         songEl.innerHTML = `
             <div class="artist-band-song-index">
                 <span class="index-num">${index + 1}</span>
@@ -7791,46 +7786,59 @@ function openArtistBandOverlay(artistData, songsList) {
                 </div>
             </div>
             <div class="artist-band-song-info">
-                <img src="${song.cover}" class="artist-band-song-cover" alt="${song.title}">
+                <img src="${song.cover || ''}" class="artist-band-song-cover" alt="${song.title}">
                 <div style="flex: 1; overflow: hidden; min-width: 0;">
                     <div class="artist-band-song-title">${song.title}</div>
-                    <div class="artist-band-song-artist">${song.artist || 'Unknown'}</div>
+                    <div class="artist-band-song-artist">${song.artist}</div>
                 </div>
             </div>
             <div class="artist-band-song-album">${song.album || ''}</div>
             <div class="artist-band-song-duration">${song.duration || '0:00'}</div>
-            <div style="display: flex; gap: 12px; justify-content: flex-end; padding-right: 8px;">
-                <button class="more-btn" style="background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 18px;">
-                    <i class="ph ph-dots-three-vertical"></i>
+            <div style="display: flex; gap: 8px; justify-content: flex-end; padding-right: 8px; align-items: center;">
+                <button class="overlay-like-btn ${likedSongs && likedSongs.includes(song.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${song.id})" id="overlay-like-${song.id}" style="background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 18px; transition: 0.2s;">
+                    <i class="ph ${likedSongs && likedSongs.includes(song.id) ? 'ph-fill' : 'ph'} ph-heart"></i>
+                </button>
+                <button onclick="event.stopPropagation(); window.openShareModal('song', ${song.id})" style="background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 18px; transition: 0.2s;">
+                    <i class="ph ph-share-network"></i>
+                </button>
+                <button onclick="event.stopPropagation(); window.addToQueue(${song.id})" style="background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 18px; transition: 0.2s;" title="Tambah Antrian">
+                    <i class="ph ph-list-plus"></i>
+                </button>
+                <button onclick="event.stopPropagation(); window.openAddSongModal(${song.id})" style="background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 18px; transition: 0.2s;" title="Tambah ke Playlist">
+                    <i class="ph ph-plus"></i>
                 </button>
             </div>
         `;
         
         songEl.style.cursor = 'pointer';
         songEl.addEventListener('click', () => {
+            console.log('🎵 Clicked song:', song.id, song.title);
             const track = songs.find(s => s.id === song.id);
             if (track) {
+                console.log('✅ Found in global array:', track.title, 'by', track.artist);
                 window.loadSong(track);
                 window.playAudio();
-                
-                // ✅ UPDATE PLAYING STATE DI OVERLAY
-                document.querySelectorAll('.artist-band-song-item').forEach(el => {
-                    el.classList.remove('playing');
-                    const eq = el.querySelector('.playing-icon-container');
-                    const num = el.querySelector('.index-num');
-                    if(eq) eq.style.display = 'none';
-                    if(num) num.style.display = 'block';
-                });
-                
-                songEl.classList.add('playing');
-                const eq = songEl.querySelector('.playing-icon-container');
-                const num = songEl.querySelector('.index-num');
-                if(eq) {
-                    eq.style.display = 'flex';
-                    eq.style.animationPlayState = 'running';
-                }
-                if(num) num.style.display = 'none';
+            } else {
+                console.error('❌ NOT FOUND in global array!', song.id);
             }
+            
+            // Update visualizer
+            document.querySelectorAll('.artist-band-song-item').forEach(el => {
+                el.classList.remove('playing');
+                const eq = el.querySelector('.playing-icon-container');
+                const num = el.querySelector('.index-num');
+                if(eq) eq.style.display = 'none';
+                if(num) num.style.display = 'block';
+            });
+            
+            songEl.classList.add('playing');
+            const eq = songEl.querySelector('.playing-icon-container');
+            const num = songEl.querySelector('.index-num');
+            if(eq) {
+                eq.style.display = 'flex';
+                eq.style.animationPlayState = 'running';
+            }
+            if(num) num.style.display = 'none';
         });
         songsContainer.appendChild(songEl);
     });
@@ -7862,6 +7870,14 @@ function openArtistBandOverlay(artistData, songsList) {
 
         window.openArtistBandOverlay = openArtistBandOverlay;
         window.closeArtistBandOverlay = closeArtistBandOverlay;
+
+        // Add click-outside to close artist-band overlay
+        document.getElementById('artist-band-profile-overlay').addEventListener('click', (e) => {
+            // Close only if clicking on the overlay itself (not content inside)
+            if (e.target.id === 'artist-band-profile-overlay') {
+                window.closeArtistBandOverlay();
+            }
+        });
 
         // Player Bar Click to Open Overlay
         document.querySelector('.player-bar').addEventListener('click', (e) => {
