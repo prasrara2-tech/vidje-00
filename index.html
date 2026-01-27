@@ -102,21 +102,37 @@
             will-change: opacity;
         }
         .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #FFF;
-            border-bottom-color: var(--primary-red);
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 0.6s linear infinite;
-            will-change: transform;
+            display: none; /* hidden when using centered logo */
         }
         @keyframes rotation {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .loader-text { margin-top: 20px; font-size: 18px; color: var(--text-gray); letter-spacing: 2px; }
+        .loader-text { display: none; }
+
+        @keyframes dots {
+            0% { opacity: 0.18 }
+            50% { opacity: 1 }
+            100% { opacity: 0.18 }
+        }
+
+        @keyframes logo-pulse {
+            0% { transform: scale(1) }
+            100% { transform: scale(1.06) }
+        }
+
+        /* Centered loading logo + title */
+        .loading-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 10px;
+        }
+        .loading-center .logo { display:flex; align-items:center; justify-content:center; }
+        .loading-center .logo i { font-size: 88px; color: var(--primary-red); display:inline-block; animation: logo-pulse 1.2s ease-in-out infinite alternate; }
+        .loading-center .loading-title { font-size: 44px; font-weight: 900; color: #fff; letter-spacing: -1px; }
 
         /* --- AUTH VIEW --- */
         #auth-view {
@@ -2691,8 +2707,10 @@ input:checked + .toggle-slider:before {
 
     <!-- 1. LOADING SCREEN -->
     <div id="loading-screen">
-        <span class="loader"></span>
-        <div class="loader-text">MEMUAT VIDJE...</div>
+        <div class="loading-center">
+            <div class="logo"><i class="ph-fill ph-play-circle"></i></div>
+            <div class="loading-title">VIDJE</div>
+        </div>
     </div>
 
     <!-- 2. AUTH VIEW -->
@@ -5105,39 +5123,55 @@ console.log('✅ Supabase initialized');
                         setupFriendListeners(); // Start friend listeners
                         
                         const savedLiked = localStorage.getItem('likedSongs');
-                        if(savedLiked) {
-                            likedSongs = JSON.parse(savedLiked);
+                        if (savedLiked) likedSongs = JSON.parse(savedLiked);
+
+                        const savedHistory = localStorage.getItem('recentlyPlayed');
+                        if (savedHistory) recentlyPlayed = JSON.parse(savedHistory);
+
+                        // Mulai memuat lagu secara background tanpa menahan UI
+                        const songsPromise = loadSongsFromSupabase();
+                        const importedPromise = loadImportedSongs();
+
+                        // Jika ada cache lagu, coba render segera untuk UX yang lebih cepat
+                        try {
+                            const cached = localStorage.getItem('cachedSongs');
+                            if (cached) {
+                                window._cachedSongs = JSON.parse(cached);
+                                // Panggil render minimal agar tampilan terlihat responsif
+                                renderTrending();
+                                renderPopularBands();
+                            }
+                        } catch (e) {
+                            console.warn('Unable to parse cachedSongs', e);
                         }
 
-const savedHistory = localStorage.getItem('recentlyPlayed');
-                        if(savedHistory) {
-                            recentlyPlayed = JSON.parse(savedHistory);
-                        }
-                        
-                        // ✅ LOAD SONGS FROM SUPABASE
-                        await loadSongsFromSupabase();
-                        
-                        // ✅ LOAD USER'S IMPORTED SONGS
-                        await loadImportedSongs();
-                        
-                        // ✅ RE-RENDER SEMUA UI SETELAH LAGU DIMUAT
-                        console.log("🔄 Re-rendering UI with loaded songs...");
-                        renderTrending();
-                        renderPopularBands();
-                        renderPopularArtists();
-                        renderForeignSoloArtists();
-                        renderForeignBands();
-                        
+                        // Tampilkan app segera, sembunyikan loading overlay
                         loadingScreen.style.opacity = '0';
                         setTimeout(() => {
                             loadingScreen.style.display = 'none';
                             appWrapper.style.display = 'flex';
                             switchView('home');
-                            
-                            // ✅ Defer non-critical rendering untuk performa lebih cepat
+                        }, 50);
+
+                        // Setelah data lagu selesai dimuat, lakukan full re-render
+                        Promise.all([songsPromise, importedPromise]).then(() => {
+                            console.log('Songs and imports loaded, re-rendering full UI');
+                            try {
+                                // Optional: simpan cache untuk akses cepat berikutnya
+                                if (window.allSongs && Array.isArray(window.allSongs)) {
+                                    try { localStorage.setItem('cachedSongs', JSON.stringify(window.allSongs)); } catch (e) {}
+                                }
+                            } catch (e) {}
+
+                            renderTrending();
+                            renderPopularBands();
+                            renderPopularArtists();
+                            renderForeignSoloArtists();
+                            renderForeignBands();
+
+                            // Defer any non-critical re-renders
                             if (window.requestIdleCallback) {
                                 requestIdleCallback(() => {
-                                    // Re-render sections jika diperlukan update
                                     const homeView = document.getElementById('view-home');
                                     if (homeView && homeView.classList.contains('active')) {
                                         renderTrending();
@@ -5145,7 +5179,7 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
                                     }
                                 });
                             }
-                        }, 200);
+                        }).catch(err => console.error('Error loading songs:', err));
                     }
                 });
             } else {
@@ -8660,6 +8694,15 @@ function cleanSongTitle(filename) {
 }
 
   
+    // --- GLOBAL KEYBOARD SHORTCUTS ---
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault(); // Prevent scrolling
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            if (playPauseBtn) playPauseBtn.click();
+        }
+    });
+
     </script>
 </body>
 </html>
