@@ -261,15 +261,22 @@
             padding: 8px 12px;
             font-size: 14px;
             text-decoration: none;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             cursor: pointer;
             transition: color 0.2s;
             border-radius: 4px;
             position: relative;
             z-index: 10;
+            min-width: 0; /* Enable text truncation in flex containers */
         }
+        
+        .playlist-item-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+        
         .playlist-item:hover { color: var(--text-white); background-color: rgba(255,255,255,0.05); }
         .playlist-thumb {
             width: 48px; height: 48px;
@@ -506,8 +513,20 @@
         }
         .song-info { display: flex; align-items: center; gap: 12px; }
         .song-info img { width: 40px; height: 40px; border-radius: 4px; }
-        .song-title-text { color: var(--text-white); font-size: 16px; font-weight: 500; }
-        .song-artist { font-size: 14px; }
+        .song-title-text {
+            color: var(--text-white);
+            font-size: 16px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .song-artist {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         
         /* ANIMATED EQUALIZER (FIXED FOR PAUSE) */
         .playing-icon-container {
@@ -535,6 +554,17 @@
         @keyframes bounce {
             0%, 100% { height: 3px; }
             50% { height: 16px; }
+        }
+        
+        /* Marquee/Running Text Animation for Long Titles */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        @keyframes marquee-reverse {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(0); }
         }
         
         .song-actions { display: flex; justify-content: flex-end; gap: 12px; }
@@ -623,8 +653,49 @@
         }
         .overlay-art-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 
-        .overlay-info h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; color: white; white-space: nowrap; overflow: hidden; }
-        .overlay-info p { font-size: 18px; color: #b3b3b3; margin-bottom: 40px; white-space: nowrap; overflow: hidden; }
+        .overlay-info {
+            width: 100%;
+            max-width: 500px;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+        
+        .overlay-info h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            max-width: 100%;
+        }
+        
+        .overlay-info h2.marquee {
+            animation: marquee 20s linear infinite;
+            width: max-content;
+            text-overflow: clip;
+            padding-left: 100%;
+        }
+        
+        .overlay-info p {
+            font-size: 18px;
+            color: #b3b3b3;
+            margin-bottom: 40px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            max-width: 100%;
+        }
+        
+        .overlay-info p.marquee {
+            animation: marquee 25s linear infinite;
+            width: max-content;
+            text-overflow: clip;
+            padding-left: 100%;
+        }
 
         .overlay-controls {
             display: flex;
@@ -4887,7 +4958,7 @@ console.log('✅ Supabase initialized');
             { title: "Dan", src: "dan.mp3" },
             { title: "Sephia", src: "sephia.mp3" },
             { title: "Melompat Lebih Tinggi", src: "anugrah.mp3" },
-            { title: "Anugrah Terindah Yang....", src: "kita.mp3" },
+            { title: "Anugrah Terindah Yang Pernah Kumiliki.", src: "kita.mp3" },
             { title: "Sahabat Sejati", src: "sahabat.mp3" },
             { title: "Seberapa Pantas", src: "seberapa.mp3" },
             { title: "Betapa", src: "betapa.mp3" },
