@@ -7305,7 +7305,7 @@ async function loadSongsFromSupabase() {
             const folderName = folder.name;
             
             // Skip non-music folders
-            if (folderName === 'album photo' || folderName === 'songs') {
+            if (folderName === 'album photo' || folderName === 'albumphoto' || folderName === 'songs') {
                 console.log(`⏭️ Skipping: ${folderName}`);
                 continue;
             }
@@ -7425,26 +7425,36 @@ function detectArtistName(folderName) {
 
 // Helper: Get default cover for artist
 function getDefaultCover(folderName) {
+    // Perbaikan: Gunakan 'albumphoto' (tanpa spasi) sesuai format URL yang diinginkan user
+    // dan generate Full Public URL dari Supabase
     const coverMap = {
-        'afgan': 'album photo/afgan.png',
-        'astrid': 'album photo/astrid.webp',
-        'brunomars': 'album photo/bruno.jpg',
-        'coldplay': 'album photo/coldplay.jpg',
-        'danielcaesar': 'album photo/daniel.jpg',
-        'edsheeran': 'album photo/ed.jpg',
-        'greenday': 'album photo/greenday.jpg',
-        'justinbieber': 'album photo/justin.jpg',
-        'mahalini': 'album photo/mahalini.jpg',
-        'oasis': 'album photo/oasis.jpg',
-        'onedirection': 'album photo/onedirection.jpg',
-        'radiohead': 'album photo/radiohead.jpg',
-        'taylorswift': 'album photo/taylor.jpg',
-        'tenxi': 'album photo/tenxi.jpg',
-        'tulus': 'album photo/tulus.jpg'
+        'afgan': 'albumphoto/afgan.png',
+        'astrid': 'albumphoto/astrid.webp',
+        'brunomars': 'albumphoto/bruno.jpg',
+        'coldplay': 'albumphoto/coldplay.jpg',
+        'danielcaesar': 'albumphoto/daniel.jpg',
+        'edsheeran': 'albumphoto/ed.jpg',
+        'greenday': 'albumphoto/greenday.jpg',
+        'justinbieber': 'albumphoto/justin.jpg',
+        'mahalini': 'albumphoto/mahalini.jpg',
+        'oasis': 'albumphoto/oasis.jpg',
+        'onedirection': 'albumphoto/onedirection.jpg',
+        'radiohead': 'albumphoto/radiohead.jpg',
+        'taylorswift': 'albumphoto/taylor.jpg',
+        'tenxi': 'albumphoto/tenxi.jpg',
+        'tulus': 'albumphoto/tulus.jpg'
     };
 
-    return coverMap[folderName.toLowerCase()] || 
-           `https://picsum.photos/seed/${folderName}/300/300`;
+    const path = coverMap[folderName.toLowerCase()];
+    
+    if (path) {
+        const { data } = supabase.storage
+            .from('vidje')
+            .getPublicUrl(path);
+        return data.publicUrl;
+    }
+
+    return `https://picsum.photos/seed/${folderName}/300/300`;
 }
 
 // Helper: Clean song title from filename
