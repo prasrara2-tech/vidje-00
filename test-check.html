@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Songs Array</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .error { color: #f00; }
+        .ok { color: #0f0; }
+        pre { background: #2a2a2a; padding: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🎵 Songs Array Verification</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        // Simulate the songs array structure by checking what gets created
+        let html = '<h2>Testing openPerungguAlbum logic:</h2>';
+        
+        // Test what filter would return
+        html += `<p>When openPerungguAlbum runs:</p>
+                 <pre>const songsList = songs.filter(s => s.id >= 30 && s.id <= 39);</pre>`;
+        
+        html += `<p class="ok">✅ Expected: Returns 10 song objects with IDs 30-39</p>
+                 <p class="error">❌ Actual: ?</p>
+                 
+                 <h2>Debug Steps:</h2>
+                 <ol>
+                    <li>Open index.html</li>
+                    <li>Press F12 to open DevTools</li>
+                    <li>Go to Console tab</li>
+                    <li>Click "Perunggu" album button</li>
+                    <li>Look for the colored debug messages (green/red text)</li>
+                    <li>Check what these show:
+                        <pre>🔍 DEBUG: songsList length:
+🔍 DEBUG: songsList[0]:
+🔍 DEBUG: global songs array length:</pre>
+                    </li>
+                 </ol>
+                 
+                 <h2>What Each Message Means:</h2>
+                 <pre>🔍 DEBUG: songsList length: 10
+   → GOOD: Should be 10 for Perunggu</pre>
+                 
+                 <pre>🔍 DEBUG: songsList[0]: { id: 1, title: "Sedia Aku Sebelum Hujan", artist: "Idgitaf" }
+   → BAD: This is from baseSongs, not Perunggu! Problem found!</pre>
+                 
+                 <pre>🔍 DEBUG: global songs array length: 0
+   → BAD: Songs array is empty or not initialized!</pre>
+                 
+                 <h2>What to Check:</h2>
+                 <ul>
+                    <li>Is songsList showing correct IDs (30-39 for Perunggu)?</li>
+                    <li>Is global songs array populated (should have 260+ songs)?</li>
+                    <li>Are the mapped songs showing correct titles?</li>
+                 </ul>
+                 `;
+        
+        output.innerHTML = html;
+    </script>
+</body>
+</html>
