@@ -2,11 +2,11 @@
   "name": "Vidje - Musik Platform",
   "short_name": "Vidje",
   "description": "Platform streaming musik untuk semua orang",
-  "start_url": "/",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#e50914",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "assets/vidje-icon.jpg",
@@ -21,25 +21,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["music", "entertainment"],
-  "shortcuts": [
-    {
-      "name": "Beranda",
-      "short_name": "Home",
-      "description": "Buka halaman beranda",
-      "url": "/?view=home"
-    },
-    {
-      "name": "Cari Musik",
-      "short_name": "Search",
-      "description": "Cari lagu favorit",
-      "url": "/?view=search"
-    },
-    {
-      "name": "Lagu Disukai",
-      "short_name": "Liked",
-      "description": "Lihat lagu yang disukai",
-      "url": "/?view=liked"
-    }
-  ]
+  "categories": ["music", "entertainment"]
 }
