@@ -6,21 +6,9 @@
     <title>Vidje - Musik Platform</title>
     <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/jpeg" href="assets/vidje-icon.jpg">
+    <link rel="apple-touch-icon" href="assets/vidje-icon.jpg">
     <meta name="theme-color" content="#e50914">
-    <script>
-        // Check manifest loading
-        fetch('manifest.json')
-            .then(res => {
-                console.log('📋 Manifest fetch status:', res.status);
-                return res.json();
-            })
-            .then(manifest => {
-                console.log('📋 Manifest loaded:', manifest);
-            })
-            .catch(err => {
-                console.error('❌ Manifest fetch error:', err);
-            });
-    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Vidje">
@@ -9061,45 +9049,15 @@ function setupPublicSongsListener() {
 
 
 // ===== REGISTER SERVICE WORKER =====
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                        .then(registration => {
-                            console.log('✅ Service Worker registered!', registration);
-
-                            // If there's an updated worker waiting, tell it to skipWaiting
-                            if (registration.waiting) {
-                                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                            }
-
-                            // Listen for updates and activate them immediately
-                            registration.addEventListener('updatefound', () => {
-                                const newWorker = registration.installing;
-                                if (newWorker) {
-                                    newWorker.addEventListener('statechange', () => {
-                                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                            newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                        }
-                                    });
-                                }
-                            });
-
-                            // Reload page when the new service worker takes control
-                            let refreshing = false;
-                            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                                if (refreshing) return;
-                                refreshing = true;
-                                console.log('Service worker updated — reloading to apply new cache');
-                                window.location.reload();
-                            });
-                        })
-                        .catch(err => {
-                            console.error('❌ Service Worker registration failed:', err);
-                        });
-            });
-        } else {
-            console.warn('⚠️ Service Worker not supported in this browser');
-        }
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+        .then(reg => {
+            console.log('✅ Service Worker Registered:', reg);
+        })
+        .catch(err => {
+            console.error('❌ Service Worker Registration Failed:', err);
+        });
+}
 
         // ===== MEDIA SESSION API (UNTUK NOTIFIKASI MUSIK) =====
         if ('mediaSession' in navigator) {
@@ -9184,31 +9142,48 @@ function setupPublicSongsListener() {
         
         // ===== PWA INSTALL PROMPT =====
         let deferredPrompt;
-        
+
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('📱 beforeinstallprompt fired!');
+            console.log('✅ PWA Install Prompt Available');
             e.preventDefault();
             deferredPrompt = e;
-            
-            // Tampilkan tombol install
-            const installBtn = document.createElement('button');
-            installBtn.textContent = '📥 Download Vidje';
-            installBtn.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 99999; padding: 10px 15px; background: #e50914; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;';
-            installBtn.onclick = async () => {
+
+            // Create install button
+            const btn = document.createElement('button');
+            btn.id = 'pwa-install-btn';
+            btn.innerHTML = '📥 Download App';
+            btn.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 99999;
+                padding: 12px 20px;
+                background: #e50914;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            `;
+
+            btn.onclick = async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    console.log('Install outcome:', outcome);
+                    const choice = await deferredPrompt.userChoice;
+                    console.log('Installation choice:', choice.outcome);
                     deferredPrompt = null;
-                    installBtn.remove();
+                    btn.remove();
                 }
             };
-            document.body.appendChild(installBtn);
-            console.log('✅ Install button created');
+
+            document.body.appendChild(btn);
+            console.log('📥 Install button added to page');
         });
-        
+
         window.addEventListener('appinstalled', () => {
-            console.log('✅ Vidje PWA installed!');
+            console.log('✅ App installed successfully!');
             deferredPrompt = null;
         });
 
