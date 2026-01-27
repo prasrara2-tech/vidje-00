@@ -5276,11 +5276,11 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
         function renderPopularBands() {
             const bands = [
                 { name: "Perunggu", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg", onclick: "window.openPerungguAlbum()" },
-                { name: "NOAH / Peterpan", image: "album photo/noah.jpg", onclick: "window.openNoahAlbum()" },
-                { name: "Dewa 19", image: "album photo/dewa19.png", onclick: "window.openDewaAlbum()" },
-                { name: "Sheila On 7", image: "album photo/so7.jpg", onclick: "window.openSheilaAlbum()" },
-                { name: "Kahitna", image: "album photo/kahitna.jpeg", onclick: "window.openKahitnaAlbum()" },
-                { name: "Hindia", image: "album photo/hindia.jpg", onclick: "window.openHindiaAlbum()" }
+                { name: "NOAH / Peterpan", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/noah.jpg", onclick: "window.openNoahAlbum()" },
+                { name: "Dewa 19", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/dewa19.png", onclick: "window.openDewaAlbum()" },
+                { name: "Sheila On 7", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/so7.jpg", onclick: "window.openSheilaAlbum()" },
+                { name: "Kahitna", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kahitna.jpeg", onclick: "window.openKahitnaAlbum()" },
+                { name: "Hindia", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/hindia.jpg", onclick: "window.openHindiaAlbum()" }
             ];
             const container = document.getElementById('popular-bands-container');
             let html = bands.map(band => `
@@ -5298,11 +5298,11 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
 
         function renderPopularArtists() {
             const artists = [
-                { name: "Astrid", image: "album photo/astrid.webp", onclick: "window.openAstridAlbum()" },
-                { name: "Afgan", image: "album photo/afgan.png", onclick: "window.openAfganAlbum()" },
-                { name: "Tulus", image: "album photo/tulus.jpg", onclick: "window.openTulusAlbum()" },
-                { name: "Mahalini", image: "album photo/mahalini.jpg", onclick: "window.openMahaliniAlbum()" },
-                { name: "Tenxi", image: "album photo/tenxi.jpg", onclick: "window.openTenxiAlbum()" }
+                { name: "Astrid", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/astrid.webp", onclick: "window.openAstridAlbum()" },
+                { name: "Afgan", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/afgan.png", onclick: "window.openAfganAlbum()" },
+                { name: "Tulus", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tulus.jpg", onclick: "window.openTulusAlbum()" },
+                { name: "Mahalini", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/mahalini.jpg", onclick: "window.openMahaliniAlbum()" },
+                { name: "Tenxi", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tenxi.jpg", onclick: "window.openTenxiAlbum()" }
             ];
             const container = document.getElementById('popular-artists-container');
             let html = artists.map(artist => `
@@ -5321,11 +5321,11 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
         // --- NEW RENDERERS: FOREIGN ARTISTS & BANDS ---
         function renderForeignSoloArtists() {
             const artists = [
-                { name: "Taylor Swift", image: "album photo/taylor.jpg", onclick: "window.openTaylorAlbum()" },
-                { name: "Justin Bieber", image: "album photo/justin.jpg", onclick: "window.openJustinAlbum()" },
-                { name: "Ed Sheeran", image: "album photo/ed.jpg", onclick: "window.openEdAlbum()" },
-                { name: "Bruno Mars", image: "album photo/bruno.jpg", onclick: "window.openBrunoAlbum()" },
-                { name: "Daniel Caesar", image: "album photo/daniel.jpg", onclick: "window.openDanielAlbum()" }
+                { name: "Taylor Swift", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg", onclick: "window.openTaylorAlbum()" },
+                { name: "Justin Bieber", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/justin.jpg", onclick: "window.openJustinAlbum()" },
+                { name: "Ed Sheeran", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/ed.jpg", onclick: "window.openEdAlbum()" },
+                { name: "Bruno Mars", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bruno.jpg", onclick: "window.openBrunoAlbum()" },
+                { name: "Daniel Caesar", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/daniel.jpg", onclick: "window.openDanielAlbum()" }
             ];
             const container = document.getElementById('foreign-solo-container');
             let html = artists.map(artist => `
@@ -5343,11 +5343,11 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
 
         function renderForeignBands() {
             const bands = [
-                { name: "Coldplay", image: "album photo/coldplay.jpg", onclick: "window.openColdplayAlbum()" },
-                { name: "One Direction", image: "album photo/onedirection.jpg", onclick: "window.openOnedirectionAlbum()" },
-                { name: "Green Day", image: "album photo/greenday.jpg", onclick: "window.openGreendayAlbum()" },
-                { name: "Oasis", image: "album photo/oasis.jpg", onclick: "window.openOasisAlbum()" },
-                { name: "Radiohead", image: "album photo/radiohead.jpg", onclick: "window.openRadioheadAlbum()" }
+                { name: "Coldplay", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/coldplay.jpg", onclick: "window.openColdplayAlbum()" },
+                { name: "One Direction", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/onedirection.jpg", onclick: "window.openOnedirectionAlbum()" },
+                { name: "Green Day", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/greenday.jpg", onclick: "window.openGreendayAlbum()" },
+                { name: "Oasis", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/oasis.jpg", onclick: "window.openOasisAlbum()" },
+                { name: "Radiohead", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg", onclick: "window.openRadioheadAlbum()" }
             ];
             const container = document.getElementById('foreign-bands-container');
             let html = bands.map(band => `
