@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Vidje - Musik Platform</title>
     <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="/manifest.json">
@@ -10,6 +10,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Vidje">
+    <!-- Prevent zoom on input focus (mobile) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
 <!-- SELESAI BAGIAN 1! -->
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
@@ -60,7 +62,8 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.25s ease;
+            will-change: opacity;
         }
         .loader {
             width: 48px;
@@ -70,7 +73,8 @@
             border-radius: 50%;
             display: inline-block;
             box-sizing: border-box;
-            animation: rotation 1s linear infinite;
+            animation: rotation 0.6s linear infinite;
+            will-change: transform;
         }
         @keyframes rotation {
             0% { transform: rotate(0deg); }
@@ -1678,6 +1682,370 @@ input:checked + .toggle-slider {
 
 input:checked + .toggle-slider:before {
     transform: translateX(24px);
+}
+
+/* === ULTRA MOBILE: iPhone 12 Mini & Small Devices (max-width: 390px) === */
+@media (max-width: 390px) {
+    /* Root adjustments */
+    :root {
+        --sidebar-width: 240px;
+        --header-height: 56px;
+        --player-height: 80px;
+    }
+
+    /* Header adjustments */
+    header {
+        padding: 8px 12px;
+        gap: 8px;
+    }
+
+    .logo i {
+        font-size: 24px;
+    }
+
+    .header-search {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .search-icon {
+        font-size: 16px;
+    }
+
+    /* Main content */
+    .main-content {
+        padding-bottom: 16px;
+    }
+
+    .content-padding {
+        padding: 12px;
+    }
+
+    /* Sidebar adjustments */
+    .sidebar {
+        width: 240px;
+        padding: 16px 8px;
+    }
+
+    .nav-links {
+        gap: 4px;
+    }
+
+    .nav-item {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .nav-item i {
+        font-size: 18px;
+    }
+
+    .playlist-item {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    /* Player bar ultra compact */
+    .player-bar {
+        height: 80px;
+        padding: 0 8px;
+        gap: 6px;
+    }
+
+    .player-left {
+        width: 32%;
+        gap: 6px;
+    }
+
+    .player-left img {
+        width: 56px;
+        height: 56px;
+        border-radius: 4px;
+    }
+
+    .current-title {
+        font-size: 11px;
+        margin-right: 3px;
+    }
+
+    .current-artist {
+        font-size: 9px;
+    }
+
+    .player-center {
+        width: 45%;
+        gap: 4px;
+    }
+
+    .player-center .control-btn {
+        padding: 4px;
+        font-size: 18px;
+    }
+
+    .player-center .play-pause-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+
+    .player-center .control-btn:nth-child(4),
+    .player-center .control-btn:nth-child(5) {
+        font-size: 14px;
+        padding: 3px;
+    }
+
+    .player-right {
+        width: 23%;
+        gap: 4px;
+    }
+
+    .player-right .control-btn {
+        padding: 4px;
+        font-size: 16px;
+    }
+
+    /* Song list adjustments */
+    .song-list-header,
+    .song-row {
+        grid-template-columns: 35px 1fr 35px;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .song-index {
+        font-size: 12px;
+    }
+
+    .song-info {
+        gap: 6px;
+    }
+
+    .song-info img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .song-title-text {
+        font-size: 12px;
+    }
+
+    .song-artist {
+        font-size: 10px;
+    }
+
+    .song-duration {
+        font-size: 10px;
+    }
+
+    .song-actions {
+        gap: 4px;
+    }
+
+    /* Playlist cover adjustments */
+    .playlist-cover-big {
+        width: 140px;
+        height: 140px;
+    }
+
+    .playlist-info-big h1 {
+        font-size: 2rem;
+    }
+
+    .playlist-actions {
+        padding: 0;
+        gap: 12px;
+    }
+
+    .action-play-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+
+    /* Album grid adjustments */
+    .band-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 0 12px;
+    }
+
+    .band-card {
+        border-radius: 8px;
+    }
+
+    .band-card img {
+        border-radius: 8px;
+    }
+
+    /* Overlay adjustments */
+    .lt-container {
+        width: 92%;
+        padding: 20px 16px;
+        max-height: 75vh;
+    }
+
+    .lt-header h2 {
+        font-size: 20px;
+    }
+
+    .lt-header p {
+        font-size: 12px;
+    }
+
+    .lt-btn,
+    .lt-input {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .lt-code {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    #queue-overlay {
+        height: 55vh;
+        bottom: 80px;
+    }
+
+    .queue-item {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .queue-item img {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Modal adjustments */
+    .modal {
+        padding: 20px 16px;
+    }
+
+    .modal h2 {
+        font-size: 20px;
+    }
+
+    .modal label {
+        font-size: 12px;
+    }
+
+    .modal input,
+    .modal textarea {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .modal button {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+
+    /* Artist profile adjustments */
+    .profile-hero-section {
+        padding-top: 30px;
+        gap: 12px;
+    }
+
+    .profile-avatar-lg {
+        width: 120px;
+        height: 120px;
+    }
+
+    .profile-name-large {
+        font-size: 2rem;
+    }
+
+    .profile-stats {
+        gap: 12px;
+    }
+
+    .profile-stat {
+        font-size: 11px;
+    }
+
+    /* Video section adjustments */
+    .video-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 0 12px;
+    }
+
+    .video-card {
+        border-radius: 6px;
+    }
+
+    .video-card img {
+        border-radius: 6px;
+    }
+
+    .video-title {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    /* Friend list adjustments */
+    .friend-list {
+        gap: 8px;
+        padding: 0 12px;
+    }
+
+    .friend-card {
+        padding: 10px;
+    }
+
+    .friend-avatar {
+        width: 44px;
+        height: 44px;
+    }
+
+    .friend-name {
+        font-size: 12px;
+    }
+
+    .friend-status {
+        font-size: 10px;
+    }
+
+    /* Text adjustments for better readability */
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 16px; }
+    p { font-size: 12px; }
+
+    /* Reduce gap in containers */
+    .grid-container {
+        gap: 10px;
+    }
+
+    /* Adjust card styles */
+    .card {
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    /* Reduce button sizes */
+    button {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 40px;
+    }
+
+    /* Scrollbar adjustments */
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 3px;
+    }
+
+    /* Safe area for notch devices */
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }
 
     </style>
@@ -4114,7 +4482,19 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
                             loadingScreen.style.display = 'none';
                             appWrapper.style.display = 'flex';
                             switchView('home');
-                        }, 500);
+                            
+                            // ✅ Defer non-critical rendering untuk performa lebih cepat
+                            if (window.requestIdleCallback) {
+                                requestIdleCallback(() => {
+                                    // Re-render sections jika diperlukan update
+                                    const homeView = document.getElementById('view-home');
+                                    if (homeView && homeView.classList.contains('active')) {
+                                        renderTrending();
+                                        renderPopularBands();
+                                    }
+                                });
+                            }
+                        }, 200);
                     }
                 });
             } else {
