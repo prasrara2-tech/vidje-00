@@ -6254,9 +6254,34 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
         });
 
         playPauseBtn.addEventListener('click', () => {
-            if (isPlaying) { audio.pause(); isPlaying = false; }
-            else { audio.play(); isPlaying = true; }
-            updatePlayBtn();
+            // Perbaikan: Cek apakah audio punya source yang valid sebelum play
+            if (!audio.src || audio.src === window.location.href) {
+                console.warn("⚠️ Audio source is empty, cannot play.");
+                return; 
+            }
+
+            // Perbaikan: Handle Promise play() untuk menangkap error NotSupportedError
+            if (isPlaying) { 
+                audio.pause(); 
+                isPlaying = false; 
+                updatePlayBtn();
+            } else { 
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        // Playback started successfully
+                        isPlaying = true;
+                        updatePlayBtn();
+                    })
+                    .catch(error => {
+                        console.error("❌ Audio Play Error:", error);
+                        // Jika error karena source tidak valid/kosong
+                        isPlaying = false;
+                        updatePlayBtn();
+                    });
+                }
+            }
             
             // --- FIX ANIMATION PAUSE/RUN ---
             const state = isPlaying ? 'running' : 'paused';
@@ -7273,6 +7298,29 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('❌ Button Listen Together TIDAK DITEMUKAN');
     }
 });
+
+// ===== DIAGNOSTIC TOOLS =====
+async function checkBucketAccess() {
+    console.log("🕵️ Checking Supabase bucket access...");
+    // Try to access a known public file (album cover)
+    const { data } = supabase.storage.from('vidje').getPublicUrl('albumphoto/afgan.png');
+    
+    try {
+        const response = await fetch(data.publicUrl, { method: 'HEAD' });
+        console.log(`📡 Bucket Check: ${data.publicUrl} -> Status: ${response.status}`);
+        
+        if (response.status === 403 || response.status === 400) {
+            console.error("🚨 ACCESS DENIED! Supabase Read Policy is missing.");
+            alert("⚠️ PERHATIAN: Lagu dan Gambar tidak muncul karena Policy 'SELECT' belum aktif di Supabase.\n\nSilakan jalankan perintah SQL 'CREATE POLICY... FOR SELECT' di Supabase Dashboard.");
+        } else if (response.status === 404) {
+             console.warn("⚠️ File check 404 (Mungkin file belum ada, tapi akses publik mungkin OK)");
+        } else if (response.status === 200) {
+            console.log("✅ Bucket public access is OK.");
+        }
+    } catch (e) {
+        console.error("❌ Network check failed:", e);
+    }
+}
 
 // ===== LOAD SONGS FROM SUPABASE STORAGE (AUTO-DETECT ALL FOLDERS) =====
 async function loadSongsFromSupabase() {
