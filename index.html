@@ -1714,7 +1714,7 @@ input:checked + .toggle-slider:before {
 
     /* Main content */
     .main-content {
-        padding-bottom: 16px;
+        padding-bottom: 80px;
     }
 
     .content-padding {
@@ -1745,204 +1745,330 @@ input:checked + .toggle-slider:before {
         font-size: 12px;
     }
 
-    /* Player bar ultra compact */
+    /* Player bar ultra compact untuk iPhone 12 mini */
     .player-bar {
-        height: 80px;
-        padding: 0 8px;
-        gap: 6px;
+        height: 72px;
+        padding: 0 6px;
+        gap: 4px;
+        flex-wrap: nowrap;
     }
 
+    /* Player left - minimal */
     .player-left {
-        width: 32%;
-        gap: 6px;
+        width: 28%;
+        gap: 4px;
+        flex-shrink: 0;
     }
 
-    .player-left img {
-        width: 56px;
-        height: 56px;
-        border-radius: 4px;
+    .player-left .current-art {
+        width: 50px;
+        height: 50px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+
+    .player-left .current-info {
+        flex: 1;
+        min-width: 0;
     }
 
     .current-title {
-        font-size: 11px;
-        margin-right: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        padding: 0;
     }
 
     .current-artist {
-        font-size: 9px;
+        font-size: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        padding: 0;
     }
 
+    /* Hide like button on ultra-small screens */
+    .player-left .like-btn {
+        display: none !important;
+    }
+
+    /* Player center - controls only */
     .player-center {
-        width: 45%;
-        gap: 4px;
+        width: 50%;
+        gap: 2px;
+        flex-direction: row;
+        flex-shrink: 1;
     }
 
-    .player-center .control-btn {
-        padding: 4px;
-        font-size: 18px;
+    .player-controls {
+        width: 100%;
+        gap: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .player-center .play-pause-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-    }
-
-    .player-center .control-btn:nth-child(4),
-    .player-center .control-btn:nth-child(5) {
+    .player-controls .control-btn {
+        padding: 2px;
         font-size: 14px;
-        padding: 3px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
+    .player-controls .play-pause-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    /* Hide playback bar on ultra-small screens */
+    .playback-bar {
+        display: none !important;
+    }
+
+    /* Player right - minimal buttons */
     .player-right {
-        width: 23%;
-        gap: 4px;
+        width: 22%;
+        gap: 2px;
+        flex-shrink: 0;
     }
 
     .player-right .control-btn {
-        padding: 4px;
-        font-size: 16px;
+        padding: 2px;
+        font-size: 14px;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
-    /* Song list adjustments */
+    /* Hide volume container on ultra-small screens */
+    #volume-container {
+        display: none !important;
+    }
+
+    /* Song list - 2 column grid */
     .song-list-header,
     .song-row {
-        grid-template-columns: 35px 1fr 35px;
-        padding: 10px 12px;
-        gap: 8px;
+        grid-template-columns: 30px 1fr 30px;
+        padding: 8px 10px;
+        gap: 6px;
+        font-size: 10px;
+    }
+
+    .song-list-header {
+        padding: 8px 10px;
+    }
+
+    .song-list-header div:nth-child(3),
+    .song-list-header div:nth-child(4),
+    .song-row div:nth-child(3),
+    .song-row div:nth-child(4) {
+        display: none !important;
     }
 
     .song-index {
-        font-size: 12px;
+        font-size: 10px;
+        width: 30px;
+        text-align: center;
     }
 
     .song-info {
+        display: flex;
         gap: 6px;
+        align-items: center;
+        min-width: 0;
     }
 
     .song-info img {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
+        border-radius: 3px;
+        flex-shrink: 0;
     }
 
     .song-title-text {
-        font-size: 12px;
+        font-size: 10px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .song-artist {
-        font-size: 10px;
+        font-size: 8px;
+        color: #999;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .song-duration {
-        font-size: 10px;
+        display: none;
     }
 
     .song-actions {
-        gap: 4px;
+        width: 30px;
+        display: flex;
+        gap: 0;
+        justify-content: center;
+    }
+
+    .song-actions button {
+        padding: 2px;
+        font-size: 12px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Playlist cover adjustments */
     .playlist-cover-big {
-        width: 140px;
-        height: 140px;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 12px;
     }
 
     .playlist-info-big h1 {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     .playlist-actions {
         padding: 0;
-        gap: 12px;
+        gap: 10px;
+        width: 100%;
     }
 
     .action-play-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 20px;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
     }
 
     /* Album grid adjustments */
     .band-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        padding: 0 12px;
+        gap: 8px;
+        padding: 0 10px;
     }
 
     .band-card {
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     .band-card img {
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     /* Overlay adjustments */
     .lt-container {
-        width: 92%;
-        padding: 20px 16px;
-        max-height: 75vh;
+        width: 94%;
+        padding: 16px 12px;
+        max-height: 70vh;
     }
 
     .lt-header h2 {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .lt-header p {
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .lt-btn,
     .lt-input {
-        padding: 10px;
-        font-size: 12px;
-    }
-
-    .lt-code {
-        font-size: 14px;
-        padding: 10px;
+        padding: 8px;
+        font-size: 11px;
     }
 
     #queue-overlay {
-        height: 55vh;
-        bottom: 80px;
+        width: 100% !important;
+        height: 50vh;
+        bottom: 72px;
+        right: 0 !important;
+        border-left: none;
+    }
+
+    .queue-header {
+        padding: 12px 10px;
+    }
+
+    .queue-title {
+        font-size: 14px;
     }
 
     .queue-item {
-        padding: 10px 12px;
-        font-size: 12px;
+        padding: 8px 10px;
+        font-size: 10px;
+        gap: 8px;
     }
 
     .queue-item img {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
     }
 
     /* Modal adjustments */
     .modal {
-        padding: 20px 16px;
+        padding: 16px 12px;
+        border-radius: 8px;
     }
 
     .modal h2 {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .modal label {
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .modal input,
     .modal textarea {
-        font-size: 12px;
-        padding: 8px;
+        font-size: 11px;
+        padding: 6px;
     }
 
     .modal button {
-        padding: 10px 16px;
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+
+    /* Text adjustments for readability */
+    h1 { font-size: 20px; }
+    h2 { font-size: 16px; }
+    h3 { font-size: 14px; }
+
+    /* Reduce sidebar width for small screens */
+    .sidebar {
+        width: 200px;
+        padding: 12px 6px;
+    }
+
+    .nav-item {
+        padding: 6px 10px;
         font-size: 12px;
     }
 
-    /* Artist profile adjustments */
+    .playlist-item {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+    /* Additional profile & media adjustments for tablets */
     .profile-hero-section {
         padding-top: 30px;
         gap: 12px;
