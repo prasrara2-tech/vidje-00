@@ -602,6 +602,8 @@
             .mobile-bottom-nav .mb-nav-item span { font-size: 11px; }
         .overlay-controls button.active { color: var(--primary-red); }
         .overlay-controls button:hover { transform: scale(1.1); color: var(--primary-red); }
+        /* Hide overlay shuffle/repeat icons (remove these controls from overlay player) */
+        #overlay-shuffle-icon, #overlay-repeat-icon { display: none !important; }
         .overlay-play-btn {
             width: 80px; height: 80px;
             background-color: white !important;
@@ -1056,18 +1058,27 @@
         #chat-overlay.active { display: flex; }
 
         .chat-header {
-            padding: 16px 20px;
+            padding: calc(12px + env(safe-area-inset-top, 0)) 16px 16px;
             background-color: #121212;
             border-bottom: 1px solid #282828;
             display: flex;
             align-items: center;
-            gap: 15px;
-            height: 70px;
+            gap: 12px;
+            min-height: 56px;
+            height: auto;
+            box-sizing: border-box;
         }
         .chat-back-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
         .chat-friend-info { display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; }
         .chat-friend-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .chat-friend-name { font-weight: 700; font-size: 16px; }
+        .chat-friend-name {
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1.1;
+            white-space: normal;
+            word-break: break-word;
+            overflow: visible;
+        }
         .chat-status { font-size: 12px; color: var(--text-gray); }
 
         .chat-body {
@@ -1209,7 +1220,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-black);
-            z-index: 3500;
+            z-index: 100003;
             display: none;
             overflow-y: auto;
             padding-bottom: 100px;
@@ -2628,7 +2639,27 @@ input:checked + .toggle-slider:before {
     color: var(--text-gray);
 }
 
-
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    #friend-public-playlists {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        padding: 0 16px 60px 16px;
+    }
+    
+    #friend-public-playlists .song-card {
+        padding: 12px;
+        max-width: 164px; /* 140px + 24px padding */
+    }
+    
+    #friend-public-playlists .card-title {
+        font-size: 14px;
+    }
+    
+    #friend-public-playlists .card-desc {
+        font-size: 12px;
+    }
+}
 
 /* Mobile Responsive untuk Profile Playlists */
 @media (max-width: 768px) {
@@ -4542,8 +4573,6 @@ console.log('✅ Supabase initialized');
             { title: "Blank Space", src: "blank.mp3" },
             { title: "Shake It Off", src: "shake.mp3" },
             { title: "Bad Blood", src: "bad.mp3" },
-            { title: "Style", src: "style.mp3" },
-            { title: "Look What You Made Me Do", src: "look.mp3" },
             { title: "Delicate", src: "delicate.mp3" },
             { title: "Anti-Hero", src: "antihero.mp3" },
             { title: "Cruel Summer", src: "cruel.mp3" }
@@ -6667,7 +6696,7 @@ function renderFriendPlaylists(playlists) {
         window.playFirstSongOfTenxi = () => window.playSpecificSong(152);
 
         // Foreign Artists & Bands
-        window.openTaylorAlbum = () => setupGenericAlbumView("Taylor Swift", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg", 157, 166, "taylor-album", "taylor-title-view", "taylor-cover-view", "taylor-header-bg", "taylor-count", "taylor-songs-container");
+        window.openTaylorAlbum = () => setupGenericAlbumView("Taylor Swift", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg", 157, 164, "taylor-album", "taylor-title-view", "taylor-cover-view", "taylor-header-bg", "taylor-count", "taylor-songs-container");
         window.playFirstSongOfTaylor = () => window.playSpecificSong(157);
 
         window.openJustinAlbum = () => setupGenericAlbumView("Justin Bieber", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/justin.jpg", 167, 176, "justin-album", "justin-title-view", "justin-cover-view", "justin-header-bg", "justin-count", "justin-songs-container");
@@ -7410,6 +7439,18 @@ function renderProfilePublicPlaylists() {
         document.getElementById('next-btn').addEventListener('click', playNext);
         document.getElementById('repeat-btn').addEventListener('click', toggleRepeat);
         document.getElementById('shuffle-btn').addEventListener('click', toggleShuffle);
+
+        // Desktop: toggle play/pause with Space (ignore when typing in inputs)
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' || e.key === ' ') {
+                const ae = document.activeElement;
+                const tag = ae && ae.tagName && ae.tagName.toLowerCase();
+                if (tag === 'input' || tag === 'textarea' || (ae && ae.isContentEditable)) return;
+                e.preventDefault();
+                const btn = document.getElementById('play-pause-btn');
+                if (btn) btn.click();
+            }
+        });
 
         // Export ke window agar bisa dipanggil dari HTML onclick
 window.playNext = playNext;
