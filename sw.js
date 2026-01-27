@@ -1,9 +1,10 @@
 // Service Worker untuk Vidje
-const CACHE_NAME = 'vidje-cache-v1';
+const CACHE_NAME = 'vidje-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/assets/vidje-icon.jpg',
   // Tambahkan assets penting lainnya di sini
 ];
 
