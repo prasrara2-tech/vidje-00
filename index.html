@@ -5,8 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Vidje - Musik Platform</title>
     <!-- PWA Manifest & Theme -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#e50914">
+    <script>
+        // Check manifest loading
+        fetch('manifest.json')
+            .then(res => {
+                console.log('📋 Manifest fetch status:', res.status);
+                return res.json();
+            })
+            .then(manifest => {
+                console.log('📋 Manifest loaded:', manifest);
+            })
+            .catch(err => {
+                console.error('❌ Manifest fetch error:', err);
+            });
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Vidje">
@@ -9049,7 +9063,7 @@ function setupPublicSongsListener() {
 // ===== REGISTER SERVICE WORKER =====
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('sw.js')
                         .then(registration => {
                             console.log('✅ Service Worker registered!', registration);
 
@@ -9079,10 +9093,12 @@ function setupPublicSongsListener() {
                                 window.location.reload();
                             });
                         })
-                        .catch(error => {
-                            console.error('❌ Service Worker registration failed:', error);
+                        .catch(err => {
+                            console.error('❌ Service Worker registration failed:', err);
                         });
             });
+        } else {
+            console.warn('⚠️ Service Worker not supported in this browser');
         }
 
         // ===== MEDIA SESSION API (UNTUK NOTIFIKASI MUSIK) =====
@@ -9170,19 +9186,25 @@ function setupPublicSongsListener() {
         let deferredPrompt;
         
         window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('📱 beforeinstallprompt fired!');
             e.preventDefault();
             deferredPrompt = e;
             
-            // Tampilkan tombol install (opsional - bisa dihapus jika tidak mau)
-            // const installBtn = document.createElement('button');
-            // installBtn.textContent = 'Install Vidje';
-            // installBtn.onclick = async () => {
-            //     deferredPrompt.prompt();
-            //     const { outcome } = await deferredPrompt.userChoice;
-            //     console.log('Install:', outcome);
-            //     deferredPrompt = null;
-            // };
-            // document.body.appendChild(installBtn);
+            // Tampilkan tombol install
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '📥 Download Vidje';
+            installBtn.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 99999; padding: 10px 15px; background: #e50914; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;';
+            installBtn.onclick = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log('Install outcome:', outcome);
+                    deferredPrompt = null;
+                    installBtn.remove();
+                }
+            };
+            document.body.appendChild(installBtn);
+            console.log('✅ Install button created');
         });
         
         window.addEventListener('appinstalled', () => {
