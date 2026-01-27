@@ -33,6 +33,7 @@
             --text-gray: #b3b3b3;
             --border-color: #333;
             --player-height: 90px;
+            --mobile-nav-height: 0px;
             --sidebar-width: 240px;
             --header-height: 64px;
         }
@@ -45,12 +46,47 @@
             color: var(--text-white);
             height: 100vh;
             overflow: hidden;
+            padding-bottom: calc(var(--player-height) + var(--mobile-nav-height));
         }
 
         /* --- SCROLLBAR --- */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+        /* Mobile bottom navigation (hidden by default) */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: calc(var(--player-height, 72px) + 10px);
+            height: 56px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.25));
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            z-index: 20010;
+            align-items: center;
+            justify-content: space-around;
+            gap: 6px;
+            padding: 6px 10px;
+            backdrop-filter: blur(6px);
+        }
+
+        .mobile-bottom-nav .mb-nav-item {
+            color: var(--text-gray);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            gap: 4px;
+            width: 72px;
+        }
+
+        .mobile-bottom-nav .mb-nav-item i { font-size: 20px; }
+        .mobile-bottom-nav .mb-nav-item.active { color: var(--primary-red); }
 
         /* --- LOADING SCREEN --- */
         #loading-screen {
@@ -343,7 +379,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 1999;
+            z-index: 60000; /* sit above player bar and overlays */
             display: none;
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -558,10 +594,12 @@
             gap: 30px;
             margin-bottom: 30px;
         }
-        .overlay-controls button {
-            background: none; border: none; color: white;
-            font-size: 32px; cursor: pointer; transition: 0.2s;
-        }
+            .overlay-controls button {
+                background: none; border: none; color: white;
+                font-size: 32px; cursor: pointer; transition: 0.2s;
+            }
+
+            .mobile-bottom-nav .mb-nav-item span { font-size: 11px; }
         .overlay-controls button.active { color: var(--primary-red); }
         .overlay-controls button:hover { transform: scale(1.1); color: var(--primary-red); }
         .overlay-play-btn {
@@ -578,6 +616,40 @@
         .overlay-progress-bar { width: 100%; height: 4px; background: #555; border-radius: 2px; position: relative; }
         .overlay-progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; position: absolute; top: 0; left: 0; }
         .overlay-time { display: flex; justify-content: space-between; width: 100%; margin-top: 10px; font-size: 12px; color: #b3b3b3; }
+
+        /* Mobile bottom navigation (hidden by default) */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: calc(var(--player-height, 72px) + 10px);
+            height: 56px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.25));
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            z-index: 20010;
+            align-items: center;
+            justify-content: space-around;
+            gap: 6px;
+            padding: 6px 10px;
+            backdrop-filter: blur(6px);
+        }
+
+        .mobile-bottom-nav .mb-nav-item {
+            color: var(--text-gray);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            gap: 4px;
+            width: 72px;
+        }
+
+        .mobile-bottom-nav .mb-nav-item i { font-size: 20px; }
+        .mobile-bottom-nav .mb-nav-item.active { color: var(--primary-red); }
 
         /* Search Results & History Areas */
         #search-results-wrapper {
@@ -640,7 +712,21 @@
         .action-play-btn:hover { transform: scale(1.05); background-color: var(--primary-red-hover); }
 
         /* --- PLAYER BAR --- */
-        .player-bar { height: var(--player-height); background-color: var(--bg-card); border-top: 1px solid #282828; padding: 0 16px; display: flex; justify-content: space-between; align-items: center; z-index: 20000; }
+        .player-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: var(--player-height);
+            background-color: var(--bg-card);
+            border-top: 1px solid #282828;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20000;
+        }
         
         .player-left { 
             display: flex; 
@@ -962,7 +1048,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-black);
-            z-index: 4000;
+            z-index: 100001; /* sit above all other app elements */
             display: none; /* Hidden by default */
             flex-direction: column;
             animation: fadeIn 0.3s ease;
@@ -1142,6 +1228,7 @@
         background-color: var(--bg-black);
         padding: 24px 12px;
         box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            z-index: 60010; /* ensure sidebar sits above overlay and player */
     }
     .sidebar.active { left: 0; }
     .mobile-menu-toggle { display: block; }
@@ -1690,7 +1777,8 @@ input:checked + .toggle-slider:before {
     :root {
         --sidebar-width: 240px;
         --header-height: 56px;
-        --player-height: 80px;
+        --player-height: 64px;
+        --mobile-nav-height: 60px;
     }
 
     /* Header adjustments */
@@ -1714,12 +1802,165 @@ input:checked + .toggle-slider:before {
 
     /* Main content */
     .main-content {
-        padding-bottom: 80px;
+        padding-bottom: calc(var(--player-height) + var(--mobile-nav-height));
     }
 
     .content-padding {
         padding: 12px;
     }
+
+    /* --- MOBILE: Tidy images for albums, playlists, bands/artists --- */
+    .playlist-cover-big {
+        width: 64px !important;
+        height: 64px !important;
+        border-radius: 6px;
+        box-shadow: none;
+        object-fit: cover;
+    }
+
+    .playlist-thumb {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        object-fit: cover;
+    }
+
+    /* Cards used across home/profile (compact for very small devices) */
+    .card-grid .card,
+    .band-grid .band-card,
+    .horizontal-list-mobile .card,
+    .horizontal-list-mobile .band-card {
+        width: 72px !important;
+        height: 72px !important;
+        flex: 0 0 72px !important;
+    }
+
+    .card-grid .card img,
+    .band-card img,
+    .horizontal-list-mobile .card img,
+    .horizontal-list-mobile .band-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    /* Artist / band list thumbnails in lists */
+    .playlist-item .playlist-thumb,
+    .friend-avatar,
+    .chat-shared-img {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        object-fit: cover;
+    }
+
+    /* Tighter grids on mobile: allow more columns with smaller cards */
+    .card-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+    .band-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+
+    /* Compact album/playlist images on ultra-small screens */
+    .playlist-cover-big {
+        width: 96px !important;
+        height: 96px !important;
+        margin-bottom: 8px;
+        box-shadow: none;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .card-grid .card img,
+    .band-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .band-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 0 8px;
+    }
+
+    .playlist-actions .action-play-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+
+    /* show mobile bottom nav on ultra-small screens */
+    .mobile-bottom-nav { display: flex; }
+
+    .mobile-bottom-nav .mb-nav-item span { font-size: 11px; }
+    .mobile-bottom-nav { left: 8px; right: 8px; height: var(--mobile-nav-height); bottom: 0; }
+
+    /* place player bar above mobile nav */
+    .player-bar { bottom: var(--mobile-nav-height); }
+
+    /* Compact the four "popular" horizontal lists (bands/artists, local & foreign)
+       so thumbnails are smaller on ultra-small screens */
+    #popular-bands-container .song-card,
+    #popular-artists-container .song-card,
+    #foreign-solo-container .song-card,
+    #foreign-bands-container .song-card {
+        min-width: 140px !important;
+        flex: 0 0 140px !important;
+        padding: 8px !important;
+    }
+
+    #popular-bands-container .card-img-wrapper,
+    #popular-artists-container .card-img-wrapper,
+    #foreign-solo-container .card-img-wrapper,
+    #foreign-bands-container .card-img-wrapper {
+        aspect-ratio: 1/1;
+        margin-bottom: 8px;
+        overflow: hidden;
+    }
+
+    #popular-bands-container .card-img-wrapper img,
+    #popular-artists-container .card-img-wrapper img,
+    #foreign-solo-container .card-img-wrapper img,
+    #foreign-bands-container .card-img-wrapper img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    /* place chat footer above player bar */
+        .chat-footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: calc(var(--player-height) + var(--mobile-nav-height) + 8px);
+            z-index: 100002; /* ensure footer sits above player/nav when chat is open */
+            padding: 12px 16px;
+            backdrop-filter: blur(6px);
+    }
+
+        /* When the full-screen chat overlay is open, place the footer inside the overlay
+           so users can type at the bottom of the chat content (not fixed to viewport). */
+        #chat-overlay .chat-footer {
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            width: 100%;
+            z-index: 100002;
+            background: transparent;
+            padding: 12px 16px;
+        }
+
+        /* Add space at the end of the chat body so last messages are not hidden behind the footer */
+        #chat-overlay .chat-body {
+            padding-bottom: 84px !important;
+        }
 
     /* Sidebar adjustments */
     .sidebar {
@@ -1747,9 +1988,9 @@ input:checked + .toggle-slider:before {
 
     /* Player bar ultra compact untuk iPhone 12 mini */
     .player-bar {
-        height: 72px;
-        padding: 0 6px;
-        gap: 4px;
+        height: var(--player-height);
+        padding: 0 8px;
+        gap: 6px;
         flex-wrap: nowrap;
     }
 
@@ -1761,9 +2002,9 @@ input:checked + .toggle-slider:before {
     }
 
     .player-left .current-art {
-        width: 50px;
-        height: 50px;
-        border-radius: 3px;
+        width: 44px;
+        height: 44px;
+        border-radius: 4px;
         flex-shrink: 0;
     }
 
@@ -1806,7 +2047,7 @@ input:checked + .toggle-slider:before {
 
     .player-controls {
         width: 100%;
-        gap: 2px;
+        gap: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1824,10 +2065,17 @@ input:checked + .toggle-slider:before {
     }
 
     .player-controls .play-pause-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 14px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
         flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--text-white);
+        color: black;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.32);
     }
 
     /* Hide playback bar on ultra-small screens */
@@ -2174,6 +2422,238 @@ input:checked + .toggle-slider:before {
     }
 }
 
+/* Tambahkan di bagian CSS, sekitar line 350-400 */
+
+/* Unread Messages Badge */
+.friend-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: 0.2s;
+    position: relative; /* Untuk badge positioning */
+}
+
+.unread-badge {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary-red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-50%) scale(1.1); }
+}
+
+/* REPLACE CSS yang ada untuk .playlist-modal-grid-profile dan #friend-public-playlists */
+/* Sekitar line 450-550 */
+
+/* Profile Public Playlists - UKURAN SAMA DENGAN HOME */
+.playlist-modal-grid-profile {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+    padding: 0 32px 60px 32px;
+}
+
+.playlist-modal-grid-profile .song-card {
+    background-color: var(--bg-card);
+    padding: 16px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.playlist-modal-grid-profile .song-card:hover {
+    background-color: var(--bg-card-hover);
+}
+
+.playlist-modal-grid-profile .card-img-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* Force 1:1 aspect ratio */
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #222;
+}
+
+.playlist-modal-grid-profile .card-img-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.playlist-modal-grid-profile .play-btn-overlay {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--primary-red);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 8px 8px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+.playlist-modal-grid-profile .song-card:hover .play-btn-overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.playlist-modal-grid-profile .card-title {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-white);
+}
+
+.playlist-modal-grid-profile .card-desc {
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+/* Friend Profile Playlists - EXACT SAME SIZE AS HOME (180x180px forced) */
+#friend-public-playlists {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+    padding: 0 32px 60px 32px;
+}
+
+#friend-public-playlists .song-card {
+    background-color: var(--bg-card);
+    padding: 16px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    max-width: 212px; /* 180px content + 32px padding */
+}
+
+#friend-public-playlists .song-card:hover {
+    background-color: var(--bg-card-hover);
+}
+
+/* CRITICAL FIX: Wrapper dengan padding-bottom 100% */
+#friend-public-playlists .card-img-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* ⬅️ INI YANG PENTING: Paksa rasio 1:1 */
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #222;
+}
+
+/* Image di dalam wrapper: absolute positioning */
+#friend-public-playlists .card-img-wrapper img {
+    position: absolute !important;  /* ⬅️ HARUS absolute */
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;   /* ⬅️ Prevent distortion */
+    transition: transform 0.3s ease;
+}
+
+#friend-public-playlists .play-btn-overlay {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--primary-red);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 8px 8px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+#friend-public-playlists .song-card:hover .play-btn-overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#friend-public-playlists .card-title {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-white);
+}
+
+#friend-public-playlists .card-desc {
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+
+
+/* Mobile Responsive untuk Profile Playlists */
+@media (max-width: 768px) {
+    .playlist-modal-grid-profile,
+    #friend-public-playlists {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        padding: 0 16px 60px 16px;
+    }
+    
+    .playlist-modal-grid-profile .song-card,
+    #friend-public-playlists .song-card {
+        padding: 12px;
+    }
+    
+    .playlist-modal-grid-profile .card-title,
+    #friend-public-playlists .card-title {
+        font-size: 14px;
+    }
+    
+    .playlist-modal-grid-profile .card-desc,
+    #friend-public-playlists .card-desc {
+        font-size: 12px;
+    }
+}
     </style>
 </head>
 <body>
@@ -3331,6 +3811,22 @@ input:checked + .toggle-slider:before {
     </div>
 </div>
         </footer>
+
+        <!-- Mobile bottom navigation (visible on small screens) -->
+        <nav class="mobile-bottom-nav" aria-label="Navigasi bawah">
+            <a href="#" class="mb-nav-item" id="mb-nav-home" onclick="event.preventDefault(); window.switchView('home')">
+                <i class="ph ph-house"></i>
+                <span>Beranda</span>
+            </a>
+            <a href="#" class="mb-nav-item" id="mb-nav-search" onclick="event.preventDefault(); window.switchView('search')">
+                <i class="ph ph-magnifying-glass"></i>
+                <span>Cari</span>
+            </a>
+            <a href="#" class="mb-nav-item" id="mb-nav-liked" onclick="event.preventDefault(); window.switchView('liked')">
+                <i class="ph ph-heart"></i>
+                <span>Disukai</span>
+            </a>
+        </nav>
 
         <!-- QUEUE OVERLAY -->
         <div id="queue-overlay">
@@ -4702,64 +5198,70 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
 
         // --- FRIENDSHIP & CHAT LOGIC ---
         
-        function setupFriendListeners() {
-            if(!auth.currentUser) return;
-            const myUid = auth.currentUser.uid;
+        let unreadMessages = {}; // { friendUid: count }
 
-            // Listen Friend Requests
-            onValue(ref(db, `users/${myUid}/friendRequests`), (snap) => {
-                const reqs = snap.val() || {};
-                const container = document.getElementById('friend-requests-container');
-                let html = '';
-                Object.keys(reqs).forEach(senderUid => {
-                    const r = reqs[senderUid];
-                    html += `
-                        <div class="friend-list-item">
-                            <img src="${r.senderPic}" class="friend-avatar-small">
-                            <span class="friend-name">${r.senderName}</span>
-                            <div class="request-actions">
-                                <button class="btn-icon-small btn-accept" onclick="window.respondFriendRequest('${senderUid}', true)"><i class="ph-fill ph-check"></i></button>
-                                <button class="btn-icon-small btn-reject" onclick="window.respondFriendRequest('${senderUid}', false)"><i class="ph-fill ph-x"></i></button>
-                            </div>
-                        </div>
-                    `;
-                });
-                if(!html) html = '<div style="padding:10px; color:#666; font-size:12px;">Tidak ada permintaan baru.</div>';
-                container.innerHTML = html;
-            });
+function setupFriendListeners() {
+    if(!auth.currentUser) return;
+    const myUid = auth.currentUser.uid;
 
-            // Listen Friends
-            onValue(ref(db, `users/${myUid}/friends`), (snap) => {
-                const friends = snap.val() || {};
-                const container = document.getElementById('friend-list-container');
-                let html = '';
-                Object.keys(friends).forEach(friendUid => {
-                    // Placeholder initially, we fetch data below
-                    html += `
-                        <div class="friend-list-item" onclick="window.openChat('${friendUid}')">
-                            <img src="https://picsum.photos/seed/${friendUid}/50/50" id="friend-img-${friendUid}" class="friend-avatar-small">
-                            <span class="friend-name" id="friend-name-${friendUid}">Loading...</span>
-                        </div>
-                    `;
-                });
-                if(!html) html = '<div style="padding:10px; color:#666; font-size:12px;">Belum ada teman.</div>';
-                container.innerHTML = html;
-                
-                // Fetch friend details to display names and pics immediately
-                Object.keys(friends).forEach(friendUid => {
-                   get(ref(db, `users/${friendUid}`)).then(uSnap => {
-                       const u = uSnap.val();
-                       if(u) {
-                           const nameEl = document.getElementById(`friend-name-${friendUid}`);
-                           const imgEl = document.getElementById(`friend-img-${friendUid}`);
-                           if(nameEl) nameEl.innerText = u.username;
-                           if(imgEl) imgEl.src = u.profile_picture;
-                       }
-                   });
-                });
-            });
-        }
+    // Listen Friend Requests
+    onValue(ref(db, `users/${myUid}/friendRequests`), (snap) => {
+        const reqs = snap.val() || {};
+        const container = document.getElementById('friend-requests-container');
+        let html = '';
+        Object.keys(reqs).forEach(senderUid => {
+            const r = reqs[senderUid];
+            html += `
+                <div class="friend-list-item">
+                    <img src="${r.senderPic}" class="friend-avatar-small">
+                    <span class="friend-name">${r.senderName}</span>
+                    <div class="request-actions">
+                        <button class="btn-icon-small btn-accept" onclick="window.respondFriendRequest('${senderUid}', true)"><i class="ph-fill ph-check"></i></button>
+                        <button class="btn-icon-small btn-reject" onclick="window.respondFriendRequest('${senderUid}', false)"><i class="ph-fill ph-x"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        if(!html) html = '<div style="padding:10px; color:#666; font-size:12px;">Tidak ada permintaan baru.</div>';
+        container.innerHTML = html;
+    });
 
+    // Listen Friends
+    onValue(ref(db, `users/${myUid}/friends`), (snap) => {
+        const friends = snap.val() || {};
+        const container = document.getElementById('friend-list-container');
+        let html = '';
+        
+        Object.keys(friends).forEach(friendUid => {
+            // Setup unread listener for each friend
+            setupUnreadListener(friendUid);
+            
+            html += `
+                <div class="friend-list-item" onclick="window.openChat('${friendUid}')" id="friend-item-${friendUid}">
+                    <img src="https://picsum.photos/seed/${friendUid}/50/50" id="friend-img-${friendUid}" class="friend-avatar-small">
+                    <span class="friend-name" id="friend-name-${friendUid}">Loading...</span>
+                    <span class="unread-badge" id="unread-${friendUid}" style="display:none;">0</span>
+                </div>
+            `;
+        });
+        
+        if(!html) html = '<div style="padding:10px; color:#666; font-size:12px;">Belum ada teman.</div>';
+        container.innerHTML = html;
+        
+        // Fetch friend details
+        Object.keys(friends).forEach(friendUid => {
+           get(ref(db, `users/${friendUid}`)).then(uSnap => {
+               const u = uSnap.val();
+               if(u) {
+                   const nameEl = document.getElementById(`friend-name-${friendUid}`);
+                   const imgEl = document.getElementById(`friend-img-${friendUid}`);
+                   if(nameEl) nameEl.innerText = u.username;
+                   if(imgEl) imgEl.src = u.profile_picture;
+               }
+           });
+        });
+    });
+}
        // GANTI KODE SEARCH INI DENGAN KODE YANG SUDAH DIPERBAIKI DI BAWAH
         document.getElementById('friend-search-input').addEventListener('input', (e) => {
             const query = e.target.value.trim().toLowerCase();
@@ -4783,6 +5285,70 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
                 performFriendSearch(query, resContainer);
             }, 500);
         });
+
+        // === SETUP UNREAD MESSAGE LISTENER ===
+function setupUnreadListener(friendUid) {
+    const myUid = auth.currentUser.uid;
+    const chatId = getChatId(myUid, friendUid);
+    
+    onValue(ref(db, `chats/${chatId}/messages`), (snap) => {
+        const msgs = snap.val() || {};
+        
+        // Count unread messages (messages from friend that we haven't read)
+        let unreadCount = 0;
+        
+        Object.values(msgs).forEach(msg => {
+            // If message is from friend and we haven't marked as read
+            if (msg.sender === friendUid && !msg.readBy?.[myUid]) {
+                unreadCount++;
+            }
+        });
+        
+        unreadMessages[friendUid] = unreadCount;
+        updateUnreadBadge(friendUid, unreadCount);
+    });
+}
+
+// === UPDATE UNREAD BADGE ===
+function updateUnreadBadge(friendUid, count) {
+    const badge = document.getElementById(`unread-${friendUid}`);
+    if (!badge) return;
+    
+    if (count > 0) {
+        badge.innerText = count > 99 ? '99+' : count;
+        badge.style.display = 'block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// === MARK MESSAGES AS READ ===
+function markMessagesAsRead(friendUid) {
+    const myUid = auth.currentUser.uid;
+    const chatId = getChatId(myUid, friendUid);
+    
+    get(ref(db, `chats/${chatId}/messages`)).then(snap => {
+        const msgs = snap.val() || {};
+        
+        Object.keys(msgs).forEach(msgId => {
+            const msg = msgs[msgId];
+            // Mark message as read if it's from the friend
+            if (msg.sender === friendUid) {
+                update(ref(db, `chats/${chatId}/messages/${msgId}/readBy`), {
+                    [myUid]: true
+                });
+            }
+        });
+    });
+    
+    // Reset unread count
+    unreadMessages[friendUid] = 0;
+    updateUnreadBadge(friendUid, 0);
+}
+
+
+// Export to window
+window.openChat = openChat;
 
         // Update selectFriendResult untuk menampilkan info lebih jelas
         function selectFriendResult(uid, username, pic) {
@@ -4945,22 +5511,30 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
             return [uid1, uid2].sort().join('_');
         }
 
-        function openChat(friendUid) {
-            activeChatFriendUid = friendUid;
-            activeChatId = getChatId(auth.currentUser.uid, friendUid);
-            
-            document.getElementById('chat-overlay').classList.add('active');
-            
-            // Get Friend Data
-            get(ref(db, `users/${friendUid}`)).then(snap => {
-                const u = snap.val();
-                activeChatFriendData = u;
-                document.getElementById('chat-friend-name-display').innerText = u.username;
-                document.getElementById('chat-friend-avatar-display').src = u.profile_picture;
-            });
+    // === UPDATE openChat FUNCTION ===
+// Ganti fungsi openChat yang lama dengan yang ini:
+function openChat(friendUid) {
+    activeChatFriendUid = friendUid;
+    activeChatId = getChatId(auth.currentUser.uid, friendUid);
+    
+    document.getElementById('chat-overlay').classList.add('active');
+    
+    // Mark messages as read when opening chat
+    markMessagesAsRead(friendUid);
+    
+    // Get Friend Data
+    get(ref(db, `users/${friendUid}`)).then(snap => {
+        const u = snap.val();
+        activeChatFriendData = u;
+        document.getElementById('chat-friend-name-display').innerText = u.username;
+        document.getElementById('chat-friend-avatar-display').src = u.profile_picture;
+    });
 
-            renderMessages();
-        }
+    renderMessages();
+}
+
+// Export to window
+window.openChat = openChat;
 
         function closeChat() {
             document.getElementById('chat-overlay').classList.remove('active');
@@ -5243,31 +5817,33 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
             });
         }
 
-        function renderFriendPlaylists(playlists) {
-            const container = document.getElementById('friend-public-playlists');
-            let html = '';
-            
-            Object.keys(playlists).forEach(key => {
-                const pl = playlists[key];
-                // Only show public playlists
-                if(pl.isPublic) {
-                    html += `
-                        <div class="song-card" onclick="window.openFriendPlaylist('${key}')">
-                            <div class="card-img-wrapper">
-                                <img src="${pl.cover}">
-                                <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
-                            </div>
-                            <div class="card-title">${pl.name}</div>
-                            <div class="card-desc">Playlist Publik</div>
-                        </div>
-                    `;
-                }
-            });
+       // Ganti fungsi renderFriendPlaylists (sekitar line 1400):
 
-            if(!html) html = '<div style="padding:0 32px; color:#666;">Teman ini tidak memiliki playlist publik.</div>';
-            container.innerHTML = html;
+function renderFriendPlaylists(playlists) {
+    const container = document.getElementById('friend-public-playlists');
+    let html = '';
+    
+    Object.keys(playlists).forEach(key => {
+        const pl = playlists[key];
+        // Only show public playlists
+        if(pl.isPublic) {
+            html += `
+                <div class="song-card" onclick="window.openFriendPlaylist('${key}')">
+                    <div class="card-img-wrapper">
+                        <img src="${pl.cover}" alt="${pl.name}">
+                        <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
+                    </div>
+                    <div class="card-title">${pl.name}</div>
+                    <div class="card-desc">Playlist Publik</div>
+                </div>
+            `;
         }
+    });
 
+    if(!html) html = '<div style="padding:0 32px; color:#666;">Teman ini tidak memiliki playlist publik.</div>';
+    container.innerHTML = html;
+}
+   
       function openFriendPlaylist(playlistId) {
     if(!viewingFriendUid) return;
     
@@ -5391,6 +5967,11 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${viewName}`);
             if (activeNav) activeNav.classList.add('active');
+
+            /* sync mobile bottom nav active state */
+            document.querySelectorAll('.mb-nav-item').forEach(el => el.classList.remove('active'));
+            const mbActive = document.getElementById(`mb-nav-${viewName}`);
+            if (mbActive) mbActive.classList.add('active');
 
             if(viewName === 'liked') {
                 openLikedView();
@@ -6178,35 +6759,38 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
             document.getElementById('profile-edit-panel').classList.toggle('active');
         }
 
-        function renderProfilePublicPlaylists() {
-            const playlists = currentUserData.playlists || {};
-            const container = document.getElementById('profile-public-playlists');
-            let html = '';
-            
-            Object.keys(playlists).forEach(key => {
-                const pl = playlists[key];
-                // ONLY SHOW PUBLIC PLAYLISTS
-                if(pl.isPublic) {
-                    html += `
-                        <div class="song-card" onclick="window.openPlaylist('${key}')">
-                            <div class="card-img-wrapper">
-                                <img src="${pl.cover}">
-                                <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
-                            </div>
-                            <div class="card-title">${pl.name}</div>
-                            <div class="card-desc">Playlist</div>
-                        </div>
-                    `;
-                }
-            });
-            
-            if (html === '') {
-                html = '<p style="color:#666; font-style:italic; padding: 0 32px;">Tidak ada playlist publik. Atur privasi di sidebar.</p>';
-            }
+       // Ganti fungsi renderProfilePublicPlaylists yang lama (sekitar line 1800):
 
-            container.innerHTML = html;
+function renderProfilePublicPlaylists() {
+    const playlists = currentUserData.playlists || {};
+    const container = document.getElementById('profile-public-playlists');
+    let html = '';
+    
+    Object.keys(playlists).forEach(key => {
+        const pl = playlists[key];
+        // ONLY SHOW PUBLIC PLAYLISTS
+        if(pl.isPublic) {
+            html += `
+                <div class="song-card" onclick="window.openPlaylist('${key}')">
+                    <div class="card-img-wrapper">
+                        <img src="${pl.cover}" alt="${pl.name}">
+                        <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
+                    </div>
+                    <div class="card-title">${pl.name}</div>
+                    <div class="card-desc">Playlist</div>
+                </div>
+            `;
         }
+    });
+    
+    if (html === '') {
+        html = '<p style="color:#666; font-style:italic; padding: 0 32px;">Tidak ada playlist publik. Atur privasi di sidebar.</p>';
+    }
 
+    container.innerHTML = html;
+}
+    
+    
         function handleProfileAvatarUpload(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
