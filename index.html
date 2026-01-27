@@ -2064,7 +2064,7 @@ input:checked + .toggle-slider:before {
                     <div id="view-perunggu-album" class="view-section">
                         <div class="playlist-header-view" id="perunggu-header-bg">
                             <div class="playlist-cover-wrap">
-                                <img src="album photo/perunggu.jpg" class="playlist-cover-big" id="perunggu-cover-view">
+                                <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg" class="playlist-cover-big" id="perunggu-cover-view">
                             </div>
                             <div class="playlist-info-big">
                                 <span>ARTIS</span>
@@ -3298,7 +3298,7 @@ console.log('✅ Supabase initialized');
                 artist: "Perunggu",
                 album: "Single",
                 duration: "3:45",
-                cover: "album photo/perunggu.jpg",
+                cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg",
                 src: `songs/${item.src}`
             });
         });
@@ -3869,7 +3869,7 @@ console.log('✅ Supabase initialized');
             { name: "Hanung's Album", img: "album photo/pras.jpg", fn: "window.openHanungAlbum()" },
             { name: "Rara's Album", img: "album photo/rara.jpg", fn: "window.openRaraAlbum()" },
             // Bands & Artists
-            { name: "Perunggu", img: "album photo/perunggu.jpg", fn: "window.openPerungguAlbum()" },
+            { name: "Perunggu", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg", fn: "window.openPerungguAlbum()" },
             { name: "NOAH / Peterpan", img: "album photo/noah.jpg", fn: "window.openNoahAlbum()" },
             { name: "Dewa 19", img: "album photo/dewa19.png", fn: "window.openDewaAlbum()" },
             { name: "Sheila On 7", img: "album photo/so7.jpg", fn: "window.openSheilaAlbum()" },
@@ -4100,6 +4100,14 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
                         
                         // ✅ LOAD USER'S IMPORTED SONGS
                         await loadImportedSongs();
+                        
+                        // ✅ RE-RENDER SEMUA UI SETELAH LAGU DIMUAT
+                        console.log("🔄 Re-rendering UI with loaded songs...");
+                        renderTrending();
+                        renderPopularBands();
+                        renderPopularArtists();
+                        renderForeignSoloArtists();
+                        renderForeignBands();
                         
                         loadingScreen.style.opacity = '0';
                         setTimeout(() => {
@@ -5267,7 +5275,7 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
 
         function renderPopularBands() {
             const bands = [
-                { name: "Perunggu", image: "album photo/perunggu.jpg", onclick: "window.openPerungguAlbum()" },
+                { name: "Perunggu", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg", onclick: "window.openPerungguAlbum()" },
                 { name: "NOAH / Peterpan", image: "album photo/noah.jpg", onclick: "window.openNoahAlbum()" },
                 { name: "Dewa 19", image: "album photo/dewa19.png", onclick: "window.openDewaAlbum()" },
                 { name: "Sheila On 7", image: "album photo/so7.jpg", onclick: "window.openSheilaAlbum()" },
@@ -5537,7 +5545,7 @@ const savedHistory = localStorage.getItem('recentlyPlayed');
         window.playFirstSongOfRara = () => window.playSpecificSong(306);
 
         // Bands Indonesia (Using Generic Helper for consistency)
-        window.openPerungguAlbum = () => setupGenericAlbumView("Perunggu", "album photo/perunggu.jpg", 30, 39, "perunggu-album", "perunggu-title-view", "perunggu-cover-view", "perunggu-header-bg", "perunggu-count", "perunggu-songs-container");
+        window.openPerungguAlbum = () => setupGenericAlbumView("Perunggu", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/perunggu.jpg", 30, 39, "perunggu-album", "perunggu-title-view", "perunggu-cover-view", "perunggu-header-bg", "perunggu-count", "perunggu-songs-container");
         window.playFirstSongOfPerunggu = () => window.playSpecificSong(30);
 
         window.openNoahAlbum = () => setupGenericAlbumView("NOAH / Peterpan", "album photo/noah.jpg", 42, 51, "noah-album", "noah-title-view", "noah-cover-view", "noah-header-bg", "noah-count", "noah-songs-container");
