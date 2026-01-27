@@ -1,10 +1,9 @@
 // Service Worker untuk Vidje
 const CACHE_NAME = 'vidje-cache-v2';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/assets/vidje-icon.jpg',
+  'index.html',
+  'manifest.json',
+  'assets/vidje-icon.jpg',
   // Tambahkan assets penting lainnya di sini
 ];
 
@@ -15,9 +14,20 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('[SW] Caching app shell');
-        return cache.addAll(urlsToCache);
+        return cache.addAll(urlsToCache).catch(err => {
+          console.warn('[SW] Cache addAll error (some files may not exist):', err);
+          // Don't fail installation if some files are missing
+          return Promise.resolve();
+        });
       })
-      .then(() => self.skipWaiting())
+      .then(() => {
+        console.log('[SW] Install complete, skipping waiting');
+        self.skipWaiting();
+      })
+      .catch(err => {
+        console.error('[SW] Install failed:', err);
+        throw err;
+      })
   );
 });
 
