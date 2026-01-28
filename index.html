@@ -575,7 +575,9 @@
             align-items: center; 
             color: var(--text-gray); 
             font-size: 14px; 
-            cursor: pointer; 
+            cursor: pointer;
+            position: relative;
+            overflow: visible;
         }
         .song-row:hover { background-color: rgba(255,255,255,0.1); }
         .song-row.playing { color: var(--primary-red); }
@@ -641,7 +643,8 @@
             100% { transform: translateX(0); }
         }
         
-        .song-actions { display: flex; justify-content: flex-end; gap: 12px; }
+        .song-actions { display: flex; justify-content: flex-end; gap: 12px; position: relative; z-index: 100; }
+        .song-actions-menu { position: relative; z-index: 101; }
         .more-btn { background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 20px; transition: color 0.2s; }
         .more-btn:hover { color: white; }
         
@@ -654,6 +657,348 @@
         
         .queue-add-btn { background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 20px; transition: color 0.2s; }
         .queue-add-btn:hover { color: white; }
+
+        /* Song Actions Menu Dropdown */
+        .song-menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 20px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
+            border-radius: 4px;
+        }
+
+        .song-menu-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .song-menu-dropdown {
+            position: absolute;
+            top: auto;
+            bottom: 100%;
+            right: -16px;
+            background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 50%, #1f1f1f 100%);
+            border: 1px solid rgba(229, 9, 20, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 200px;
+            z-index: 2000;
+            overflow: hidden;
+            margin-bottom: 12px;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .song-menu-dropdown:hover {
+            border-color: rgba(229, 9, 20, 0.4);
+            box-shadow: 0 12px 40px rgba(229, 9, 20, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .song-menu-dropdown {
+                position: absolute !important;
+                top: auto !important;
+                bottom: 100% !important;
+                right: -16px !important;
+                left: auto !important;
+                width: auto !important;
+                max-width: 220px !important;
+                height: auto !important;
+                border-radius: 12px !important;
+                margin: 0 0 12px 0 !important;
+                z-index: 9999 !important;
+                background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 50%, #1f1f1f 100%);
+                border: 1px solid rgba(229, 9, 20, 0.25);
+                box-shadow: 0 12px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                transform: none !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                display: none !important;
+                opacity: 1 !important;
+                padding: 0 !important;
+                min-width: 200px !important;
+                backdrop-filter: blur(10px);
+            }
+            .song-menu-dropdown.active-slide {
+                display: block !important;
+                opacity: 1 !important;
+                animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        }
+                    <script>
+                    // Dropdown mobile: selalu muncul di atas playbar, dan visible
+                    function adjustDropdownPosition(e) {
+                        var allMenus = document.querySelectorAll('.song-menu-dropdown');
+                        allMenus.forEach(function(menu) {
+                            menu.classList.remove('higher-mobile');
+                            if(window.innerWidth <= 600 && menu.style.display !== 'none') {
+                                menu.style.display = 'block';
+                                menu.style.opacity = '1';
+                            }
+                        });
+                        if(window.innerWidth <= 600 && e && e.target && e.target.closest && e.target.closest('.song-menu-btn')) {
+                            var btn = e.target.closest('.song-menu-btn');
+                            var rect = btn.getBoundingClientRect();
+                            if(rect.bottom > window.innerHeight - 220) {
+                                setTimeout(function() {
+                                    var openMenu = btn.parentElement.querySelector('.song-menu-dropdown');
+                                    if(openMenu && openMenu.style.display !== 'none') {
+                                        openMenu.classList.add('higher-mobile');
+                                    }
+                                }, 50);
+                            }
+                        }
+                    }
+                    document.addEventListener('click', adjustDropdownPosition, true);
+                    window.addEventListener('resize', function(){
+                        var allMenus = document.querySelectorAll('.song-menu-dropdown');
+                        allMenus.forEach(function(menu) {
+                            menu.classList.remove('higher-mobile');
+                            if(window.innerWidth <= 600 && menu.style.display !== 'none') {
+                                menu.style.display = 'block';
+                                menu.style.opacity = '1';
+                            }
+                        });
+                    });
+                    </script>
+
+        .menu-item {
+            width: 100%;
+            padding: 14px 18px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid rgba(229, 9, 20, 0.08);
+            position: relative;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(180deg, rgba(229, 9, 20, 0.8), rgba(229, 9, 20, 0));
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .menu-item:hover {
+            background: rgba(229, 9, 20, 0.08);
+            padding-left: 22px;
+        }
+
+        .menu-item:hover::before {
+            opacity: 1;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .song-menu-dropdown {
+            position: absolute;
+            top: auto;
+            bottom: 100%;
+            right: -16px;
+            background: #1f1f1f;
+            border: 1px solid rgba(229, 9, 20, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            transition: all 0.2s ease;
+            min-width: 200px;
+            z-index: 2000;
+            overflow: hidden;
+            margin-bottom: 8px;
+            display: none;
+        }
+
+        .dropdown-cover {
+            width: 100%;
+            height: 140px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .dropdown-cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media (max-width: 1024px) {
+            .dropdown-cover {
+                display: block !important;
+                width: 100% !important;
+                height: 140px !important;
+                overflow: hidden !important;
+            }
+            .dropdown-cover-img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+            }
+            .song-menu-dropdown {
+                position: absolute !important;
+                top: auto !important;
+                bottom: 100% !important;
+                right: -16px !important;
+                left: auto !important;
+                width: auto !important;
+                max-width: 200px !important;
+                height: auto !important;
+                border-radius: 8px !important;
+                margin: 0 0 8px 0 !important;
+                z-index: 9999 !important;
+                background: #1f1f1f;
+                border: 1px solid rgba(229, 9, 20, 0.15);
+                box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+                transform: none !important;
+                transition: all 0.2s ease;
+                display: none !important;
+                opacity: 1 !important;
+                padding: 0 !important;
+                min-width: 180px !important;
+            }
+            .song-menu-dropdown.active-slide {
+                display: block !important;
+                opacity: 1 !important;
+            }
+            .dropdown-cover {
+                display: block !important;
+            }
+        }
+
+        .menu-item {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(229, 9, 20, 0.08);
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(229, 9, 20, 0.1);
+        }
+
+        .menu-emoji {
+            display: inline-block;
+            font-size: 18px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .menu-item i {
+            font-size: 20px;
+            flex-shrink: 0;
+            color: var(--text-gray);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+            transition: color 0.2s ease;
+        }
+
+        .menu-item:hover i {
+            color: var(--primary-red);
+        }
+
+        .menu-item span {
+            flex: 1;
+        }
+
+            .icon-fallback {
+                display: inline-block;
+                min-width: 20px;
+                min-height: 20px;
+                text-align: center;
+                font-size: 18px;
+                line-height: 1.2;
+                vertical-align: middle;
+                color: var(--text-gray);
+            }
+
+        @media (max-width: 768px) {
+            .song-menu-dropdown {
+                min-width: 180px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-60%);
+                bottom: 110%;
+                margin-bottom: 12px;
+            }
+
+            .menu-emoji {
+                font-size: 20px;
+                width: 26px;
+                height: 26px;
+            }
+
+            .menu-item {
+                padding: 12px 14px;
+                font-size: 14px;
+                gap: 12px;
+                min-height: 44px;
+            }
+
+            .menu-item i {
+                font-size: 22px;
+                width: 26px;
+                height: 26px;
+            }
+
+            .menu-item span {
+                flex: 1;
+            }
+        }
+
+        .menu-item span {
+            flex: 1;
+        }
 
         /* Search */
         .search-container { max-width: 500px; margin: 0 auto 40px auto; position: relative; }
@@ -3515,6 +3860,53 @@ input:checked + .toggle-slider:before {
 .artist-band-song-play:hover {
     color: #ff4d5a;
 }
+
+/* Toast Notification */
+.toast {
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.95), rgba(229, 9, 20, 0.85));
+    color: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(229, 9, 20, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    animation: slideInToast 0.3s ease-out forwards;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideInToast {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutToast {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.toast.exit {
+    animation: slideOutToast 0.3s ease-out forwards;
+}
+
+.toast-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
     </style>
 </head>
 <body>
@@ -3693,7 +4085,7 @@ input:checked + .toggle-slider:before {
             <i class="ph ph-arrow-left"></i>
         </button>
         <div class="playlist-cover-wrap">
-            <img src="https://picsum.photos/seed/playlist/300/300" class="playlist-cover-big" id="playlist-cover-view">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=300&q=80" class="playlist-cover-big playlist-cover-filtered" id="playlist-cover-view" onerror="this.src='https://picsum.photos/seed/vidje/300/300'">
             <button class="edit-cover-btn" onclick="document.getElementById('playlist-cover-input').click()">
                 <i class="ph-fill ph-camera"></i>
             </button>
@@ -4739,6 +5131,9 @@ input:checked + .toggle-slider:before {
             </div>
         </div>
 
+        <!-- Toast Notification -->
+        <div id="toast-container" style="position: fixed; bottom: 110px; right: 20px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; max-width: 320px;"></div>
+
         <!-- Player Bar -->
         <footer class="player-bar">
             <div class="player-left">
@@ -5009,7 +5404,7 @@ input:checked + .toggle-slider:before {
     <div id="add-song-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">Tambahkan ke Playlist</div>
+                <div class="modal-title" data-i18n="add-to-playlist">Add to Playlist</div>
                 <button class="close-modal-btn" onclick="window.closeModal('add-song-modal')"><i class="ph ph-x"></i></button>
             </div>
             <div class="playlist-select-list" id="add-song-playlist-list"></div>
@@ -7030,6 +7425,8 @@ function renderFriendPlaylists(playlists) {
                 'searching': 'Mencari...',
                 'error-search': 'Error saat mencari',
                 'empty-queue': 'Antrian kosong',
+                'song-added-to-queue': 'Lagu ditambahkan ke antrian',
+                'queue': 'Antrian',
                 'no-public-playlists': 'Tidak ada playlist publik. Atur privasi di sidebar',
                 'waiting-friends': 'Menunggu teman bergabung...',
                 'waiting': 'Menunggu...',
@@ -7149,6 +7546,8 @@ function renderFriendPlaylists(playlists) {
                 'searching': 'Searching...',
                 'error-search': 'Error searching',
                 'empty-queue': 'Queue is empty',
+                'song-added-to-queue': 'Song added to queue',
+                'queue': 'Queue',
                 'no-public-playlists': 'No public playlists. Adjust privacy in sidebar',
                 'waiting-friends': 'Waiting for friends to join...',
                 'waiting': 'Waiting...',
@@ -7560,7 +7959,7 @@ function renderFriendPlaylists(playlists) {
                     <div class="song-duration">${s.duration}</div>
                     <div class="song-actions">
                         <button class="list-like-btn ${likedSongs.includes(s.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${s.id})" id="list-like-${s.id}">
-                            <i class="ph ${likedSongs.includes(s.id) ? 'ph-fill' : 'ph'} ph-heart"></i>
+                            <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
                         </button>
                         <button class="more-btn" onclick="event.stopPropagation(); window.openAddSongModal(${s.id})">
                             <i class="ph ph-plus"></i>
@@ -7612,7 +8011,7 @@ function renderFriendPlaylists(playlists) {
                     // History Mode
                     actionButtonsHTML = `
                         <button class="list-like-btn ${likedSongs.includes(s.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${s.id})" id="list-like-${s.id}">
-                            <i class="ph ${likedSongs.includes(s.id) ? 'ph-fill' : 'ph'} ph-heart"></i>
+                            <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
                         </button>
                         <button class="more-btn" onclick="event.stopPropagation(); window.openAddSongModal(${s.id})">
                             <i class="ph ph-plus"></i>
@@ -7621,20 +8020,36 @@ function renderFriendPlaylists(playlists) {
                 } else {
                     // Normal Mode (Includes Queue & Share)
                     actionButtonsHTML = `
-                        <button class="list-like-btn ${likedSongs.includes(s.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${s.id})" id="list-like-${s.id}">
-                            <i class="ph ${likedSongs.includes(s.id) ? 'ph-fill' : 'ph'} ph-heart"></i>
-                        </button>
-                        <!-- FITUR BAGIKAN LAGU -->
-                        <button class="share-btn" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id})">
-                            <i class="ph ph-share-network"></i>
-                        </button>
-                        <!-- TOMBOL ANTRIAN (QUEUE) -->
-                        <button class="queue-add-btn" onclick="event.stopPropagation(); window.addToQueue(${s.id})" title="Masukkan Antrian">
-                            <i class="ph ph-list-plus"></i>
-                        </button>
-                        <button class="more-btn" onclick="event.stopPropagation(); window.openAddSongModal(${s.id})">
-                            <i class="ph ph-plus"></i>
-                        </button>
+                        <div class="song-actions-menu" style="position: relative;">
+                            <button class="song-menu-btn" onclick="event.stopPropagation(); window.toggleSongMenu(${s.id})">
+                                <i class="ph ph-dots-three-vertical"></i>
+                            </button>
+                            <div class="song-menu-dropdown" id="menu-${s.id}" style="display: none;">
+                                <div class="dropdown-cover">
+                                    <img src="${s.cover && s.cover.trim() ? s.cover : 'https://picsum.photos/seed/vidje/100/100'}" alt="cover" class="dropdown-cover-img">
+                                </div>
+                                <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
+                                    <span class="menu-emoji">🩶</span>
+                                    <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
+                                    <span data-i18n="liked-songs">Liked Songs</span>
+                                </button>
+                                <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
+                                    <span class="menu-emoji">➤</span>
+                                    <i class="ph ph-list-plus"></i>
+                                    <span data-i18n="queue">Queue</span>
+                                </button>
+                                <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
+                                    <span class="menu-emoji">➕</span>
+                                    <i class="ph ph-plus"></i>
+                                    <span data-i18n="add-to-playlist">Add to Playlist </span>
+                                </button>
+                                <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
+                                    <span class="menu-emoji">☷</span>
+                                    <i class="ph ph-share-network"></i>
+                                    <span data-i18n="share">Share</span>
+                                </button>
+                            </div>
+                        </div>
                     `;
                 }
 
@@ -7649,10 +8064,12 @@ function renderFriendPlaylists(playlists) {
                         </div>
                     </div>
                     <div class="song-info">
-                        <img src="${s.cover}" alt="art">
+                        <img src="${s.cover && s.cover.trim() ? s.cover : 'assets/vidje-icon.jpg'}" alt="art">
                         <div>
                             <!-- CLICK TITLE TO OPEN OVERLAY -->
-                            <div class="song-title-text" onclick="event.stopPropagation(); window.playSpecificSong(${s.id}); window.openOverlayPlayer();">${s.title}</div>
+                            <div class="song-title-text" onclick="event.stopPropagation(); window.playSpecificSong(${s.id}); window.openOverlayPlayer();">
+                                ${s.title}
+                            </div>
                             <div class="song-artist">${s.artist}</div>
                         </div>
                     </div>
@@ -7674,7 +8091,7 @@ function renderFriendPlaylists(playlists) {
     }
 
     container.innerHTML = data.map((s, i) => {
-        return `
+                const rowHTML = `
         <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id})">
             <div class="song-index">
                 <span class="index-num">${i + 1}</span>
@@ -7685,31 +8102,46 @@ function renderFriendPlaylists(playlists) {
             <div class="song-info">
                 <img src="${s.cover}" alt="art">
                 <div>
-                    <div class="song-title-text">${s.title}</div>
+                    <div class="song-title-text">
+                        ${s.title}
+                    </div>
                     <div class="song-artist">${s.artist}</div>
                 </div>
             </div>
             <div class="song-album">${s.album}</div>
             <div class="song-duration">${s.duration}</div>
             <div class="song-actions">
-                <button class="list-like-btn ${likedSongs.includes(s.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${s.id})" id="list-like-${s.id}">
-                    <i class="ph ${likedSongs.includes(s.id) ? 'ph-fill' : 'ph'} ph-heart"></i>
-                </button>
-                <!-- TOMBOL BAGIKAN -->
-                <button class="share-btn" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id})">
-                    <i class="ph ph-share-network"></i>
-                </button>
-                <!-- TOMBOL ANTRIAN (QUEUE) -->
-                <button class="queue-add-btn" onclick="event.stopPropagation(); window.addToQueue(${s.id})" title="Masukkan Antrian">
-                    <i class="ph ph-list-plus"></i>
-                </button>
-                <button class="more-btn" onclick="event.stopPropagation(); window.openAddSongModal(${s.id})">
-                    <i class="ph ph-plus"></i>
-                </button>
+                <div class="song-actions-menu" style="position: relative;">
+                    <button class="song-menu-btn" onclick="event.stopPropagation(); window.toggleSongMenu(${s.id})">
+                        <i class="ph ph-dots-three-vertical"></i>
+                    </button>
+                    <div class="song-menu-dropdown" id="menu-${s.id}" style="display: none;">
+                        <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
+                            <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
+                            <span data-i18n="liked-songs">Liked Songs</span>
+                        </button>
+                        <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-list-plus"></i>
+                            <span data-i18n="queue">Queue</span>
+                        </button>
+                        <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-plus"></i>
+                            <span data-i18n="add-to-playlist">Add to Playlist</span>
+                        </button>
+                        <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-share-network"></i>
+                            <span data-i18n="share">Share</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-    `}).join('');
-}
+                </div>
+            `;
+                return rowHTML;
+            }).join('');
+            // apply fallback icons after rendering
+            window.applyIconFallback(container);
+        }
 
         // --- RENDERERS ---
 
@@ -8390,10 +8822,13 @@ function renderProfilePublicPlaylists() {
 
         function toggleLike(id) {
             const index = likedSongs.indexOf(id);
+            let isLiked = false;
+            
             if(index > -1) {
                 likedSongs.splice(index, 1);
             } else {
                 likedSongs.push(id);
+                isLiked = true;
             }
             localStorage.setItem('likedSongs', JSON.stringify(likedSongs));
             
@@ -8402,6 +8837,13 @@ function renderProfilePublicPlaylists() {
                 updatePlayerLikeIcon(id);
             }
             updateListLikeIcon(id);
+            updateMenuLikeIcon(id);
+            updateSongTitleIndicator(id);
+            
+            // Show toast notification
+            if(isLiked) {
+                window.showToast('Lagu disukai', 'info');
+            }
         }
 
         function updatePlayerLikeIcon(id) {
@@ -8447,9 +8889,116 @@ function renderProfilePublicPlaylists() {
             }
         }
 
+        function updateMenuLikeIcon(id) {
+            // Update menu-like button in dropdown
+            const menuBtn = document.getElementById(`menu-like-${id}`);
+            if(menuBtn) {
+                const icon = menuBtn.querySelector('i');
+                if(likedSongs.includes(id)) {
+                    if(icon) icon.className = 'ph-fill ph-heart';
+                } else {
+                    if(icon) icon.className = 'ph ph-heart';
+                }
+            }
+        }
+
+        function updateSongTitleIndicator(id) {
+            const row = document.getElementById(`row-${id}`);
+            if(!row) return;
+            const titleEl = row.querySelector('.song-title-text');
+            if(!titleEl) return;
+            // remove any existing heart icons next to title
+            titleEl.querySelectorAll('i.ph-heart, i.ph-fill.ph-heart, i.ph-heart-fill').forEach(n => n.remove());
+            if(likedSongs.includes(id)) {
+                const heart = document.createElement('i');
+                heart.className = 'ph-fill ph-heart';
+                heart.style.fontSize = '14px';
+                heart.style.color = 'var(--primary-red)';
+                heart.style.marginLeft = '6px';
+                heart.style.verticalAlign = 'middle';
+                titleEl.appendChild(heart);
+            }
+        }
+
+        // Fallback renderer for icons inserted dynamically (helps mobile where icons may not render)
+        window.applyIconFallback = function(root = document) {
+            const icons = (root.querySelectorAll ? root.querySelectorAll('i') : []);
+            icons.forEach(i => {
+                if(i.dataset.fallbackApplied) return;
+                const cls = (i.className || '').toLowerCase();
+                let ch = '';
+                if(cls.includes('ph-dots-three-vertical')) ch = '⋮';
+                else if(cls.includes('ph-list-plus')) ch = '➕';
+                else if(cls.includes('ph-plus')) ch = '＋';
+                else if(cls.includes('ph-share-network')) ch = '🔗';
+                else if(cls.includes('ph-heart')) ch = (cls.includes('ph-fill')) ? '❤' : '♡';
+                else ch = '•';
+
+                // Only apply fallback if icon is not visible, empty, atau sudah tidak ada fallback
+                const style = window.getComputedStyle(i);
+                const alreadyHasFallback = i.innerHTML.includes('icon-fallback');
+                const iconVisible = style.display !== 'none' && style.visibility !== 'hidden' && style.width !== '0px' && style.height !== '0px';
+                // Hanya tambahkan fallback jika icon tidak tampil dan belum ada fallback
+                if(!iconVisible && !alreadyHasFallback) {
+                    i.innerHTML = `<span class="icon-fallback">${ch}</span>`;
+                    i.style.lineHeight = '1';
+                }
+                i.dataset.fallbackApplied = '1';
+            });
+        };
+
         window.toggleLike = toggleLike;
         window.addToLiked = addToLiked;
         window.toggleCurrentSongLike = toggleCurrentSongLike;
+
+        // Toggle Song Action Menu
+        window.toggleSongMenu = function(songId) {
+            const menu = document.getElementById(`menu-${songId}`);
+            if(!menu) return;
+            // Close all other menus
+            document.querySelectorAll('.song-menu-dropdown').forEach(m => {
+                if(m !== menu) {
+                    m.style.display = 'none';
+                    m.classList.remove('active-slide');
+                }
+            });
+            // Toggle current menu
+            if(menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'block';
+                menu.classList.add('active-slide');
+            } else {
+                menu.style.display = 'none';
+                menu.classList.remove('active-slide');
+            }
+        };
+
+        // Close dropdown saat menu item diklik
+        document.addEventListener('click', function(e) {
+            var menuItem = e.target.closest('.menu-item');
+            if(menuItem) {
+                var dropdown = menuItem.closest('.song-menu-dropdown');
+                if(dropdown) {
+                    dropdown.style.display = 'none';
+                    dropdown.classList.remove('active-slide');
+                }
+            }
+            // Close dropdown saat klik di area lain (bukan menu atau button)
+            else if(!e.target.closest('.song-actions-menu')) {
+                document.querySelectorAll('.song-menu-dropdown').forEach(menu => {
+                    menu.style.display = 'none';
+                    menu.classList.remove('active-slide');
+                });
+            }
+        });
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(event) {
+            if(!event.target.closest('.song-actions-menu')) {
+                document.querySelectorAll('.song-menu-dropdown').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
 
         // --- QUEUE SYSTEM LOGIC ---
 
@@ -8459,13 +9008,37 @@ function renderProfilePublicPlaylists() {
             renderQueue();
         }
 
+        // Show toast notification
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            let icon = '<i class="ph ph-check-circle" style="font-size: 20px;"></i>';
+            if(type === 'queue') {
+                icon = '<i class="ph ph-plus-circle" style="font-size: 20px;"></i>';
+            } else if(type === 'error') {
+                icon = '<i class="ph ph-warning-circle" style="font-size: 20px;"></i>';
+            }
+            
+            toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('exit');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
         function addToQueue(songId) {
             const song = songs.find(s => s.id === songId);
             if(song) {
                 songQueue.push(song);
                 renderQueue();
-                // Small toast or visual feedback could go here
-                // alert(`"${song.title}" ditambahkan ke antrian`);
+                // Show toast notification
+                window.showToast(window.t('song-added-to-queue'), 'queue');
             }
         }
 
@@ -8576,6 +9149,7 @@ function renderProfilePublicPlaylists() {
 
         window.toggleQueueOverlay = toggleQueueOverlay;
         window.addToQueue = addToQueue;
+        window.showToast = showToast;
         window.removeFromQueue = removeFromQueue;
         window.playFromQueue = playFromQueue;
 
@@ -8671,7 +9245,7 @@ function openArtistBandOverlay(artistData, songsList) {
             <div class="artist-band-song-duration">${song.duration || '0:00'}</div>
             <div style="display: flex; gap: 8px; justify-content: flex-end; padding-right: 8px; align-items: center;">
                 <button class="overlay-like-btn ${likedSongs && likedSongs.includes(song.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${song.id})" id="overlay-like-${song.id}" style="background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 18px; transition: 0.2s;">
-                    <i class="ph ${likedSongs && likedSongs.includes(song.id) ? 'ph-fill' : 'ph'} ph-heart"></i>
+                    <i class="${likedSongs && likedSongs.includes(song.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
                 </button>
                 <button onclick="event.stopPropagation(); window.openShareModal('song', ${song.id})" style="background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 18px; transition: 0.2s;">
                     <i class="ph ph-share-network"></i>
@@ -9596,32 +10170,6 @@ function generateSessionCode() {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
-}
-// Tambahkan fungsi ini di bagian atas script
-function showToast(message, type = 'info') {
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        document.body.appendChild(container);
-    }
-
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    let icon = 'ph-info';
-    if(type === 'success') icon = 'ph-check-circle';
-    if(type === 'error') icon = 'ph-warning-circle';
-
-    toast.innerHTML = `<i class="ph-fill ${icon}" style="font-size:20px;"></i> ${message}`;
-    
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(20px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
 }
 
 // ===== GLOBAL VARIABLES FOR IMPORT =====
