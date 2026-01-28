@@ -10960,7 +10960,85 @@ function cleanSongTitle(filename) {
         .join(' ');
 }
 
+function attachSongMenuListeners(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Remove old listeners (cleanup)
+    const oldListeners = container.__songMenuListeners;
+    if (oldListeners) {
+        oldListeners.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+    }
+    
+    const listeners = [];
+    
+    // Menu toggle buttons
+    container.querySelectorAll('.song-menu-btn').forEach(btn => {
+        const handler = function(e) {
+            e.stopPropagation();
+            const songId = this.dataset.songId;
+            window.toggleSongMenu(songId);
+        };
+        btn.addEventListener('click', handler);
+        listeners.push({ element: btn, event: 'click', handler });
+    });
+    
+    // Like buttons
+    container.querySelectorAll('.menu-like-item').forEach(btn => {
+        const handler = function(e) {
+            e.stopPropagation();
+            const songId = this.dataset.songId;
+            window.toggleLike(songId);
+            window.toggleSongMenu(songId);
+        };
+        btn.addEventListener('click', handler);
+        listeners.push({ element: btn, event: 'click', handler });
+    });
+    
+    // Queue buttons
+    container.querySelectorAll('.menu-queue-item').forEach(btn => {
+        const handler = function(e) {
+            e.stopPropagation();
+            const songId = this.dataset.songId;
+            window.addToQueue(songId);
+            window.toggleSongMenu(songId);
+        };
+        btn.addEventListener('click', handler);
+        listeners.push({ element: btn, event: 'click', handler });
+    });
+    
+    // Add to playlist buttons
+    container.querySelectorAll('.menu-add-item').forEach(btn => {
+        const handler = function(e) {
+            e.stopPropagation();
+            const songId = this.dataset.songId;
+            window.openAddSongModal(songId);
+            window.toggleSongMenu(songId);
+        };
+        btn.addEventListener('click', handler);
+        listeners.push({ element: btn, event: 'click', handler });
+    });
+    
+    // Share buttons
+    container.querySelectorAll('.menu-share-item').forEach(btn => {
+        const handler = function(e) {
+            e.stopPropagation();
+            const songId = this.dataset.songId;
+            window.openShareModal('song', songId);
+            window.toggleSongMenu(songId);
+        };
+        btn.addEventListener('click', handler);
+        listeners.push({ element: btn, event: 'click', handler });
+    });
+    
+    // Store listeners untuk cleanup nanti
+    container.__songMenuListeners = listeners;
+}
+
   
     </script>
 </body>
 </html> 
+
