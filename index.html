@@ -839,17 +839,12 @@
         }
 
         .dropdown-cover {
-            width: 100%;
-            height: 140px;
-            overflow: hidden;
-            display: none;
-        }
+    display: none !important;
+}
 
-        .dropdown-cover-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+.dropdown-cover-img {
+    display: none !important;
+}
 
         @media (max-width: 1024px) {
             .dropdown-cover {
@@ -7996,94 +7991,7 @@ function renderFriendPlaylists(playlists) {
     container.innerHTML = html;
 }
 
-        // --- HELPER: RENDER CUSTOM SONG LIST ---
-        function renderSongListCustom(data, containerId, isHistoryMode) {
-            const container = document.getElementById(containerId);
-            if(!data || data.length === 0) {
-                if(containerId) container.innerHTML = '<div style="padding:20px; color:#666;">' + window.t('no-songs') + '</div>';
-                return;
-            }
-
-            container.innerHTML = data.map((s, i) => {
-                let actionButtonsHTML = '';
-
-                if (isHistoryMode) {
-                    // History Mode
-                    actionButtonsHTML = `
-                        <button class="list-like-btn ${likedSongs.includes(s.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${s.id})" id="list-like-${s.id}">
-                            <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
-                        </button>
-                        <button class="more-btn" onclick="event.stopPropagation(); window.openAddSongModal(${s.id})">
-                            <i class="ph ph-plus"></i>
-                        </button>
-                    `;
-                } else {
-                    // Normal Mode (Includes Queue & Share)
-                    actionButtonsHTML = `
-                        <div class="song-actions-menu" style="position: relative;">
-                            <button class="song-menu-btn" onclick="event.stopPropagation(); window.toggleSongMenu(${s.id})">
-                                <i class="ph ph-dots-three-vertical"></i>
-                            </button>
-                            <div class="song-menu-dropdown" id="menu-${s.id}" style="display: none;">
-                                <div class="dropdown-cover">
-                                    <img src="${s.cover && s.cover.trim() ? s.cover : 'https://picsum.photos/seed/vidje/100/100'}" alt="cover" class="dropdown-cover-img">
-                                </div>
-                                <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
-                                    <span class="menu-emoji">🩶</span>
-                                    <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
-                                    <span data-i18n="liked-songs">Liked Songs</span>
-                                </button>
-                                <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
-                                    <span class="menu-emoji">➤</span>
-                                    <i class="ph ph-list-plus"></i>
-                                    <span data-i18n="queue">Queue</span>
-                                </button>
-                                <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
-                                    <span class="menu-emoji">➕</span>
-                                    <i class="ph ph-plus"></i>
-                                    <span data-i18n="add-to-playlist">Add to Playlist </span>
-                                </button>
-                                <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
-                                    <span class="menu-emoji">☷</span>
-                                    <i class="ph ph-share-network"></i>
-                                    <span data-i18n="share">Share</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                return `
-                <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id})">
-                    <div class="song-index">
-                        <span class="index-num">${i + 1}</span>
-                        <!-- ANIMATED VISUALIZER -->
-                        <div class="playing-icon-container" style="display:none;">
-                             <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-
-                        </div>
-                    </div>
-                    <div class="song-info">
-                        <img src="${s.cover && s.cover.trim() ? s.cover : 'assets/vidje-icon.jpg'}" alt="art">
-                        <div>
-                            <!-- CLICK TITLE TO OPEN OVERLAY -->
-                            <div class="song-title-text" onclick="event.stopPropagation(); window.playSpecificSong(${s.id}); window.openOverlayPlayer();">
-                                ${s.title}
-                            </div>
-                            <div class="song-artist">${s.artist}</div>
-                        </div>
-                    </div>
-                    <div class="song-album">${s.album}</div>
-                    <div class="song-duration">${s.duration}</div>
-                    <div class="song-actions">
-                        ${actionButtonsHTML}
-                    </div>
-                </div>
-            `}).join('');
-        }
-
-        
-        function renderSongList(data, containerId) {
+       function renderSongListCustom(data, containerId, isHistoryMode) {
     const container = document.getElementById(containerId);
     if(!data || data.length === 0) {
         if(containerId) container.innerHTML = '<div style="padding:20px; color:#666;">' + window.t('no-songs') + '</div>';
@@ -8091,12 +7999,90 @@ function renderFriendPlaylists(playlists) {
     }
 
     container.innerHTML = data.map((s, i) => {
-                const rowHTML = `
+        let actionButtonsHTML = '';
+
+        if (isHistoryMode) {
+            // History Mode - NO DROPDOWN
+            actionButtonsHTML = `
+                <button class="list-like-btn ${likedSongs.includes(s.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${s.id})" id="list-like-${s.id}">
+                    <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
+                </button>
+                <button class="more-btn" onclick="event.stopPropagation(); window.openAddSongModal(${s.id})">
+                    <i class="ph ph-plus"></i>
+                </button>
+            `;
+        } else {
+            // ✅ PERBAIKAN: HANYA 1 DROPDOWN MENU
+            actionButtonsHTML = `
+                <div class="song-actions-menu" style="position: relative;">
+                    <button class="song-menu-btn" onclick="event.stopPropagation(); window.toggleSongMenu(${s.id})">
+                        <i class="ph ph-dots-three-vertical"></i>
+                    </button>
+                    <div class="song-menu-dropdown" id="menu-${s.id}" style="display: none;">
+                    
+                        <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
+                            <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
+                            <span data-i18n="liked-songs">Liked Songs</span>
+                        </button>
+                        <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-list-plus"></i>
+                            <span data-i18n="queue">Queue</span>
+                        </button>
+                        <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-plus"></i>
+                            <span data-i18n="add-to-playlist">Add to Playlist</span>
+                        </button>
+                        <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-share-network"></i>
+                            <span data-i18n="share">Share</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
         <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id})">
             <div class="song-index">
                 <span class="index-num">${i + 1}</span>
                 <div class="playing-icon-container" style="display:none;">
-                     <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+            </div>
+            <div class="song-info">
+                <img src="${s.cover && s.cover.trim() ? s.cover : 'assets/vidje-icon.jpg'}" alt="art">
+                <div>
+                    <div class="song-title-text" onclick="event.stopPropagation(); window.playSpecificSong(${s.id}); window.openOverlayPlayer();">
+                        ${s.title}
+                    </div>
+                    <div class="song-artist">${s.artist}</div>
+                </div>
+            </div>
+            <div class="song-album">${s.album}</div>
+            <div class="song-duration">${s.duration}</div>
+            <div class="song-actions">
+                ${actionButtonsHTML}
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+        
+       function renderSongList(data, containerId) {
+    const container = document.getElementById(containerId);
+    if(!data || data.length === 0) {
+        if(containerId) container.innerHTML = '<div style="padding:20px; color:#666;">' + window.t('no-songs') + '</div>';
+        return;
+    }
+
+    container.innerHTML = data.map((s, i) => {
+        return `
+        <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id})">
+            <div class="song-index">
+                <span class="index-num">${i + 1}</span>
+                <div class="playing-icon-container" style="display:none;">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
                 </div>
             </div>
             <div class="song-info">
@@ -8135,13 +8121,10 @@ function renderFriendPlaylists(playlists) {
                     </div>
                 </div>
             </div>
-                </div>
-            `;
-                return rowHTML;
-            }).join('');
-            // apply fallback icons after rendering
-            window.applyIconFallback(container);
-        }
+        </div>
+        `;
+    }).join('');
+}
 
         // --- RENDERERS ---
 
