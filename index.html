@@ -8541,7 +8541,7 @@ function renderFriendPlaylists(playlists) {
         // ✅ CLEAR + DELAY: Ensure clean render
         const songsContainer = document.getElementById('playlist-songs-container');
         songsContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Loading...</div>';
-        
+      
         setTimeout(() => {
             renderSongList(validSongDetails, 'playlist-songs-container');
             console.log('✅ Playlist rendered successfully');
@@ -10643,13 +10643,44 @@ async function loadImportedSongs() {
         // ✅ TAMBAHKAN: Load imported songs saat user login
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        console.log('🔄 User logged in, loading imported songs...');
-        await loadImportedSongs();
+        console.log('👤 User logged in:', user.email);
         
-        // ✅ Setup real-time listener untuk lagu publik baru
-        setupPublicSongsListener();
+        // ✅ DETACH old listener first
+        if (activeListeners.user) {
+            activeListeners.user();
+            activeListeners.user = null;
+        }
         
-        console.log('✅ Total songs available:', songs.length);
+        const userRef = ref(db, 'users/' + user.uid);
+        
+        // ✅ Store the unsubscribe function
+        activeListeners.user = onValue(userRef, async (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                currentUserData = data;
+                likedSongs = data.likedSongs || [];
+                
+                // Render UI
+                renderSidebarPlaylists();
+                renderTrending();
+                await loadPublicPlaylists();
+                await loadImportedSongs();
+                
+                console.log('✅ User data updated');
+            }
+        }, (error) => {
+            console.error('❌ User data listener error:', error);
+            if (error.code === 'PERMISSION_DENIED') {
+                showToast('⚠️ Database quota exceeded. Please try again later.', 'error');
+                detachAllListeners(); // Stop all listeners to save quota
+            }
+        });
+        
+        // ... rest of code
+    } else {
+        console.log('👋 User logged out');
+        detachAllListeners(); // ✅ Cleanup on logout
+        currentUserData = null;
     }
 });
 
@@ -11238,7 +11269,203 @@ window.debugPlaylist = function(playlistId) {
     console.log('======================');
 };
 
+// Global listener tracker
+const activeListeners = {
+    user: null,
+    playlists: {},
+    songs: {}
+};
 
+// Cleanup function
+function detachAllListeners() {
+    console.log('🧹 Detaching all Firebase listeners...');
+    
+    // Detach user listener
+    if (activeListeners.user) {
+        activeListeners.user();
+        activeListeners.user = null;
+    }
+    
+    // Detach playlist listeners
+    Object.keys(activeListeners.playlists).forEach(key => {
+        if (activeListeners.playlists[key]) {
+            activeListeners.playlists[key]();
+            delete activeListeners.playlists[key];
+        }
+    });
+    
+    // Detach song listeners
+    Object.keys(activeListeners.songs).forEach(key => {
+        if (activeListeners.songs[key]) {
+            activeListeners.songs[key]();
+            delete activeListeners.songs[key];
+        }
+    });
+    
+    console.log('✅ All listeners detached');
+}
+
+// Call on logout
+function logout() {
+    detachAllListeners();
+    signOut(auth);
+    // ... rest of logout code
+}
+
+// Call on page unload
+window.addEventListener('beforeunload', () => {
+    detachAllListeners();
+});
+
+
+
+// ✅ GOOD: Load only user's own + on-demand
+async function loadUserImportedSongs() {
+    if (!auth.currentUser) return;
+    
+    const userId = auth.currentUser.uid;
+    
+    try {
+        // Load only user's own imported songs
+        const userSongsSnap = await get(ref(db, `importedSongs/${userId}`));
+        if (userSongsSnap.exists()) {
+            const userSongs = Object.values(userSongsSnap.val());
+            userSongs.forEach(song => {
+                if (!songs.find(s => s.id === song.id)) {
+                    songs.push(song);
+                }
+            });
+            console.log('✅ Loaded user imported songs:', userSongs.length);
+        }
+    } catch (error) {
+        console.error('❌ Error loading user songs:', error);
+    }
+}
+
+// Load specific public song only when needed
+async function loadPublicImportedSong(songId) {
+    if (songs.find(s => s.id === songId)) {
+        return songs.find(s => s.id === songId); // Already loaded
+    }
+    
+    try {
+        const songSnap = await get(ref(db, `publicImportedSongs/${songId}`));
+        if (songSnap.exists()) {
+            const song = songSnap.val();
+            songs.push(song);
+            return song;
+        }
+    } catch (error) {
+        console.error('❌ Error loading public song:', error);
+    }
+    return null;
+}
+
+
+
+async function uploadProfilePicture(file) {
+    try {
+        const storage = getStorage();
+        const fileRef = storageRef(storage, `profilePictures/${auth.currentUser.uid}`);
+        
+        // Upload to Storage (separate quota)
+        await uploadBytes(fileRef, file);
+        
+        // Get URL
+        const url = await getDownloadURL(fileRef);
+        
+        // Save only URL to Database (tiny!)
+        await set(ref(db, `users/${auth.currentUser.uid}/profilePictureUrl`), url);
+        
+        console.log('✅ Profile picture uploaded:', url);
+        return url;
+    } catch (error) {
+        console.error('❌ Upload failed:', error);
+    }
+}
+
+// Cache data in localStorage to reduce Firebase reads
+const DataCache = {
+    set(key, data, ttl = 3600000) { // Default 1 hour
+        const item = {
+            data: data,
+            expiry: Date.now() + ttl
+        };
+        localStorage.setItem(key, JSON.stringify(item));
+    },
+    
+    get(key) {
+        const itemStr = localStorage.getItem(key);
+        if (!itemStr) return null;
+        
+        const item = JSON.parse(itemStr);
+        if (Date.now() > item.expiry) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        
+        return item.data;
+    },
+    
+    clear() {
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('vidje_cache_')) {
+                localStorage.removeItem(key);
+            }
+        });
+    }
+};
+
+
+// Global error handler
+function handleFirebaseError(error, context) {
+    console.error(`❌ Firebase error in ${context}:`, error);
+    
+    if (error.code === 'PERMISSION_DENIED' || 
+        error.message?.includes('quota') || 
+        error.message?.includes('exceeded')) {
+        
+        // Quota exceeded!
+        showToast('⚠️ Database quota exceeded. Some features may be limited.', 'error');
+        
+        // Stop all listeners to save quota
+        detachAllListeners();
+        
+        // Show modal to user
+        showQuotaExceededModal();
+        
+        return true; // Handled
+    }
+    
+    return false; // Not quota error
+}
+
+function showQuotaExceededModal() {
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                    background: rgba(0,0,0,0.8); display: flex; align-items: center; 
+                    justify-content: center; z-index: 9999;">
+            <div style="background: var(--bg-dark); padding: 30px; border-radius: 12px; 
+                        max-width: 400px; text-align: center;">
+                <h2>⚠️ Database Limit Reached</h2>
+                <p style="margin: 20px 0; color: #aaa;">
+                    Vidje has reached the free database quota for this month. 
+                    Some features may not work properly.
+                </p>
+                <p style="color: #888; font-size: 14px;">
+                    Quota resets on the 1st of next month.
+                </p>
+                <button onclick="this.closest('div').parentElement.remove()" 
+                        style="margin-top: 20px; padding: 10px 20px; background: var(--primary-color); 
+                               border: none; border-radius: 8px; color: white; cursor: pointer;">
+                    OK
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
   
     </script>
 </body>
