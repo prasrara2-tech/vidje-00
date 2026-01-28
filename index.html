@@ -867,6 +867,7 @@
             background: linear-gradient(180deg, #530000 0%, var(--bg-dark) 100%); 
             border-radius: 0;
             transition: background 0.5s ease;
+            position: relative;
         }
         .playlist-cover-big { 
             width: 232px; height: 232px; 
@@ -3248,6 +3249,27 @@ input:checked + .toggle-slider:before {
         left: 0 !important;
         right: 0 !important;
     }
+    
+    /* Hide desktop language section on mobile */
+    .desktop-language-section {
+        display: none !important;
+    }
+    
+    /* Show mobile language section on mobile */
+    .mobile-language-section {
+        display: block !important;
+    }
+}
+
+/* Show desktop language section on desktop */
+@media (min-width: 769px) {
+    .desktop-language-section {
+        display: block !important;
+    }
+    
+    .mobile-language-section {
+        display: none !important;
+    }
 }
 
 .artist-band-overlay-header {
@@ -3548,12 +3570,6 @@ input:checked + .toggle-slider:before {
                 <div class="logo" onclick="window.switchView('home')">
                     <img src="assets/vidje-icon.jpg" alt="VIDJE" class="app-logo">
                     <span style="font-family: 'Montserrat', sans-serif; font-weight:700; font-size:20px; margin-left:8px;">VIDJE</span>
-                </div>
-
-                <!-- Language Switcher -->
-                <div class="language-switcher">
-                    <button class="lang-btn active" data-lang="id" onclick="window.switchLanguage('id')">ID</button>
-                    <button class="lang-btn" data-lang="en" onclick="window.switchLanguage('en')">ENG</button>
                 </div>
                 
                 <ul class="nav-links">
@@ -4422,6 +4438,9 @@ input:checked + .toggle-slider:before {
                     <!-- One Direction -->
                     <div id="view-onedirection-album" class="view-section">
                         <div class="playlist-header-view" id="onedirection-header-bg">
+                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;">
+                                <i class="ph ph-arrow-left"></i>
+                            </button>
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/onedirection.jpg" class="playlist-cover-big" id="onedirection-cover-view">
                             </div>
@@ -4452,6 +4471,9 @@ input:checked + .toggle-slider:before {
                     <!-- Green Day -->
                     <div id="view-greenday-album" class="view-section">
                         <div class="playlist-header-view" id="greenday-header-bg">
+                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;">
+                                <i class="ph ph-arrow-left"></i>
+                            </button>
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/greenday.jpg" class="playlist-cover-big" id="greenday-cover-view">
                             </div>
@@ -4482,6 +4504,9 @@ input:checked + .toggle-slider:before {
                     <!-- Oasis -->
                     <div id="view-oasis-album" class="view-section">
                         <div class="playlist-header-view" id="oasis-header-bg">
+                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;">
+                                <i class="ph ph-arrow-left"></i>
+                            </button>
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/oasis.jpg" class="playlist-cover-big" id="oasis-cover-view">
                             </div>
@@ -4512,6 +4537,9 @@ input:checked + .toggle-slider:before {
                     <!-- Radiohead -->
                     <div id="view-radiohead-album" class="view-section">
                         <div class="playlist-header-view" id="radiohead-header-bg">
+                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;">
+                                <i class="ph ph-arrow-left"></i>
+                            </button>
                             <div class="playlist-cover-wrap">
                                 <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg" class="playlist-cover-big" id="radiohead-cover-view">
                             </div>
@@ -4604,6 +4632,23 @@ input:checked + .toggle-slider:before {
                             </button>
                         </div>
 
+                        <!-- Desktop Language Selector -->
+                        <div style="padding: 24px 32px; position: relative; display: none;" class="desktop-language-section" id="desktop-language-section">
+                            <button class="btn-pill" style="width: 100%; max-width: 280px; margin: 0 auto; display: flex; justify-content: space-between; padding: 12px 20px; background: linear-gradient(135deg, rgba(229, 9, 20, 0.15), rgba(229, 9, 20, 0.05)); border: 1px solid rgba(229, 9, 20, 0.3);" onclick="window.toggleLanguageDropdownDesktop()">
+                                <span data-i18n="setting-language" style="font-weight: 600;">Setting Language</span>
+                                <i class="ph ph-caret-down"></i>
+                            </button>
+                            <div class="language-dropdown" id="language-dropdown-desktop" style="display: none; position: absolute; top: 72px; left: 50%; transform: translateX(-50%); width: calc(100% - 64px); max-width: 280px; background: linear-gradient(135deg, #1a1a1a, #222222); border: 1px solid rgba(229, 9, 20, 0.4); border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);">
+                                <button onclick="window.switchLanguage('id'); document.getElementById('language-dropdown-desktop').style.display='none';" class="active" id="lang-id-btn-desktop" style="padding: 14px 20px; border: none; background: transparent; color: white; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; width: 100%; border-radius: 10px 10px 0 0;">
+                                    <i class="ph ph-check" style="margin-right: 12px; color: var(--primary-red); opacity: 1; transition: opacity 0.2s;"></i> <span>Bahasa Indonesia</span>
+                                </button>
+                                <div style="height: 1px; background: rgba(229, 9, 20, 0.2);"></div>
+                                <button onclick="window.switchLanguage('en'); document.getElementById('language-dropdown-desktop').style.display='none';" id="lang-en-btn-desktop" style="padding: 14px 20px; border: none; background: transparent; color: white; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; width: 100%; border-radius: 0 0 10px 10px;">
+                                    <i class="ph ph-check" style="margin-right: 12px; color: var(--primary-red); opacity: 0; transition: opacity 0.2s;"></i> <span>English</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Mobile Language Selector -->
                         <div style="padding: 16px 24px; position: relative; display: none;" id="mobile-language-section" class="mobile-language-section">
                             <button class="btn-pill" style="width: 100%; justify-content: space-between;" onclick="window.toggleLanguageDropdown()">
@@ -4612,10 +4657,10 @@ input:checked + .toggle-slider:before {
                             </button>
                             <div class="language-dropdown" id="language-dropdown">
                                 <button onclick="window.switchLanguage('id'); window.toggleLanguageDropdown();" class="active" id="lang-id-btn">
-                                    <i class="ph ph-check" style="margin-right: 8px;"></i> Bahasa Indonesia
+                                    <i class="ph ph-check" style="margin-right: 8px; opacity: 1; transition: opacity 0.2s;"></i> Bahasa Indonesia
                                 </button>
                                 <button onclick="window.switchLanguage('en'); window.toggleLanguageDropdown();" id="lang-en-btn">
-                                    <i class="ph ph-check" style="margin-right: 8px; opacity: 0;"></i> English
+                                    <i class="ph ph-check" style="margin-right: 8px; opacity: 0; transition: opacity 0.2s;"></i> English
                                 </button>
                             </div>
                         </div>
@@ -4634,16 +4679,14 @@ input:checked + .toggle-slider:before {
                                 <div class="edit-form">
                                     <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;" data-i18n="profile-name-label">Name</label>
                                     <input type="text" id="edit-profile-name" class="edit-input">
-                                    <small style="color: #aaa; font-size: 12px;">ID User akan otomatis mengikuti nama baru.</small>
-                                                                        <small style="color: #aaa; font-size: 12px;" data-i18n="profile-id-note">User ID will automatically follow the new name.</small>
+                                    <small style="color: #aaa; font-size: 12px;" data-i18n="profile-id-note">User ID will automatically follow the new name.</small>
                                     
-                                    <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;">Bio</label>
-                                                                        <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase;" data-i18n="profile-bio-label">Bio</label>
+                                    <label style="font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase; margin-top: 16px;" data-i18n="profile-bio-label">Bio</label>
                                     <textarea id="edit-profile-bio" class="edit-input" rows="3"></textarea>
                                 </div>
                             </div>
                             <div class="edit-actions-row">
-                                <button class="btn-cancel" onclick="window.toggleProfileEdit()">Batal</button>
+                                <button class="btn-cancel" onclick="window.toggleProfileEdit()" data-i18n="cancel">Cancel</button>
                                 <button class="btn-save" onclick="window.saveProfileChanges()" data-i18n="save">Save</button>
                             </div>
                         </div>
@@ -6780,7 +6823,7 @@ function renderFriendPlaylists(playlists) {
         }
     });
 
-    if(!html) html = `<div style="padding:0 32px; color:#666;">${window.t('no-public-playlists')}</div>`;
+    if(!html) html = `<div style="padding:0 32px; color:#666;">${window.t('friend-no-public-playlists')}</div>`;
     container.innerHTML = html;
 }
    
@@ -6932,6 +6975,7 @@ function renderFriendPlaylists(playlists) {
 
         // --- LANGUAGE SYSTEM ---
         let currentLanguage = localStorage.getItem('appLanguage') || 'id';
+        console.log('Language initialized to:', currentLanguage);
         
         const translations = {
             id: {
@@ -6986,7 +7030,6 @@ function renderFriendPlaylists(playlists) {
                 'searching': 'Mencari...',
                 'error-search': 'Error saat mencari',
                 'empty-queue': 'Antrian kosong',
-                'no-requests': 'Tidak ada permintaan baru',
                 'no-public-playlists': 'Tidak ada playlist publik. Atur privasi di sidebar',
                 'waiting-friends': 'Menunggu teman bergabung...',
                 'waiting': 'Menunggu...',
@@ -7008,11 +7051,11 @@ function renderFriendPlaylists(playlists) {
                 'owner': 'Owner',
                 'songs-label': 'lagu',
                 'sidebar-friends': 'Teman',
-                'search-friends-placeholder': 'Cari teman (Nama/ID Pengguna)...',
+                'search-friends-placeholder': 'Cari Teman (User/Nama)',
                 'friend-requests': 'Permintaan Pertemanan',
                 'friend-list': 'Daftar Teman',
                 'recently-played': 'Baru Diputar',
-                'no-public-playlists': 'Teman ini tidak memiliki playlist publik.',
+                'friend-no-public-playlists': 'Teman ini tidak memiliki playlist publik.',
                 'already-friends': 'Sudah berteman dengan pengguna ini.',
                 'request-already-sent': 'Permintaan sudah terkirim sebelumnya.',
                 'friend-request-sent': 'Permintaan pertemanan berhasil dikirim!',
@@ -7047,7 +7090,9 @@ function renderFriendPlaylists(playlists) {
                 'settings-playlist-name': 'Nama Playlist',
                 'profile-label': 'Profil',
                 'profile-bio-placeholder': 'Bio pengguna akan muncul di sini.',
+                'no-requests': 'Tidak ada permintaan baru',
                 'edit-profile': 'Edit Profil',
+                'profile-id-note': 'ID pengguna akan otomatis mengikuti nama baru.',
                 'setting-language': 'Setting Bahasa',
                 'friend-profile-label': 'Profil Teman',
                 'friend-bio-placeholder': 'Bio teman akan muncul di sini.'
@@ -7104,7 +7149,6 @@ function renderFriendPlaylists(playlists) {
                 'searching': 'Searching...',
                 'error-search': 'Error searching',
                 'empty-queue': 'Queue is empty',
-                'no-requests': 'No new requests',
                 'no-public-playlists': 'No public playlists. Adjust privacy in sidebar',
                 'waiting-friends': 'Waiting for friends to join...',
                 'waiting': 'Waiting...',
@@ -7126,11 +7170,11 @@ function renderFriendPlaylists(playlists) {
                 'owner': 'Owner',
                 'songs-label': 'songs',
                 'sidebar-friends': 'Friends',
-                'search-friends-placeholder': 'Search friends (Name/User ID)...',
+                'search-friends-placeholder': 'Search Friends (Name/User)',
                 'friend-requests': 'Friend Requests',
                 'friend-list': 'Friend List',
                 'recently-played': 'Recently Played',
-                'no-public-playlists': 'This friend has no public playlists.',
+                'friend-no-public-playlists': 'This friend has no public playlists.',
                 'already-friends': 'Already friends with this user.',
                 'request-already-sent': 'Friend request already sent.',
                 'friend-request-sent': 'Friend request sent successfully!',
@@ -7165,7 +7209,9 @@ function renderFriendPlaylists(playlists) {
                 'settings-playlist-name': 'Playlist Name',
                 'profile-label': 'Profile',
                 'profile-bio-placeholder': 'User bio will appear here.',
+                'no-requests': 'No New Request',
                 'edit-profile': 'Edit Profile',
+                'profile-id-note': 'User ID will automatically follow the new name.',
                 'setting-language': 'Setting Language',
                 'friend-profile-label': 'Friend Profile',
                 'friend-bio-placeholder': 'Friend bio will appear here.'
@@ -7174,6 +7220,7 @@ function renderFriendPlaylists(playlists) {
         
         function switchLanguage(lang) {
             if (!translations[lang]) lang = 'id'; // Fallback to Indonesian if invalid
+            console.log('Switching language to:', lang);
             currentLanguage = lang;
             localStorage.setItem('appLanguage', lang);
             
@@ -7197,6 +7244,14 @@ function renderFriendPlaylists(playlists) {
                 }
             });
             
+            // Update all elements with data-i18n-placeholder attribute
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+            
             // Update placeholder for search input
             const searchInput = document.getElementById('search-input');
             if (searchInput) {
@@ -7205,9 +7260,12 @@ function renderFriendPlaylists(playlists) {
             
             // Update friend requests container text
             const friendReqsContainer = document.getElementById('friend-requests-container');
-            if (friendReqsContainer && friendReqsContainer.textContent.includes('color:#666')) {
-                // If empty state is showing, update the text
-                friendReqsContainer.innerHTML = '<div style="padding:10px; color:#666; font-size:12px;">' + window.t('no-requests') + '</div>';
+            if (friendReqsContainer) {
+                const existingContent = friendReqsContainer.innerHTML;
+                // Check if it's showing the empty state (contains "Tidak ada permintaan" or "No New Request" or has color:#666)
+                if (existingContent.includes('color:#666') || existingContent.includes('Tidak ada permintaan') || existingContent.includes('No New Request')) {
+                    friendReqsContainer.innerHTML = '<div style="padding:10px; color:#666; font-size:12px;">' + window.t('no-requests') + '</div>';
+                }
             }
         }
         
@@ -7221,17 +7279,56 @@ function renderFriendPlaylists(playlists) {
             }
         };
         
+        // Toggle language dropdown (desktop)
+        window.toggleLanguageDropdownDesktop = function() {
+            const dropdown = document.getElementById('language-dropdown-desktop');
+            if(dropdown) {
+                if(dropdown.style.display === 'none') {
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            }
+        };
+        
         // Update language dropdown button active state
         window.updateLanguageDropdownState = function(lang) {
+            // Mobile buttons
             const langIdBtn = document.getElementById('lang-id-btn');
             const langEnBtn = document.getElementById('lang-en-btn');
+            const langIdCheckMobile = langIdBtn ? langIdBtn.querySelector('.ph-check') : null;
+            const langEnCheckMobile = langEnBtn ? langEnBtn.querySelector('.ph-check') : null;
+            
+            // Desktop buttons
+            const langIdBtnDesktop = document.getElementById('lang-id-btn-desktop');
+            const langEnBtnDesktop = document.getElementById('lang-en-btn-desktop');
+            const langIdCheckDesktop = langIdBtnDesktop ? langIdBtnDesktop.querySelector('.ph-check') : null;
+            const langEnCheckDesktop = langEnBtnDesktop ? langEnBtnDesktop.querySelector('.ph-check') : null;
             
             if(lang === 'id') {
+                // Mobile
                 if(langIdBtn) langIdBtn.classList.add('active');
                 if(langEnBtn) langEnBtn.classList.remove('active');
+                if(langIdCheckMobile) langIdCheckMobile.style.opacity = '1';
+                if(langEnCheckMobile) langEnCheckMobile.style.opacity = '0';
+                
+                // Desktop
+                if(langIdBtnDesktop) langIdBtnDesktop.classList.add('active');
+                if(langEnBtnDesktop) langEnBtnDesktop.classList.remove('active');
+                if(langIdCheckDesktop) langIdCheckDesktop.style.opacity = '1';
+                if(langEnCheckDesktop) langEnCheckDesktop.style.opacity = '0';
             } else {
+                // Mobile
                 if(langIdBtn) langIdBtn.classList.remove('active');
                 if(langEnBtn) langEnBtn.classList.add('active');
+                if(langIdCheckMobile) langIdCheckMobile.style.opacity = '0';
+                if(langEnCheckMobile) langEnCheckMobile.style.opacity = '1';
+                
+                // Desktop
+                if(langIdBtnDesktop) langIdBtnDesktop.classList.remove('active');
+                if(langEnBtnDesktop) langEnBtnDesktop.classList.add('active');
+                if(langIdCheckDesktop) langIdCheckDesktop.style.opacity = '0';
+                if(langEnCheckDesktop) langEnCheckDesktop.style.opacity = '1';
             }
         };
         
