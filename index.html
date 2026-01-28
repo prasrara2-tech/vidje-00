@@ -3902,6 +3902,10 @@ input:checked + .toggle-slider:before {
     font-size: 20px;
     flex-shrink: 0;
 }
+.song-card.opening {
+    opacity: 0.6;
+    pointer-events: none;
+}
     </style>
 </head>
 <body>
@@ -6424,6 +6428,12 @@ console.log('✅ Supabase initialized');
         onValue(userRef, async (snapshot) => {
             const data = snapshot.val(); // ✅ Ambil data dari snapshot
             if (data) {
+                 const trendingContainer = document.getElementById('trending-container');
+        if (trendingContainer) {
+            // Clone node to remove all event listeners
+            const newContainer = trendingContainer.cloneNode(false);
+            trendingContainer.parentNode.replaceChild(newContainer, trendingContainer);
+        }
                 currentUserData = data;
                         document.getElementById('header-username').innerText = data.username;
                         document.getElementById('header-avatar').src = data.profile_picture || "https://picsum.photos/50/50";
@@ -8164,39 +8174,121 @@ function renderFriendPlaylists(playlists) {
 
 
         function renderTrending() {
-            const container = document.getElementById('trending-container');
-            if (!currentUserData || !currentUserData.playlists) {
-                container.innerHTML = '<div style="padding:20px; color:#888;">' + window.t('no-playlists') + '. Buat playlist baru yuk!</div>';
-                return;
-            }
-            
-            // Convert object to array
-            const playlists = Object.keys(currentUserData.playlists).map(key => ({
+    const container = document.getElementById('trending-container');
+    
+    // ✅ SAFETY CHECK 1: Container exists?
+    if (!container) {
+        console.error('❌ trending-container not found');
+        return;
+    }
+    
+    // ✅ SAFETY CHECK 2: User data exists?
+    if (!currentUserData || !currentUserData.playlists) {
+        container.innerHTML = '<div style="padding:20px; color:#888;">' + 
+            window.t('no-playlists') + '. Buat playlist baru yuk!</div>';
+        return;
+    }
+    
+    // ✅ SAFETY CHECK 3: Convert to array safely
+    let playlists = [];
+    try {
+        playlists = Object.keys(currentUserData.playlists)
+            .filter(key => currentUserData.playlists[key]) // Filter null/undefined
+            .map(key => ({
                 id: key,
                 ...currentUserData.playlists[key]
-            }));
+            }))
+            .filter(pl => pl && pl.name && pl.cover); // Validate required fields
+    } catch (error) {
+        console.error('❌ Error converting playlists:', error);
+        container.innerHTML = '<div style="padding:20px; color:#888;">Error loading playlists</div>';
+        return;
+    }
 
-            // Take top 4 (simulating "frequently listened")
-            const topPlaylists = playlists.slice(0, 4);
+    // Take top 4
+    const topPlaylists = playlists.slice(0, 4);
+    
+    if (topPlaylists.length === 0) {
+        container.innerHTML = '<div style="padding:20px; color:#888;">' + 
+            window.t('no-playlists') + '. Buat playlist baru yuk!</div>';
+        return;
+    }
+
+    // ✅ FIX: Clear container first
+    container.innerHTML = '';
+    
+    // ✅ FIX: Use DocumentFragment for better performance
+    const fragment = document.createDocumentFragment();
+    
+    topPlaylists.forEach(pl => {
+        if (!pl || !pl.id) {
+            console.warn('⚠️ Invalid playlist data:', pl);
+            return;
+        }
+        
+        const card = document.createElement('div');
+        card.className = 'song-card';
+        card.dataset.playlistId = pl.id; // Store ID in data attribute
+        
+        // ✅ FIX: Use event listener instead of inline onclick
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             
-            if (topPlaylists.length === 0) {
-                container.innerHTML = '<div style="padding:20px; color:#888;">' + window.t('no-playlists') + '. Buat playlist baru yuk!</div>';
+            const playlistId = this.dataset.playlistId;
+            
+            // ✅ DEFENSIVE: Double-check playlist exists before opening
+            if (!playlistId) {
+                console.error('❌ No playlist ID');
+                showToast('❌ Error: Playlist ID not found', 'error');
                 return;
             }
-
-            let html = topPlaylists.map(pl => `
-                <div class="song-card" onclick="window.openPlaylist('${pl.id}')">
-                    <div class="card-img-wrapper">
-                        <img src="${pl.cover}" alt="${pl.name}">
-                        <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
-                    </div>
-                    <div class="card-title">${pl.name}</div>
-                    <div class="card-desc">${window.t('my-playlists')}</div>
-                </div>
-            `).join('');
             
-            container.innerHTML = html;
-        }
+            // ✅ DEFENSIVE: Check if playlist still exists in data
+            if (!currentUserData?.playlists?.[playlistId]) {
+                console.error('❌ Playlist no longer exists:', playlistId);
+                showToast('❌ Playlist tidak ditemukan', 'error');
+                return;
+            }
+            
+            // ✅ DEBOUNCE: Prevent double-tap
+            if (this.classList.contains('opening')) {
+                console.log('⏳ Already opening...');
+                return;
+            }
+            
+            this.classList.add('opening');
+            
+            setTimeout(() => {
+                try {
+                    window.openPlaylist(playlistId);
+                } catch (error) {
+                    console.error('❌ Error opening playlist:', error);
+                    showToast('❌ Error: ' + error.message, 'error');
+                } finally {
+                    this.classList.remove('opening');
+                }
+            }, 100);
+        });
+        
+        card.innerHTML = `
+            <div class="card-img-wrapper">
+                <img src="${pl.cover || 'https://picsum.photos/seed/default/300/300'}" 
+                     alt="${pl.name || 'Playlist'}" 
+                     onerror="this.src='https://picsum.photos/seed/default/300/300'">
+                <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
+            </div>
+            <div class="card-title">${pl.name || 'Untitled Playlist'}</div>
+            <div class="card-desc">${window.t('my-playlists')}</div>
+        `;
+        
+        fragment.appendChild(card);
+    });
+    
+    container.appendChild(fragment);
+    
+    console.log('✅ renderTrending completed:', topPlaylists.length, 'playlists');
+}
 
         function renderPopularBands() {
             const bands = [
@@ -8319,64 +8411,163 @@ function renderFriendPlaylists(playlists) {
         }
 
         function openPlaylist(playlistId) {
-            let playlist = null;
-            let isOwner = false;
+    console.log('🔍 Opening playlist:', playlistId);
+    
+    // ✅ VALIDATION 1: Check playlistId
+    if (!playlistId) {
+        console.error('❌ Invalid playlist ID:', playlistId);
+        showToast('❌ ID playlist tidak valid', 'error');
+        return;
+    }
+    
+    try {
+        let playlist = null;
+        let isOwner = false;
 
-            // 1. Check User's Playlists
-            if (currentUserData && currentUserData.playlists && currentUserData.playlists[playlistId]) {
-                playlist = currentUserData.playlists[playlistId];
-                isOwner = true;
-            } 
-            // 2. Check Public Playlists
-            else if (allPublicPlaylists) {
-                playlist = allPublicPlaylists.find(pl => pl.id === playlistId);
+        // ✅ VALIDATION 2: Check if user's playlist
+        if (currentUserData?.playlists?.[playlistId]) {
+            playlist = currentUserData.playlists[playlistId];
+            isOwner = true;
+            console.log('✅ Found in user playlists');
+        } 
+        // Check Public Playlists
+        else if (allPublicPlaylists) {
+            playlist = allPublicPlaylists.find(pl => pl.id === playlistId);
+            console.log('✅ Found in public playlists');
+        }
+
+        // ✅ VALIDATION 3: Playlist must exist
+        if (!playlist) {
+            console.error('❌ Playlist not found:', playlistId);
+            showToast('❌ Playlist tidak ditemukan', 'error');
+            
+            // ✅ AUTO-FIX: Refresh data and try again
+            if (isOwner) {
+                console.log('🔄 Attempting to refresh user data...');
+                // Trigger data refresh
+                get(ref(db, 'users/' + auth.currentUser.uid)).then(snap => {
+                    if (snap.exists()) {
+                        currentUserData = snap.val();
+                        renderTrending(); // Re-render
+                        showToast('🔄 Data diperbarui, silakan coba lagi', 'info');
+                    }
+                });
             }
+            return;
+        }
 
-            if (!playlist) return;
+        currentPlaylistId = playlistId;
 
-            currentPlaylistId = playlistId;
+        // ✅ VALIDATION 4: Check required DOM elements
+        const requiredElements = {
+            'playlist-title-view': 'Title element',
+            'playlist-cover-view': 'Cover element',
+            'playlist-count': 'Count element',
+            'playlist-songs-container': 'Songs container',
+            'playlist-header-bg': 'Header background'
+        };
 
-            document.getElementById('playlist-title-view').innerText = playlist.name;
-            const coverEl = document.getElementById('playlist-cover-view');
-            coverEl.src = playlist.cover;
-            
-            // Set Owner Name
-            const ownerDisplay = document.getElementById('playlist-owner-display');
-            if(ownerDisplay) {
-                ownerDisplay.innerText = isOwner ? currentUserData.username : (playlist.ownerName || 'Unknown User');
+        for (const [id, name] of Object.entries(requiredElements)) {
+            if (!document.getElementById(id)) {
+                console.error(`❌ Required element not found: ${name} (${id})`);
+                showToast('❌ Error: Halaman belum siap', 'error');
+                return;
             }
+        }
 
-            // Hide/Show Edit Controls
-            const editCoverBtn = document.querySelector('#view-playlist .edit-cover-btn');
-            const settingsBtn = document.querySelector('#view-playlist .settings-btn');
-            
-            if(editCoverBtn) editCoverBtn.style.display = isOwner ? 'flex' : 'none';
-            if(settingsBtn) settingsBtn.style.display = isOwner ? 'block' : 'none';
-            
-            // --- DYNAMIC BACKGROUND FOR PLAYLIST ---
-            coverEl.onload = function() {
+        // Set playlist info
+        document.getElementById('playlist-title-view').innerText = playlist.name || 'Untitled';
+        const coverEl = document.getElementById('playlist-cover-view');
+        coverEl.src = playlist.cover || 'https://picsum.photos/seed/default/300/300';
+        
+        // Set Owner Name
+        const ownerDisplay = document.getElementById('playlist-owner-display');
+        if(ownerDisplay) {
+            ownerDisplay.innerText = isOwner ? 
+                (currentUserData?.username || 'You') : 
+                (playlist.ownerName || 'Unknown User');
+        }
+
+        // Show/Hide Edit Controls
+        const editCoverBtn = document.querySelector('#view-playlist .edit-cover-btn');
+        const settingsBtn = document.querySelector('#view-playlist .settings-btn');
+        const shareBtn = document.querySelector('#view-playlist .share-btn');
+        
+        if(editCoverBtn) editCoverBtn.style.display = isOwner ? 'flex' : 'none';
+        if(settingsBtn) settingsBtn.style.display = isOwner ? 'block' : 'none';
+        if(shareBtn) shareBtn.style.display = 'block';
+        
+        // Dynamic Background
+        coverEl.onerror = function() {
+            this.src = 'https://picsum.photos/seed/default/300/300';
+        };
+        
+        coverEl.onload = function() {
+            try {
                 const rgb = getAverageRGB(coverEl);
                 const color = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-                document.getElementById('playlist-header-bg').style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
-            };
-            
-            const playlistSongs = Object.values(playlist.songs || {});
-            const validSongDetails = playlistSongs
-                .filter(songIdOrObj => songIdOrObj !== undefined && songIdOrObj !== null)
-                .map(songIdOrObj => {
-                    const idToFind = (typeof songIdOrObj === 'object') ? songIdOrObj.id : songIdOrObj;
-                    return songs.find(s => s.id == idToFind);
-                })
-                .filter(song => song !== undefined); 
+                const headerBg = document.getElementById('playlist-header-bg');
+                if (headerBg) {
+                    headerBg.style.background = `linear-gradient(180deg, ${color} 0%, var(--bg-dark) 100%)`;
+                }
+            } catch (e) {
+                console.warn('⚠️ Failed to set background:', e);
+            }
+        };
+        
+        // ✅ VALIDATION 5: Filter songs safely
+        const playlistSongs = Object.values(playlist.songs || {});
+        
+        const validSongDetails = playlistSongs
+            .filter(songIdOrObj => {
+                if (songIdOrObj === undefined || songIdOrObj === null) {
+                    console.warn('⚠️ Null/undefined song in playlist');
+                    return false;
+                }
+                return true;
+            })
+            .map(songIdOrObj => {
+                const idToFind = (typeof songIdOrObj === 'object') ? songIdOrObj.id : songIdOrObj;
+                const found = songs.find(s => s && s.id == idToFind);
+                if (!found) {
+                    console.warn('⚠️ Song not found in library:', idToFind);
+                }
+                return found;
+            })
+            .filter(song => song !== undefined && song !== null); 
 
-            document.getElementById('playlist-count').innerText = `${validSongDetails.length} ${window.t('songs-label')}`;
+        document.getElementById('playlist-count').innerText = `${validSongDetails.length} ${window.t('songs-label')}`;
+        
+        // ✅ CLEAR + DELAY: Ensure clean render
+        const songsContainer = document.getElementById('playlist-songs-container');
+        songsContainer.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">Loading...</div>';
+        
+        setTimeout(() => {
             renderSongList(validSongDetails, 'playlist-songs-container');
-            
-            // Add to recently played
-            addToRecentlyPlayed('playlist', { id: playlistId, name: playlist.name, cover: playlist.cover });
-            
-            switchView('playlist');
-        }
+            console.log('✅ Playlist rendered successfully');
+        }, 100);
+        
+        // Add to recently played
+        addToRecentlyPlayed('playlist', { 
+            id: playlistId, 
+            name: playlist.name || 'Untitled', 
+            cover: playlist.cover || 'https://picsum.photos/seed/default/300/300'
+        });
+        
+        switchView('playlist');
+        
+    } catch (error) {
+        console.error('❌ Critical error in openPlaylist:', error);
+        console.error('Stack trace:', error.stack);
+        showToast('❌ Error: ' + error.message, 'error');
+        
+        // ✅ FALLBACK: Go back to home
+        setTimeout(() => {
+            switchView('home');
+        }, 2000);
+    }
+}
+
         // <--- TAMBAHKAN BARIS INI DI SINI --- >
            window.openPlaylist = openPlaylist;
 
@@ -11036,6 +11227,17 @@ function attachSongMenuListeners(containerId) {
     // Store listeners untuk cleanup nanti
     container.__songMenuListeners = listeners;
 }
+
+window.debugPlaylist = function(playlistId) {
+    console.log('=== DEBUG PLAYLIST ===');
+    console.log('Playlist ID:', playlistId);
+    console.log('Current User Data:', currentUserData);
+    console.log('Playlist exists in user data?', currentUserData?.playlists?.[playlistId]);
+    console.log('Playlist data:', currentUserData?.playlists?.[playlistId]);
+    console.log('Songs in playlist:', Object.keys(currentUserData?.playlists?.[playlistId]?.songs || {}));
+    console.log('======================');
+};
+
 
   
     </script>
