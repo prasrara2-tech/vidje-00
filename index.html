@@ -1366,6 +1366,23 @@
             #overlay-progress-container {
                 width: 100%;
                 margin-bottom: 20px !important;
+                display: block !important;
+                visibility: visible !important;
+                height: auto !important;
+                overflow: visible !important;
+                opacity: 1 !important;
+            }
+            
+            /* Hide progress bar in profile view - AGGRESSIVE HIDE */
+            #view-profile.active #overlay-progress-container {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
             }
 
             .overlay-progress-bar {
@@ -1858,68 +1875,6 @@
         .overlay-progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; position: absolute; top: 0; left: 0; }
         .overlay-time { display: flex; justify-content: space-between; width: 100%; margin-top: 10px; font-size: 12px; color: #b3b3b3; }
 
-        /* Standalone Interactive Progress Bar (below playbar) */
-        .standalone-progress-bar {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: calc(var(--player-height, 72px));
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            z-index: 20002;
-            cursor: pointer;
-            transition: height 0.2s ease;
-        }
-
-        .standalone-progress-bar:hover {
-            height: 8px;
-        }
-
-        .standalone-progress-bar.dragging {
-            height: 8px;
-        }
-
-        .standalone-progress-track {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        .standalone-progress-fill {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            background: var(--primary-red);
-            width: 0%;
-            transition: width 0.1s linear;
-            pointer-events: none;
-        }
-
-        .standalone-progress-bar.dragging .standalone-progress-fill {
-            transition: none;
-        }
-
-        .standalone-progress-thumb {
-            position: absolute;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 12px;
-            height: 12px;
-            background: white;
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            pointer-events: none;
-            left: 0%;
-        }
-
-        .standalone-progress-bar:hover .standalone-progress-thumb,
-        .standalone-progress-bar.dragging .standalone-progress-thumb {
-            opacity: 1;
-        }
-
         /* Mobile bottom navigation (hidden by default) */
         .mobile-bottom-nav {
             display: none;
@@ -2052,10 +2007,15 @@
             background-color: var(--bg-card);
             border-top: 1px solid #282828;
             padding: 0 16px;
-            display: flex;
+            display: none; /* Hidden by default */
             justify-content: space-between;
             align-items: center;
             z-index: 20000;
+        }
+        
+        /* Show player-bar when active */
+        .player-bar.active {
+            display: flex;
         }
 
         /* On larger screens keep player-bar to the right of the sidebar */
@@ -2212,10 +2172,59 @@
         .play-pause-btn { width: 32px; height: 32px; background-color: var(--text-white); border-radius: 50%; color: black; font-size: 20px; transition: transform 0.2s; }
         .play-pause-btn:hover { transform: scale(1.1); color: black; }
         .playback-bar { width: 100%; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-gray); }
-        .progress-container { flex: 1; height: 4px; background-color: #555; border-radius: 2px; position: relative; cursor: pointer; }
-        .progress-fill { height: 100%; background-color: var(--text-white); border-radius: 2px; width: 0%; }
-        .progress-container:hover .progress-fill { background-color: var(--primary-red); }
-        .progress-container:hover .progress-fill { background-color: var(--primary-red); }
+        
+        .progress-container { 
+            flex: 1; 
+            height: 4px; 
+            background-color: #555; 
+            border-radius: 2px; 
+            position: relative; 
+            cursor: pointer;
+            transition: height 0.2s ease;
+        }
+        
+        .progress-container:hover,
+        .progress-container.dragging {
+            height: 6px;
+        }
+        
+        .progress-fill { 
+            height: 100%; 
+            background-color: var(--text-white); 
+            border-radius: 2px; 
+            width: 0%;
+            transition: width 0.1s linear, background-color 0.2s ease;
+            pointer-events: none;
+        }
+        
+        .progress-container:hover .progress-fill,
+        .progress-container.dragging .progress-fill { 
+            background-color: var(--primary-red);
+        }
+        
+        .progress-container.dragging .progress-fill {
+            transition: none;
+        }
+        
+        .progress-thumb {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+        
+        .progress-container:hover .progress-thumb,
+        .progress-container.dragging .progress-thumb {
+            opacity: 1;
+        }
 
         /* Fixed Progress Bar Wrapper (di atas playbar) */
         .player-progress-bar-wrapper {
@@ -2228,6 +2237,23 @@
             cursor: pointer;
             z-index: 19999;
             transition: height 0.2s ease;
+            display: none; /* Hidden by default */
+        }
+        
+        
+        /* Show progress bar when it has active class */
+        .player-progress-bar-wrapper.active {
+            display: block;
+        }
+        
+        /* 🔒 HIDE progress bar when profile view is active */
+        #view-profile.active ~ .player-progress-bar-wrapper,
+        body.profile-view-active .player-progress-bar-wrapper {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            pointer-events: none !important;
         }
 
         /* Saat hover atau dragging, buat lebih visible */
@@ -5577,11 +5603,18 @@ input:checked + .toggle-slider:before {
 .new-left-panel {
     flex: 0 0 280px;
     width: 280px;
-    display: flex;
+    display: none !important; /* Hidden by default */
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 24px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.new-left-panel.visible {
+    display: flex !important;
+    opacity: 1;
 }
 
 /* Album Art */
@@ -5623,6 +5656,14 @@ input:checked + .toggle-slider:before {
 .new-progress-container {
     width: 100%;
     margin-bottom: 8px;
+    display: none !important; /* Hidden by default - FORCED */
+    opacity: 0 !important;
+    transition: opacity 0.3s ease;
+}
+
+.new-progress-container.visible {
+    display: block !important;
+    opacity: 1 !important;
 }
 
 .new-progress-bar {
@@ -5692,10 +5733,17 @@ input:checked + .toggle-slider:before {
 /* Controls */
 .new-controls {
     width: 100%;
-    display: flex;
+    display: none !important; /* Hidden by default - FORCED */
     justify-content: center;
     align-items: center;
     gap: 16px;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease;
+}
+
+.new-controls.visible {
+    display: flex !important;
+    opacity: 1 !important;
 }
 
 .new-control-btn {
@@ -7214,7 +7262,7 @@ input:checked + .toggle-slider:before {
         </div>
 
         <!-- Player Bar -->
-        <footer class="player-bar">
+        <footer class="player-bar" >
             <div class="player-left">
                 <img src="https://picsum.photos/seed/music/60/60" alt="Album Art" class="current-art" id="player-art">
                 <div class="current-info">
@@ -7233,6 +7281,14 @@ input:checked + .toggle-slider:before {
                     <button class="play-pause-btn" id="play-pause-btn"><i class="ph-fill ph-play"></i></button>
                     <button class="control-btn" id="next-btn" onclick="window.playNext()"><i class="ph ph-skip-forward-fill"></i></button>
                     <button class="control-btn" id="repeat-btn" onclick="window.toggleRepeat()"><i class="ph ph-repeat"></i></button>
+                </div>
+                <div class="playback-bar">
+                    <span id="current-time">0:00</span>
+                    <div class="progress-container" id="progress-container">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <div class="progress-thumb" id="progress-thumb"></div>
+                    </div>
+                    <span id="total-duration">0:00</span>
                 </div>
             </div>
 
@@ -9072,15 +9128,15 @@ console.log('✅ Supabase initialized');
 
         const songs = [...baseSongs, ...mainBandSongs, ...hanungSongs, ...raraSongs, ...casSongs, ...rocSongs, ...smithsSongs, ...arcticSongs, ...queenSongs, ...stonerosesSongs, ...neckdeepSongs, ...mcrSongs, ...bobmarleySongs, ...frankSongs, ...drakeSongs, ...kendrickSongs, ...weekndSongs, ...the1975Songs, ...oliviaSongs, ...chainsmokersSongs, ...avengedSongs, ...slankSongs, ...realityclubSongs, ...nidjiSongs];
 
-        // Restore previously played song if it exists
-        const savedSongId = localStorage.getItem('currentSongId');
-        if (savedSongId) {
-            const songToRestore = songs.find(s => s.id === parseInt(savedSongId));
-            if (songToRestore) {
-                // Set playbar visibility and prepare to load song (will load after loadSong function is defined)
-                window.songToRestoreOnLoad = songToRestore;
-            }
-        }
+// DISABLED:         // Restore previously played song if it exists
+// DISABLED:         const savedSongId = localStorage.getItem('currentSongId');
+// DISABLED:         if (savedSongId) {
+// DISABLED:             const songToRestore = songs.find(s => s.id === parseInt(savedSongId));
+// DISABLED:             if (songToRestore) {
+// DISABLED:                 // Set playbar visibility and prepare to load song (will load after loadSong function is defined)
+// DISABLED:                 window.songToRestoreOnLoad = songToRestore;
+// DISABLED:             }
+// DISABLED:         }
 
         // --- GLOBAL STATE ---
         let likedSongs = [];
@@ -9096,6 +9152,71 @@ console.log('✅ Supabase initialized');
         let playHistory = [];
         let isShuffle = false;
         let repeatMode = 0; // 0: Off, 1: All, 2: One
+        
+        // --- SAVE/RESTORE PLAYBACK STATE ---
+        function savePlaybackState() {
+            if (songs && songs[currentSongIndex]) {
+                const state = {
+                    songIndex: currentSongIndex,
+                    songId: songs[currentSongIndex].id,
+                    songTitle: songs[currentSongIndex].title,
+                    currentTime: audio ? audio.currentTime : 0,
+                    isPlaying: isPlaying,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('vidjePlaybackState', JSON.stringify(state));
+                console.log('💾 Saved playback state:', state);
+            }
+        }
+        
+        function restorePlaybackState() {
+            try {
+                // First try to restore from vidjePlaybackState (comprehensive state)
+                const saved = localStorage.getItem('vidjePlaybackState');
+                if (saved) {
+                    const state = JSON.parse(saved);
+                    console.log('📂 Restoring playback state from vidjePlaybackState:', state);
+                    
+                    // Find song by ID or title
+                    let foundIndex = -1;
+                    if (songs && songs.length > 0) {
+                        // Try by ID first
+                        foundIndex = songs.findIndex(s => s.id === state.songId);
+                        // If not found, try by title
+                        if (foundIndex === -1) {
+                            foundIndex = songs.findIndex(s => s.title === state.songTitle);
+                        }
+                    }
+                    
+                    if (foundIndex >= 0) {
+                        currentSongIndex = foundIndex;
+                        console.log('✅ Restored to song index:', currentSongIndex, songs[currentSongIndex].title);
+                        return true;
+                    }
+                }
+                
+                // Fallback: try to restore from currentSongId (simple ID storage)
+                const savedSongId = localStorage.getItem('currentSongId');
+                if (savedSongId && songs && songs.length > 0) {
+                    console.log('📂 Restoring from currentSongId:', savedSongId);
+                    const foundIndex = songs.findIndex(s => s.id === parseInt(savedSongId));
+                    
+                    if (foundIndex >= 0) {
+                        currentSongIndex = foundIndex;
+                        console.log('✅ Restored to song index:', currentSongIndex, songs[currentSongIndex].title);
+                        return true;
+                    }
+                }
+                
+                console.log('⚠️ Could not find restored song, will use first song');
+                currentSongIndex = 0;
+                return false;
+            } catch (error) {
+                console.error('❌ Error restoring playback state:', error);
+                currentSongIndex = 0;
+                return false;
+            }
+        }
         
         // --- HISTORY / RECENTLY PLAYED ---
         let recentlyPlayed = []; // Stores {type: 'song'|'playlist', data: object, timestamp}
@@ -10430,14 +10551,52 @@ function renderFriendPlaylists(playlists) {
                 
                 if (viewName === 'profile') {
                     window.loadProfileData();
+                    
+                    // 🔒 Add class to body and hide both progress bars
+                    document.body.classList.add('profile-view-active');
+                    
+                    // Hide overlay progress bar (in overlay-player)
+                    const overlayProgress = document.getElementById('overlay-progress-container');
+                    if (overlayProgress) {
+                        overlayProgress.style.display = 'none !important';
+                        overlayProgress.style.visibility = 'hidden';
+                        overlayProgress.style.height = '0';
+                    }
+                    
+                    // Hide bottom progress bar (near playbar)
+                    const playerProgressBar = document.querySelector('.player-progress-bar-wrapper');
+                    if (playerProgressBar) {
+                        playerProgressBar.style.display = 'none !important';
+                        playerProgressBar.style.visibility = 'hidden';
+                        playerProgressBar.style.opacity = '0';
+                    }
+                } else {
+                    // Remove class when leaving profile
+                    document.body.classList.remove('profile-view-active');
+                    
+                    // Show overlay progress bar
+                    const overlayProgress = document.getElementById('overlay-progress-container');
+                    if (overlayProgress) {
+                        overlayProgress.style.display = 'block';
+                        overlayProgress.style.visibility = 'visible';
+                        overlayProgress.style.height = 'auto';
+                    }
+                    
+                    // Progress bar will show automatically via CSS when player-bar.active
+                    // No need to manually show it here
                 }
 
                 // Hide/Show playbar based on view
                 const playerBar = document.querySelector('.player-bar');
+                
                 if (viewName === 'profile') {
-                    playerBar.style.display = 'none';
+                    // Hide player in profile
+                    if (playerBar) playerBar.style.setProperty('display', 'none', 'important');
                 } else {
-                    playerBar.style.display = '';
+                    // Only show player if it has 'active' class (means a song was loaded)
+                    if (playerBar && playerBar.classList.contains('active')) {
+                        playerBar.style.setProperty('display', 'flex', 'important');
+                    }
                 }
             }
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -13785,6 +13944,11 @@ function renderProfilePublicPlaylists() {
             if (document.getElementById('art-lyrics-wrapper').style.display !== 'none') {
                 updateArtLyricsHighlight();
             }
+            
+            // Update NEW overlay progress bar (even if overlay is closed)
+            if (typeof updateNewProgress === 'function') {
+                updateNewProgress();
+            }
         });
 
         function openLyricsFromFooter() {
@@ -14082,15 +14246,13 @@ function openArtistBandOverlay(artistData, songsList) {
             // Check if we have a song to restore
             if (window.songToRestoreOnLoad) {
                 loadSong(window.songToRestoreOnLoad);
-                playerBar.style.display = '';
+                // Don't auto-show here, let loadSong handle it with 'active' class
                 window.songToRestoreOnLoad = null; // Clear for next time
-            } else {
-                playerBar.style.display = 'none';
             }
+            // Player stays hidden until user selects a song
         }
-        
         // Initialize playbar visibility immediately (songs array is now loaded)
-        initializePlaybarVisibility();
+        // initializePlaybarVisibility(); // DISABLED - no auto-restore on page load
         
 
         // Main Player Progress Bar Click - for background skip
@@ -14267,7 +14429,14 @@ function openArtistBandOverlay(artistData, songsList) {
         function loadSong(song) {
     // ✅ PERBAIKAN: Update semua elemen UI dengan data lagu yang benar
     
-    // ✅ NEW: Resume audio context if suspended (for background playback)
+    // 2. Update Audio Source with proper initialization
+    audio.src = song.src;
+    
+    // 🔊 CRITICAL: Force load and prefetch audio to prevent cutting out
+    audio.load(); // Preload the audio file
+    audio.preload = 'auto'; // Enable automatic prefetching
+    
+    // 🔊 NEW: Resume audio context if suspended (for background playback)
     if (audio.paused && isPlaying) {
         audio.play().catch(err => console.warn('Auto-play failed:', err));
     }
@@ -14278,20 +14447,69 @@ function openArtistBandOverlay(artistData, songsList) {
         lyricsState.currentLineIndex = 0;
     }
     
-    // Save song to localStorage for persistence
+    // Save song to localStorage for persistence (DUAL SAVE for reliability)
     localStorage.setItem('currentSongId', song.id);
     localStorage.setItem('currentSongPaused', !isPlaying);
     
-    // Show playbar when song is loaded
-    document.querySelector('.player-bar').style.display = '';
+    // ALSO save comprehensive playback state
+    const playbackState = {
+        songIndex: songs.indexOf(song),
+        songId: song.id,
+        songTitle: song.title,
+        currentTime: 0,
+        isPlaying: isPlaying,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('vidjePlaybackState', JSON.stringify(playbackState));
+    console.log('💾 Saved playback state:', playbackState);
+    
+    // Show playbar when song is loaded (by adding 'active' class)
+    const playerBar = document.querySelector('.player-bar');
+    const playerProgressBar = document.querySelector('.player-progress-bar-wrapper');
+    
+    if (playerBar) {
+        playerBar.classList.add('active');
+        playerBar.style.setProperty('display', 'flex', 'important'); // Ensure it's visible
+    }
+    
+    // Show progress bar when player bar is shown
+    if (playerProgressBar) {
+        playerProgressBar.classList.add('active');
+        playerProgressBar.style.removeProperty('display'); // Remove inline style to let CSS handle it
+        console.log('✅ Progress bar shown with player bar');
+    }
+    
+    // Show new overlay progress bar
+    const newProgressContainer = document.querySelector('.new-progress-container');
+    if (newProgressContainer) {
+        console.log('✅ Showing new progress container');
+        newProgressContainer.classList.add('visible');
+    } else {
+        console.log('❌ new-progress-container not found');
+    }
+    
+    // Show new overlay controls
+    const newControls = document.querySelector('.new-controls');
+    if (newControls) {
+        console.log('✅ Showing new controls');
+        newControls.classList.add('visible');
+    } else {
+        console.log('❌ new-controls not found');
+    }
+    
+    // Show entire new left panel
+    const newLeftPanel = document.querySelector('.new-left-panel');
+    if (newLeftPanel) {
+        console.log('✅ Showing new left panel');
+        newLeftPanel.classList.add('visible');
+    } else {
+        console.log('❌ new-left-panel not found');
+    }
     
     // 1. Update Player Bar
     checkMarquee(document.getElementById('player-title'), song.title);
     checkMarquee(document.getElementById('player-artist'), song.artist);
     playerArt.src = song.cover;
-    
-    // 2. Update Audio Source
-    audio.src = song.src;
     
     // 3. ✅ PERBAIKAN OVERLAY - SELALU UPDATE (tidak peduli overlay buka/tutup)
     const overlayTitle = document.getElementById('overlay-title');
@@ -14913,7 +15131,7 @@ function progressMouseUp(e) {
     const percent = Math.max(0, Math.min(1, x / width));
     
     // Commit the change
-    audio.currentTime = percent * audio.duration;
+    if (audio.duration && isFinite(audio.duration)) { audio.currentTime = percent * audio.duration; }
     
     isProgressDragging = false;
     document.removeEventListener('mousemove', progressMouseMove);
@@ -15695,7 +15913,7 @@ async function loadImportedSongs() {
         renderPopularArtists();
         renderForeignSoloArtists();
         renderForeignBands();
-        loadSong(songs[0]);
+        // loadSong(songs[0]); // DISABLED - no auto-load on page load
 
         // ✅ TAMBAHKAN: Load imported songs saat user login
 onAuthStateChanged(auth, async (user) => {
@@ -15812,6 +16030,18 @@ if ('serviceWorker' in navigator) {
             audio.addEventListener('play', () => {
                 if (navigator.mediaSession) {
                     navigator.mediaSession.playbackState = 'playing';
+                    // Force update metadata to ensure lock screen updates
+                    updateMediaSessionMetadata();
+                }
+                
+                // Save playback state
+                savePlaybackState();
+                
+                console.log('🎵 Audio playing - current source:', audio.src ? 'Valid' : 'MISSING');
+                
+                // Update new overlay progress
+                if (typeof updateNewProgress === 'function') {
+                    updateNewProgress();
                 }
                 
                 // Start lyrics sync saat audio play
@@ -15831,6 +16061,54 @@ if ('serviceWorker' in navigator) {
             audio.addEventListener('pause', () => {
                 if (navigator.mediaSession) {
                     navigator.mediaSession.playbackState = 'paused';
+                    // CRITICAL: Force immediate update to ensure pause button persists on lock screen
+                    updateMediaSessionMetadata();
+                }
+                
+                // Save playback state
+                savePlaybackState();
+            });
+            
+            // 🔊 CRITICAL: Handle audio errors and stalling
+            audio.addEventListener('error', (event) => {
+                const error = audio.error;
+                if (error) {
+                    console.error('❌ Audio Error Code:', error.code, 'Message:', error.message);
+                    // MEDIA_ERR_ABORTED: 1
+                    // MEDIA_ERR_NETWORK: 2
+                    // MEDIA_ERR_DECODE: 3
+                    // MEDIA_ERR_SRC_NOT_SUPPORTED: 4
+                    
+                    if (error.code === 4) {
+                        console.warn('⚠️ Audio format not supported, trying next song...');
+                        playNext();
+                    } else if (error.code === 2) {
+                        console.warn('⚠️ Network error, retrying audio load...');
+                        setTimeout(() => {
+                            if (audio.src) {
+                                audio.load();
+                                if (isPlaying) audio.play().catch(e => console.warn('Retry failed:', e));
+                            }
+                        }, 1000);
+                    }
+                }
+            });
+            
+            // 🔊 Handle stalling (buffering issues)
+            audio.addEventListener('stalled', () => {
+                console.warn('⚠️ Audio stalled, attempting recovery...');
+                if (isPlaying && audio.src) {
+                    const saveTime = audio.currentTime;
+                    audio.currentTime = saveTime; // Trigger re-buffering
+                }
+            });
+            
+            // 🔊 Handle suspend (playback suspended)
+            audio.addEventListener('suspend', () => {
+                console.warn('⚠️ Audio playback suspended');
+                if (isPlaying && audio.src && audio.paused) {
+                    console.log('🔄 Attempting to resume...');
+                    audio.play().catch(e => console.warn('Resume failed:', e));
                 }
             });
             
@@ -15845,6 +16123,81 @@ if ('serviceWorker' in navigator) {
                 }
             });
         }
+        
+        // Function to update Media Session metadata (persists pause button state longer)
+        function updateMediaSessionMetadata() {
+            if (!navigator.mediaSession) return;
+            
+            const song = songs[currentSongIndex];
+            if (!song) return;
+            
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: song.title || 'Pilih Lagu',
+                    artist: song.artist || 'Vidje',
+                    album: song.album || 'Music Platform',
+                    artwork: [
+                        { src: song.cover, sizes: '96x96', type: 'image/jpeg' },
+                        { src: song.cover, sizes: '128x128', type: 'image/jpeg' },
+                        { src: song.cover, sizes: '192x192', type: 'image/jpeg' },
+                        { src: song.cover, sizes: '256x256', type: 'image/jpeg' },
+                        { src: song.cover, sizes: '384x384', type: 'image/jpeg' },
+                        { src: song.cover, sizes: '512x512', type: 'image/jpeg' }
+                    ]
+                });
+                
+                // Force update playback state (critical for pause button persistence)
+                navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+                
+                // Update position state immediately
+                if ('setPositionState' in navigator.mediaSession && audio && !isNaN(audio.duration)) {
+                    navigator.mediaSession.setPositionState({
+                        duration: audio.duration,
+                        playbackRate: audio.playbackRate,
+                        position: audio.currentTime
+                    });
+                }
+                
+                console.log('🔄 Media Session metadata updated - State:', isPlaying ? 'playing' : 'paused');
+            } catch (error) {
+                console.warn('⚠️ Error updating Media Session:', error);
+            }
+        }
+        
+        // ===== AUDIO KEEP-ALIVE SYSTEM =====
+        // Periodically update media session state untuk memastikan pause button bertahan lama
+        setInterval(() => {
+            if (navigator.mediaSession && document.hidden) {
+                // Update lebih sering saat app di background
+                updateMediaSessionMetadata();
+            }
+        }, 2000);
+        
+        // Keep audio alive - prevent background audio from cutting out
+        const audioKeepAlive = setInterval(() => {
+            const audio = document.getElementById('audio-player');
+            
+            // 1. Check if audio should be playing but is paused (browser suspension)
+            if (isPlaying && audio.paused && audio.src) {
+                console.log('🔊 Resuming audio (was suspended)...');
+                audio.play().catch(err => {
+                    console.warn('❌ Auto-resume failed:', err.message);
+                });
+            }
+            
+            // 2. Verify audio is actually loaded and playable
+            if (audio.src && audio.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+                console.warn('⚠️ Audio network state empty, reloading...');
+                audio.load();
+            }
+            
+            // 3. Check for stalled audio (stuck/buffering)
+            if (audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA && isPlaying && document.hidden) {
+                console.warn('⚠️ Audio stalled, attempting recovery...');
+                const currentTime = audio.currentTime;
+                audio.currentTime = currentTime; // Force seek to trigger buffering
+            }
+        }, 500); // Check every 500ms for quick recovery
         
         // ===== PWA INSTALL PROMPT =====
         let deferredPrompt;
@@ -16066,6 +16419,14 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.error('❌ Button Listen Together TIDAK DITEMUKAN');
     }
+    
+    // 🔄 RESET: Clear playback state on refresh
+    // User will start fresh and select a song manually
+    console.log('🔄 Clearing playback state for fresh start...');
+    localStorage.removeItem('currentSongId');
+    localStorage.removeItem('currentSongPaused');
+    localStorage.removeItem('vidjePlaybackState');
+    console.log('✅ Playback state cleared - user must select a song manually');
 });
 
 // ===== DIAGNOSTIC TOOLS =====
@@ -16348,6 +16709,13 @@ if (originalLoadSong) {
     window.loadSong = function(index) {
         originalLoadSong(index);
         setTimeout(updateLyricsButtonIndicator, 100);
+        
+        // Update new overlay progress bar when song loads
+        setTimeout(function() {
+            if (typeof updateNewProgress === 'function') {
+                updateNewProgress();
+            }
+        }, 200);
     };
 }
 
@@ -16428,6 +16796,10 @@ async function setupWakeLock() {
         if (!wakeLock && isPlaying) {
             requestWakeLock();
         }
+        // Update new overlay play button
+        if (typeof updateNewPlayButton === 'function') {
+            updateNewPlayButton();
+        }
     });
     
     // Release wake lock when paused
@@ -16435,6 +16807,10 @@ async function setupWakeLock() {
         if (wakeLock) {
             wakeLock.release();
             wakeLock = null;
+        }
+        // Update new overlay play button
+        if (typeof updateNewPlayButton === 'function') {
+            updateNewPlayButton();
         }
     });
     
@@ -16682,6 +17058,205 @@ window.addEventListener('beforeunload', () => {
 });
 
 console.log('✅ Background Playback System Ready - Music akan jalan di background!');
+
+// ✅ FORCE HIDE PLAYER ON PAGE LOAD - Only show when user plays a song
+document.addEventListener('DOMContentLoaded', () => {
+    const playerBar = document.querySelector('.player-bar');
+    const playerProgressBar = document.querySelector('.player-progress-bar-wrapper');
+    
+    // Force hide unless 'active' class is present
+    if (playerBar && !playerBar.classList.contains('active')) {
+        playerBar.style.setProperty('display', 'none', 'important');
+    } else if (playerBar && playerBar.classList.contains('active')) {
+        // If player bar is already active (from restored state), show progress bar too
+        if (playerProgressBar) {
+            playerProgressBar.classList.add('active');
+            console.log('✅ Progress bar activated with restored player state');
+        }
+    }
+    
+    // ✅ Progress bar sekarang akan muncul otomatis saat player bar active
+    // Tidak perlu force hide lagi - akan muncul bersamaan dengan player bar
+    
+    
+    console.log('🎵 Player visibility initialized - progress bar will show with player');
+});
+
+
+// Initialize new overlay progress on page load
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 Initializing new overlay progress...');
+    
+    // Update progress bar immediately if audio is playing
+    if (typeof audio !== 'undefined' && audio.duration) {
+        if (typeof updateNewProgress === 'function') {
+            updateNewProgress();
+        }
+    }
+    
+    // Set up interval to update even when overlay is closed
+    setInterval(function() {
+        if (typeof audio !== 'undefined' && audio.duration && !audio.paused) {
+            if (typeof updateNewProgress === 'function') {
+                updateNewProgress();
+            }
+        }
+    }, 500); // Update every 500ms
+});
+
+
+
+// ===== PLAYBAR PROGRESS BAR WITH DRAG FUNCTIONALITY =====
+(function() {
+    const progressContainer = document.getElementById('progress-container');
+    const progressFill = document.getElementById('progress-fill');
+    const progressThumb = document.getElementById('progress-thumb');
+    const currentTimeSpan = document.getElementById('current-time');
+    const totalDurationSpan = document.getElementById('total-duration');
+    const audio = document.getElementById('audio-player');
+    
+    let isDragging = false;
+    
+    // Format time helper
+    function formatTime(seconds) {
+        if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Update progress bar
+    function updateProgress() {
+        if (!audio || !audio.duration || isDragging) return;
+        
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressFill.style.width = percent + '%';
+        progressThumb.style.left = percent + '%';
+        
+        if (currentTimeSpan) currentTimeSpan.textContent = formatTime(audio.currentTime);
+        if (totalDurationSpan) totalDurationSpan.textContent = formatTime(audio.duration);
+    }
+    
+    // Mouse down - start dragging
+    function onMouseDown(e) {
+        if (!audio || !audio.duration) return;
+        isDragging = true;
+        e.preventDefault();
+        
+        progressContainer.classList.add('dragging');
+        updatePreview(e);
+        
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+    
+    // Mouse move - update preview
+    function onMouseMove(e) {
+        if (!isDragging) return;
+        updatePreview(e);
+    }
+    
+    // Mouse up - commit seek
+    function onMouseUp(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        progressContainer.classList.remove('dragging');
+        
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        
+        seekToPosition(e);
+    }
+    
+    // Update preview while dragging
+    function updatePreview(e) {
+        if (!progressContainer || !audio || !audio.duration) return;
+        
+        const rect = progressContainer.getBoundingClientRect();
+        const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        
+        progressFill.style.width = (percent * 100) + '%';
+        progressThumb.style.left = (percent * 100) + '%';
+        
+        if (currentTimeSpan) {
+            currentTimeSpan.textContent = formatTime(percent * audio.duration);
+        }
+    }
+    
+    // Seek to position
+    function seekToPosition(e) {
+        if (!progressContainer || !audio || !audio.duration) return;
+        
+        const rect = progressContainer.getBoundingClientRect();
+        const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        
+        audio.currentTime = percent * audio.duration;
+        updateProgress();
+    }
+    
+    // Touch support
+    function onTouchStart(e) {
+        if (!audio || !audio.duration) return;
+        isDragging = true;
+        e.preventDefault();
+        
+        progressContainer.classList.add('dragging');
+        
+        const touch = e.touches[0];
+        updatePreview({ clientX: touch.clientX });
+        
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+    }
+    
+    function onTouchMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const touch = e.touches[0];
+        updatePreview({ clientX: touch.clientX });
+    }
+    
+    function onTouchEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        progressContainer.classList.remove('dragging');
+        
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+        
+        const touch = e.changedTouches[0];
+        seekToPosition({ clientX: touch.clientX });
+    }
+    
+    // Click to seek
+    function onClick(e) {
+        if (isDragging) return;
+        seekToPosition(e);
+    }
+    
+    // Initialize
+    if (progressContainer) {
+        progressContainer.addEventListener('mousedown', onMouseDown);
+        progressContainer.addEventListener('touchstart', onTouchStart, { passive: false });
+        progressContainer.addEventListener('click', onClick);
+        
+        // Prevent text selection
+        progressContainer.style.userSelect = 'none';
+        progressContainer.style.webkitUserSelect = 'none';
+    }
+    
+    // Update progress on timeupdate
+    if (audio) {
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('loadedmetadata', updateProgress);
+    }
+    
+    console.log('✅ Playbar progress with drag initialized');
+})();
+
 
 </script>
 </body>
