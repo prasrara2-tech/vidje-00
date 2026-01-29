@@ -15458,6 +15458,14 @@ if ('serviceWorker' in navigator) {
                 audio.currentTime = Math.min(audio.currentTime + 10, audio.duration);
             });
             
+            // ✅ Arbitrary seek from lock screen progress bar
+            navigator.mediaSession.setActionHandler('seek', (details) => {
+                console.log('🎯 Seek to:', details.seekTime);
+                if (details.seekTime !== undefined && audio.duration) {
+                    audio.currentTime = Math.max(0, Math.min(audio.duration, details.seekTime));
+                }
+            });
+            
             // Update metadata lagu di notifikasi
             audio.addEventListener('loadedmetadata', () => {
                 const song = songs[currentSongIndex];
@@ -16730,6 +16738,23 @@ function setupEnhancedMediaSession() {
         console.log('↷ Seek forward:', details.seekTime);
         const newTime = Math.min(audio.duration, audio.currentTime + 10);
         audio.currentTime = newTime;
+    });
+    
+    // ✅ Arbitrary seek from lock screen progress bar drag
+    navigator.mediaSession.setActionHandler('seek', (details) => {
+        console.log('🎯 Seek to:', details.seekTime);
+        if (details.seekTime !== undefined && audio.duration) {
+            audio.currentTime = Math.max(0, Math.min(audio.duration, details.seekTime));
+            
+            // Update position state immediately
+            if ('setPositionState' in navigator.mediaSession) {
+                navigator.mediaSession.setPositionState({
+                    duration: audio.duration,
+                    playbackRate: audio.playbackRate || 1,
+                    position: audio.currentTime
+                });
+            }
+        }
     });
     
     console.log('✅ Enhanced Media Session handlers registered');
