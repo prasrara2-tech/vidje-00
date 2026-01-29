@@ -1,6 +1,9 @@
 // Service Worker untuk Vidje - Simple Cache Strategy
 const CACHE_NAME = 'vidje-v1';
 
+// Store reference untuk komunikasi dengan client
+let clients_store = [];
+
 // Install event - cache essential files
 self.addEventListener('install', (event) => {
   console.log('SW: Installing...');
@@ -34,6 +37,18 @@ self.addEventListener('activate', (event) => {
       );
     }).then(() => self.clients.claim())
   );
+});
+
+// ✅ BARU: Handle media control dari lock screen / notification
+self.addEventListener('message', (event) => {
+  console.log('SW: Message received:', event.data);
+  
+  // Broadcast pesan ke semua clients
+  self.clients.matchAll().then(clientList => {
+    clientList.forEach(client => {
+      client.postMessage(event.data);
+    });
+  });
 });
 
 // Fetch event - network first, fallback to cache
