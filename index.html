@@ -2283,7 +2283,6 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.9);
             border: 2px solid var(--primary-red);
         }
-        }
 
         /* Fixed Progress Bar Wrapper (di bawah playbar) */
         .fixed-progress-wrapper {
@@ -5008,8 +5007,6 @@ input:checked + .toggle-slider:before {
         font-weight: 700 !important;
         font-size: 32px !important;
     }
-}
-
 
     
     .overlay-lyrics-section {
@@ -5026,7 +5023,6 @@ input:checked + .toggle-slider:before {
         padding: 20px !important;
         text-align: center !important;
     }
-}
 
 .lyrics-overlay-container {
     position: fixed;
@@ -5922,7 +5918,6 @@ input:checked + .toggle-slider:before {
     .new-lyrics-line.current {
         font-size: 30px; /* Sedikit lebih kecil */
     }
-}
 }
 
     
@@ -8057,7 +8052,7 @@ console.log('✅ Supabase initialized');
             { title: "Dan", src: "dan.mp3" },
             { title: "Sephia", src: "sephia.mp3" },
             { title: "Melompat Lebih Tinggi", src: "anugrah.mp3" },
-            { title: "Anugrah Terindah Yang Pernah Kumiliki.", src: "kita.mp3" },
+            { title: "Film Favorit", src: "film.mp3" },
             { title: "Sahabat Sejati", src: "sahabat.mp3" },
             { title: "Seberapa Pantas", src: "seberapa.mp3" },
             { title: "Betapa", src: "betapa.mp3" },
@@ -10853,6 +10848,318 @@ function renderFriendPlaylists(playlists) {
         } else {
             switchLanguage(currentLanguage);
         }
+
+        // --- NEW LYRICS OVERLAY STATE ---
+        let newLyricsState = {
+            isOpen: false,
+            currentLineIndex: -1,
+            syncInterval: null
+        };
+        
+        // Helper function to format time
+        function formatTime(secs) {
+            if (isNaN(secs)) return '0:00';
+            const mins = Math.floor(secs / 60);
+            const seconds = Math.floor(secs % 60);
+            return `${mins}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Open new lyrics overlay
+        function openNewLyricsOverlay() {
+            console.log('🎵 Opening NEW lyrics overlay...');
+            
+            const overlay = document.getElementById('new-lyrics-overlay');
+            if (!overlay) {
+                console.error('❌ new-lyrics-overlay not found');
+                return;
+            }
+            
+            // Get current song
+            const currentSong = songs[currentSongIndex];
+            if (!currentSong) {
+                console.error('❌ No song playing');
+                return;
+            }
+            
+            // Set background
+            const bg = document.getElementById('new-overlay-bg');
+            if (bg && currentSong.cover) {
+                bg.style.backgroundImage = `url('${currentSong.cover}')`;
+            }
+            
+            // Set album art
+            const art = document.getElementById('new-album-art');
+            if (art && currentSong.cover) {
+                art.src = currentSong.cover;
+            }
+            
+            // Set title and artist
+            document.getElementById('new-song-title').textContent = currentSong.title || '-';
+            document.getElementById('new-song-artist').textContent = currentSong.artist || '-';
+            
+            // Render lyrics
+            renderNewLyrics();
+            
+            // Update shuffle/repeat button states
+            updateNewControlStates();
+            
+            // Show overlay
+            overlay.classList.add('active');
+            newLyricsState.isOpen = true;
+            
+            // Start sync
+            startNewLyricsSync();
+            
+            console.log('✅ NEW overlay opened for:', currentSong.title);
+        }
+        
+        // Close new lyrics overlay
+        function closeNewLyricsOverlay() {
+            console.log('❌ Closing NEW lyrics overlay...');
+            
+            const overlay = document.getElementById('new-lyrics-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            
+            newLyricsState.isOpen = false;
+            stopNewLyricsSync();
+        }
+        
+        // Render lyrics to new overlay
+        function renderNewLyrics() {
+            const currentSong = songs[currentSongIndex];
+            if (!currentSong) return;
+            
+            const lyrics = lyricsDatabase[currentSong.title];
+            const container = document.getElementById('new-lyrics-content');
+            
+            if (!container) {
+                console.error('❌ new-lyrics-content not found');
+                return;
+            }
+            
+            if (!lyrics) {
+                container.innerHTML = '<div class="new-lyrics-line" style="color: rgba(255,255,255,0.5);">Lirik tidak tersedia untuk lagu ini</div>';
+                console.log('⚠️ No lyrics for:', currentSong.title);
+                return;
+            }
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Render each line
+            lyrics.lines.forEach((line, index) => {
+                const lineEl = document.createElement('div');
+                lineEl.className = 'new-lyrics-line';
+                lineEl.id = `new-line-${index}`;
+                lineEl.textContent = line.text;
+                lineEl.onclick = () => newSeekToTime(line.time);
+                container.appendChild(lineEl);
+            });
+            
+            console.log('✅ Rendered', lyrics.lines.length, 'lyrics lines in NEW overlay');
+        }
+        
+        // Start lyrics sync for new overlay
+        function startNewLyricsSync() {
+            stopNewLyricsSync();
+            
+            newLyricsState.syncInterval = setInterval(() => {
+                if (!newLyricsState.isOpen) return;
+                
+                updateNewLyrics();
+                updateNewProgress();
+            }, 100);
+        }
+        
+        // Stop lyrics sync for new overlay
+        function stopNewLyricsSync() {
+            if (newLyricsState.syncInterval) {
+                clearInterval(newLyricsState.syncInterval);
+                newLyricsState.syncInterval = null;
+            }
+        }
+        
+        // Update lyrics highlighting in new overlay
+        function updateNewLyrics() {
+            const currentSong = songs[currentSongIndex];
+            if (!currentSong || !audio) return;
+            
+            const lyrics = lyricsDatabase[currentSong.title];
+            if (!lyrics) return;
+            
+            const currentTime = audio.currentTime;
+            
+            // Find current line
+            let newLineIndex = -1;
+            for (let i = 0; i < lyrics.lines.length; i++) {
+                if (lyrics.lines[i].time <= currentTime) {
+                    newLineIndex = i;
+                }
+            }
+
+            // Update if changed
+            if (newLineIndex !== newLyricsState.currentLineIndex) {
+                // Remove old highlight
+                if (newLyricsState.currentLineIndex >= 0) {
+                    const oldLine = document.getElementById(`new-line-${newLyricsState.currentLineIndex}`);
+                    if (oldLine) oldLine.classList.remove('current');
+                }
+
+                // Add new highlight
+                newLyricsState.currentLineIndex = newLineIndex;
+                if (newLineIndex >= 0) {
+                    const newLine = document.getElementById(`new-line-${newLineIndex}`);
+                    if (newLine) {
+                        newLine.classList.add('current');
+                        
+                        // Scroll to center
+                        const container = document.getElementById('new-lyrics-content');
+                        if (container) {
+                            const lineTop = newLine.offsetTop;
+                            const containerHeight = container.clientHeight;
+                            const scrollTarget = lineTop - (containerHeight / 2) + (newLine.offsetHeight / 2);
+                            
+                            container.scrollTo({
+                                top: scrollTarget,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Update progress bar in new overlay
+        function updateNewProgress() {
+            if (!audio || !audio.duration) return;
+            
+            // Don't update if user is dragging
+            if (isDraggingNewProgress) return;
+            
+            const percent = (audio.currentTime / audio.duration) * 100;
+            const fill = document.getElementById('new-progress-fill');
+            if (fill) {
+                fill.style.width = percent + '%';
+            }
+            
+            // Update time display
+            const currentTimeEl = document.getElementById('new-current-time');
+            const totalTimeEl = document.getElementById('new-total-time');
+            
+            if (currentTimeEl) {
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+            
+            if (totalTimeEl) {
+                totalTimeEl.textContent = formatTime(audio.duration);
+            }
+        }
+        
+        // Update control button states (shuffle/repeat)
+        function updateNewControlStates() {
+            try {
+                const shuffleBtn = document.getElementById('new-shuffle-btn');
+                const repeatBtn = document.getElementById('new-repeat-btn');
+                
+                // Safely check shuffle state
+                if (shuffleBtn) {
+                    const isShuffleActive = (typeof isShuffle !== 'undefined' && isShuffle) || 
+                                           (document.getElementById('shuffle-btn')?.classList.contains('active'));
+                    
+                    if (isShuffleActive) {
+                        shuffleBtn.classList.add('active');
+                    } else {
+                        shuffleBtn.classList.remove('active');
+                    }
+                }
+                
+                // Safely check repeat state
+                if (repeatBtn) {
+                    const isRepeatActive = (typeof repeatMode !== 'undefined' && repeatMode !== 0) || 
+                                           (document.getElementById('repeat-btn')?.classList.contains('active'));
+                    
+                    if (isRepeatActive) {
+                        repeatBtn.classList.add('active');
+                    } else {
+                        repeatBtn.classList.remove('active');
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not update control states:', error);
+            }
+        }
+        
+        // Toggle play/pause from new overlay
+        function newTogglePlayPause() {
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+            
+            // Update button icon
+            updateNewPlayButton();
+        }
+        
+        // Update play button icon with smooth animation
+        function updateNewPlayButton() {
+            const btn = document.getElementById('new-play-btn');
+            if (!btn) return;
+            
+            const icon = btn.querySelector('i');
+            if (icon) {
+                // Add scale animation
+                btn.style.transform = 'scale(0.9)';
+                
+                setTimeout(() => {
+                    if (isPlaying) {
+                        icon.className = 'ph-fill ph-pause';
+                    } else {
+                        icon.className = 'ph-fill ph-play';
+                    }
+                    btn.style.transform = 'scale(1)';
+                }, 100);
+            }
+        }
+        
+        // Seek to time in new overlay
+        function newSeekToTime(time) {
+            if (audio) {
+                audio.currentTime = time;
+                if (!isPlaying) {
+                    playAudio();
+                }
+            }
+        }
+        
+        // Progress bar drag state
+        let isDraggingNewProgress = false;
+        let previewPosition = 0;
+        
+        // Seek to position with drag support in new overlay
+        function newSeekToPosition(event) {
+            if (!audio || !audio.duration) return;
+            
+            const bar = event.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const percent = (event.clientX - rect.left) / rect.width;
+            
+            // Clamp between 0 and 1
+            const clampedPercent = Math.max(0, Math.min(1, percent));
+            
+            audio.currentTime = clampedPercent * audio.duration;
+        }
+        
+        // Make functions globally accessible
+        window.openNewLyricsOverlay = openNewLyricsOverlay;
+        window.closeNewLyricsOverlay = closeNewLyricsOverlay;
+        window.newTogglePlayPause = newTogglePlayPause;
+        window.newSeekToTime = newSeekToTime;
+        window.newSeekToPosition = newSeekToPosition;
+        
+        console.log('✅ NEW Lyrics Overlay functions loaded early');
 
         // --- NAVIGATION HISTORY FOR BACK BUTTON ---
         let navigationHistory = ['home']; // Start with home
@@ -13799,6 +14106,11 @@ function openArtistBandOverlay(artistData, songsList) {
                 return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }
             
+            // Helper function untuk get audio element (with fallback)
+            function getAudio() {
+                return document.getElementById('audio-player') || (window.audio);
+            }
+            
             // Show tooltip saat mouse move
             playerProgressBarWrapper.addEventListener('mousemove', (e) => {
                 if (!audio.duration) return;
@@ -13823,11 +14135,13 @@ function openArtistBandOverlay(artistData, songsList) {
                 }
             });
             
-            // Handle mouse drag untuk skip di desktop
+            // Handle mouse drag & click untuk skip di desktop
             let isMouseDragging = false;
+            let dragStartX = 0;
             
-            playerProgressBarWrapper.addEventListener('mousedown', () => {
+            playerProgressBarWrapper.addEventListener('mousedown', (e) => {
                 isMouseDragging = true;
+                dragStartX = e.clientX;
                 playerProgressBarWrapper.classList.add('dragging');
             });
             
@@ -13853,7 +14167,11 @@ function openArtistBandOverlay(artistData, songsList) {
             });
             
             document.addEventListener('mouseup', (e) => {
-                if (!isMouseDragging || !playerProgressBarWrapper || !audio.duration) return;
+                if (!isMouseDragging || !playerProgressBarWrapper || !audio.duration) {
+                    isMouseDragging = false;
+                    playerProgressBarWrapper.classList.remove('dragging');
+                    return;
+                }
                 
                 const rect = playerProgressBarWrapper.getBoundingClientRect();
                 
@@ -13877,14 +14195,15 @@ function openArtistBandOverlay(artistData, songsList) {
                 progressTimeTooltip.style.display = 'none';
             });
             
-            // Handle click untuk skip
+            // Handle click untuk simple skip (tanpa drag)
             playerProgressBarWrapper.addEventListener('click', (e) => {
-                if (!audio.duration) return;
+                const audio = getAudio();
+                if (!audio || !audio.duration || isMouseDragging) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const width = rect.width;
                 audio.currentTime = (x / width) * audio.duration;
-                console.log('⏭️ Skipped via progress bar to', audio.currentTime);
+                console.log('⏭️ Skipped via progress bar click to', audio.currentTime);
             });
             
             // Handle touch untuk mobile drag
@@ -15999,479 +16318,6 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error('❌ overlay-player NOT found');
     }
 });
-
-
-// ============================================
-// NEW CLEAN LYRICS OVERLAY FUNCTIONS
-// ============================================
-
-let newLyricsState = {
-    isOpen: false,
-    currentLineIndex: -1,
-    syncInterval: null
-};
-
-// Open new lyrics overlay
-function openNewLyricsOverlay() {
-    console.log('🎵 Opening NEW lyrics overlay...');
-    
-    const overlay = document.getElementById('new-lyrics-overlay');
-    if (!overlay) {
-        console.error('❌ new-lyrics-overlay not found');
-        return;
-    }
-    
-    // Get current song
-    const currentSong = songs[currentSongIndex];
-    if (!currentSong) {
-        console.error('❌ No song playing');
-        return;
-    }
-    
-    // Set background
-    const bg = document.getElementById('new-overlay-bg');
-    if (bg && currentSong.cover) {
-        bg.style.backgroundImage = `url('${currentSong.cover}')`;
-    }
-    
-    // Set album art
-    const art = document.getElementById('new-album-art');
-    if (art && currentSong.cover) {
-        art.src = currentSong.cover;
-    }
-    
-    // Set title and artist
-    document.getElementById('new-song-title').textContent = currentSong.title || '-';
-    document.getElementById('new-song-artist').textContent = currentSong.artist || '-';
-    
-    // Render lyrics
-    renderNewLyrics();
-    
-    // Update shuffle/repeat button states
-    updateNewControlStates();
-    
-    // Show overlay
-    overlay.classList.add('active');
-    newLyricsState.isOpen = true;
-    
-    // Start sync
-    startNewLyricsSync();
-    
-    console.log('✅ NEW overlay opened for:', currentSong.title);
-}
-
-// Close new lyrics overlay
-function closeNewLyricsOverlay() {
-    console.log('❌ Closing NEW lyrics overlay...');
-    
-    const overlay = document.getElementById('new-lyrics-overlay');
-    if (overlay) {
-        overlay.classList.remove('active');
-    }
-    
-    newLyricsState.isOpen = false;
-    stopNewLyricsSync();
-}
-
-// Render lyrics to new overlay
-function renderNewLyrics() {
-    const currentSong = songs[currentSongIndex];
-    if (!currentSong) return;
-    
-    const lyrics = lyricsDatabase[currentSong.title];
-    const container = document.getElementById('new-lyrics-content');
-    
-    if (!container) {
-        console.error('❌ new-lyrics-content not found');
-        return;
-    }
-    
-    if (!lyrics) {
-        container.innerHTML = '<div class="new-lyrics-line" style="color: rgba(255,255,255,0.5);">Lirik tidak tersedia untuk lagu ini</div>';
-        console.log('⚠️ No lyrics for:', currentSong.title);
-        return;
-    }
-    
-    // Clear container
-    container.innerHTML = '';
-    
-    // Render each line
-    lyrics.lines.forEach((line, index) => {
-        const lineEl = document.createElement('div');
-        lineEl.className = 'new-lyrics-line';
-        lineEl.id = `new-line-${index}`;
-        lineEl.textContent = line.text;
-        lineEl.onclick = () => newSeekToTime(line.time);
-        container.appendChild(lineEl);
-    });
-    
-    console.log('✅ Rendered', lyrics.lines.length, 'lyrics lines in NEW overlay');
-}
-
-// Start lyrics sync for new overlay
-function startNewLyricsSync() {
-    stopNewLyricsSync();
-    
-    newLyricsState.syncInterval = setInterval(() => {
-        if (!newLyricsState.isOpen) return;
-        
-        updateNewLyrics();
-        updateNewProgress();
-    }, 100);
-}
-
-// Stop lyrics sync for new overlay
-function stopNewLyricsSync() {
-    if (newLyricsState.syncInterval) {
-        clearInterval(newLyricsState.syncInterval);
-        newLyricsState.syncInterval = null;
-    }
-}
-
-// Update lyrics highlighting in new overlay
-function updateNewLyrics() {
-    const currentSong = songs[currentSongIndex];
-    if (!currentSong || !audio) return;
-    
-    const lyrics = lyricsDatabase[currentSong.title];
-    if (!lyrics) return;
-    
-    const currentTime = audio.currentTime;
-    
-    // Find current line
-    let newLineIndex = -1;
-    for (let i = 0; i < lyrics.lines.length; i++) {
-        if (lyrics.lines[i].time <= currentTime) {
-            newLineIndex = i;
-        }
-    }
-
-    // Update if changed
-    if (newLineIndex !== newLyricsState.currentLineIndex) {
-        // Remove old highlight
-        if (newLyricsState.currentLineIndex >= 0) {
-            const oldLine = document.getElementById(`new-line-${newLyricsState.currentLineIndex}`);
-            if (oldLine) oldLine.classList.remove('current');
-        }
-
-        // Add new highlight
-        newLyricsState.currentLineIndex = newLineIndex;
-        if (newLineIndex >= 0) {
-            const newLine = document.getElementById(`new-line-${newLineIndex}`);
-            if (newLine) {
-                newLine.classList.add('current');
-                
-                // Scroll to center
-                const container = document.getElementById('new-lyrics-content');
-                if (container) {
-                    const lineTop = newLine.offsetTop;
-                    const containerHeight = container.clientHeight;
-                    const scrollTarget = lineTop - (containerHeight / 2) + (newLine.offsetHeight / 2);
-                    
-                    container.scrollTo({
-                        top: scrollTarget,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-        }
-    }
-}
-
-// Helper function to format time
-function formatTime(secs) {
-    if (isNaN(secs)) return '0:00';
-    const mins = Math.floor(secs / 60);
-    const seconds = Math.floor(secs % 60);
-    return `${mins}:${seconds.toString().padStart(2, '0')}`;
-}
-
-// Update progress bar in new overlay
-function updateNewProgress() {
-    if (!audio || !audio.duration) return;
-    
-    // Don't update if user is dragging
-    if (isDraggingNewProgress) return;
-    
-    const percent = (audio.currentTime / audio.duration) * 100;
-    const fill = document.getElementById('new-progress-fill');
-    if (fill) {
-        fill.style.width = percent + '%';
-    }
-    
-    // Update time display
-    const currentTimeEl = document.getElementById('new-current-time');
-    const totalTimeEl = document.getElementById('new-total-time');
-    
-    if (currentTimeEl) {
-        currentTimeEl.textContent = formatTime(audio.currentTime);
-    }
-    
-    if (totalTimeEl) {
-        totalTimeEl.textContent = formatTime(audio.duration);
-    }
-}
-
-// Update control button states (shuffle/repeat)
-function updateNewControlStates() {
-    try {
-        const shuffleBtn = document.getElementById('new-shuffle-btn');
-        const repeatBtn = document.getElementById('new-repeat-btn');
-        
-        // Safely check shuffle state
-        if (shuffleBtn) {
-            const isShuffleActive = (typeof isShuffle !== 'undefined' && isShuffle) || 
-                                   (document.getElementById('shuffle-btn')?.classList.contains('active'));
-            
-            if (isShuffleActive) {
-                shuffleBtn.classList.add('active');
-            } else {
-                shuffleBtn.classList.remove('active');
-            }
-        }
-        
-        // Safely check repeat state
-        if (repeatBtn) {
-            const isRepeatActive = (typeof repeatMode !== 'undefined' && repeatMode !== 0) || 
-                                   (document.getElementById('repeat-btn')?.classList.contains('active'));
-            
-            if (isRepeatActive) {
-                repeatBtn.classList.add('active');
-            } else {
-                repeatBtn.classList.remove('active');
-            }
-        }
-    } catch (error) {
-        console.warn('Could not update control states:', error);
-    }
-}
-
-// Toggle play/pause from new overlay
-function newTogglePlayPause() {
-    if (isPlaying) {
-        pauseAudio();
-    } else {
-        playAudio();
-    }
-    
-    // Update button icon
-    updateNewPlayButton();
-}
-
-// Update play button icon with smooth animation
-function updateNewPlayButton() {
-    const btn = document.getElementById('new-play-btn');
-    if (!btn) return;
-    
-    const icon = btn.querySelector('i');
-    if (icon) {
-        // Add scale animation
-        btn.style.transform = 'scale(0.9)';
-        
-        setTimeout(() => {
-            if (isPlaying) {
-                icon.className = 'ph-fill ph-pause';
-            } else {
-                icon.className = 'ph-fill ph-play';
-            }
-            btn.style.transform = 'scale(1)';
-        }, 100);
-    }
-}
-
-// Seek to time in new overlay
-function newSeekToTime(time) {
-    if (audio) {
-        audio.currentTime = time;
-        if (!isPlaying) {
-            playAudio();
-        }
-    }
-}
-
-// ===== NEW DRAG SYSTEM FOR PROGRESS BAR =====
-
-// State untuk tracking drag
-let isDraggingNewProgress = false;
-let previewPosition = 0;
-
-// Seek to position with drag support in new overlay
-function newSeekToPosition(event) {
-    if (!audio || !audio.duration) return;
-    
-    const bar = event.currentTarget;
-    const rect = bar.getBoundingClientRect();
-    const percent = (event.clientX - rect.left) / rect.width;
-    
-    // Clamp between 0 and 1
-    const clampedPercent = Math.max(0, Math.min(1, percent));
-    
-    audio.currentTime = clampedPercent * audio.duration;
-}
-
-// Mouse down - start dragging
-function newProgressMouseDown(event) {
-    if (!audio || !audio.duration) return;
-    
-    isDraggingNewProgress = true;
-    event.preventDefault();
-    
-    // Add dragging class for visual feedback
-    const bar = document.querySelector('.new-progress-bar');
-    if (bar) bar.classList.add('dragging');
-    
-    // Update preview immediately
-    updateNewProgressPreview(event);
-    
-    // Add global listeners
-    document.addEventListener('mousemove', newProgressMouseMove);
-    document.addEventListener('mouseup', newProgressMouseUp);
-}
-
-// Mouse move - update preview
-function newProgressMouseMove(event) {
-    if (!isDraggingNewProgress) return;
-    updateNewProgressPreview(event);
-}
-
-// Mouse up - commit the seek
-function newProgressMouseUp(event) {
-    if (!isDraggingNewProgress) return;
-    
-    isDraggingNewProgress = false;
-    
-    // Remove dragging class
-    const bar = document.querySelector('.new-progress-bar');
-    if (bar) bar.classList.remove('dragging');
-    
-    // Remove global listeners
-    document.removeEventListener('mousemove', newProgressMouseMove);
-    document.removeEventListener('mouseup', newProgressMouseUp);
-    
-    // Actually seek to the position
-    if (!bar || !audio || !audio.duration) return;
-    
-    const rect = bar.getBoundingClientRect();
-    const percent = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-    
-    audio.currentTime = percent * audio.duration;
-    
-    // Force update display
-    updateNewProgress();
-}
-
-// Update preview while dragging
-function updateNewProgressPreview(event) {
-    const bar = document.querySelector('.new-progress-bar');
-    const fill = document.getElementById('new-progress-fill');
-    const currentTimeEl = document.getElementById('new-current-time');
-    
-    if (!bar || !fill || !audio || !audio.duration) return;
-    
-    const rect = bar.getBoundingClientRect();
-    const percent = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-    
-    // Update visual preview
-    fill.style.width = (percent * 100) + '%';
-    
-    // Update time preview
-    previewPosition = percent * audio.duration;
-    if (currentTimeEl) {
-        currentTimeEl.textContent = formatTime(previewPosition);
-    }
-}
-
-// Touch event handlers for mobile
-function newProgressTouchStart(event) {
-    if (!audio || !audio.duration) return;
-    
-    isDraggingNewProgress = true;
-    event.preventDefault();
-    
-    const bar = document.querySelector('.new-progress-bar');
-    if (bar) bar.classList.add('dragging');
-    
-    // Convert touch to mouse event format
-    const touch = event.touches[0];
-    const mouseEvent = { clientX: touch.clientX };
-    updateNewProgressPreview(mouseEvent);
-    
-    document.addEventListener('touchmove', newProgressTouchMove, { passive: false });
-    document.addEventListener('touchend', newProgressTouchEnd);
-}
-
-function newProgressTouchMove(event) {
-    if (!isDraggingNewProgress) return;
-    event.preventDefault();
-    
-    const touch = event.touches[0];
-    const mouseEvent = { clientX: touch.clientX };
-    updateNewProgressPreview(mouseEvent);
-}
-
-function newProgressTouchEnd(event) {
-    if (!isDraggingNewProgress) return;
-    
-    isDraggingNewProgress = false;
-    
-    const bar = document.querySelector('.new-progress-bar');
-    if (bar) bar.classList.remove('dragging');
-    
-    document.removeEventListener('touchmove', newProgressTouchMove);
-    document.removeEventListener('touchend', newProgressTouchEnd);
-    
-    // Get the last touch position
-    const touch = event.changedTouches[0];
-    if (!bar || !audio || !audio.duration) return;
-    
-    const rect = bar.getBoundingClientRect();
-    const percent = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
-    
-    audio.currentTime = percent * audio.duration;
-    updateNewProgress();
-}
-
-// Initialize drag handlers
-function initNewProgressBarDrag() {
-    const progressBar = document.querySelector('.new-progress-bar');
-    if (progressBar) {
-        // Remove onclick, use mousedown instead
-        progressBar.removeAttribute('onclick');
-        progressBar.addEventListener('mousedown', newProgressMouseDown);
-        
-        // Add touch support
-        progressBar.addEventListener('touchstart', newProgressTouchStart, { passive: false });
-        
-        // Prevent text selection while dragging
-        progressBar.style.userSelect = 'none';
-        progressBar.style.webkitUserSelect = 'none';
-        progressBar.style.webkitTouchCallout = 'none';
-    }
-}
-
-// Call init when ready
-setTimeout(initNewProgressBarDrag, 100);
-
-// Hook into existing audio events to update new overlay
-if (typeof audio !== 'undefined') {
-    audio.addEventListener('play', () => {
-        updateNewPlayButton();
-    });
-    
-    audio.addEventListener('pause', () => {
-        updateNewPlayButton();
-    });
-}
-
-// Make function globally accessible
-window.openNewLyricsOverlay = openNewLyricsOverlay;
-window.closeNewLyricsOverlay = closeNewLyricsOverlay;
-window.newTogglePlayPause = newTogglePlayPause;
-window.newSeekToTime = newSeekToTime;
-window.newSeekToPosition = newSeekToPosition;
-
-console.log('✅ NEW Lyrics Overlay functions loaded');
-
 
 
 // Update lyrics button indicator when song changes
