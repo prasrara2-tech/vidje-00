@@ -11253,9 +11253,9 @@ function renderFriendPlaylists(playlists) {
         // Toggle play/pause from new overlay
         function newTogglePlayPause() {
             if (isPlaying) {
-                pauseAudio();
+                window.pauseAudio();
             } else {
-                playAudio();
+                window.playAudio();
             }
             
             // Update button icon
@@ -11288,7 +11288,7 @@ function renderFriendPlaylists(playlists) {
             if (audio) {
                 audio.currentTime = time;
                 if (!isPlaying) {
-                    playAudio();
+                    window.playAudio();
                 }
             }
         }
@@ -13577,7 +13577,7 @@ function renderProfilePublicPlaylists() {
             if (audio) {
                 audio.currentTime = time;
                 if (!isPlaying) {
-                    playAudio();
+                    window.playAudio();
                 }
             }
         }
@@ -14176,7 +14176,7 @@ function openArtistBandOverlay(artistData, songsList) {
             if (track) {
                 console.log('✅ Found in global array:', track.title, 'by', track.artist);
                 window.loadSong(track);
-                window.playAudio();
+                window.window.playAudio();
             } else {
                 console.error('❌ NOT FOUND in global array!', song.id);
             }
@@ -15970,13 +15970,12 @@ if ('serviceWorker' in navigator) {
             // Setup controls di notifikasi (Play/Pause/Next/Previous)
             navigator.mediaSession.setActionHandler('play', () => {
                 console.log('▶️ Play triggered from notification');
-                playAudio();
+                window.playAudio();
             });
             
             navigator.mediaSession.setActionHandler('pause', () => {
-                audio.pause();
-                isPlaying = false;
-                updatePlayBtn();
+                console.log('⏸️ Pause triggered from notification');
+                window.pauseAudio();
             });
             
             navigator.mediaSession.setActionHandler('nexttrack', () => {
@@ -16840,10 +16839,10 @@ function setupMediaControlListener() {
             
             switch (action) {
                 case 'play':
-                    playAudio();
+                    window.playAudio();
                     break;
                 case 'pause':
-                    pauseAudio();
+                    window.pauseAudio();
                     break;
                 case 'next':
                     playNext();
@@ -16912,6 +16911,10 @@ function pauseAudio() {
     console.log('✅ Audio paused');
 }
 
+// Export to window for media session handlers
+if (typeof window.playAudio === 'undefined') window.playAudio = playAudio;
+if (typeof window.pauseAudio === 'undefined') window.pauseAudio = pauseAudio;
+
 // ✅ ENHANCED MEDIA SESSION dengan error handling
 function setupEnhancedMediaSession() {
     if (!('mediaSession' in navigator)) {
@@ -16925,15 +16928,13 @@ function setupEnhancedMediaSession() {
     // ✅ Play action
     navigator.mediaSession.setActionHandler('play', () => {
         console.log('▶️ Play triggered from media control');
-        playAudio();
+        window.playAudio();
     });
     
     // ✅ Pause action
     navigator.mediaSession.setActionHandler('pause', () => {
         console.log('⏸️ Pause triggered from media control');
-        audio.pause();
-        isPlaying = false;
-        updatePlayBtn();
+        window.pauseAudio();
     });
     
     // ✅ Next track
