@@ -2217,6 +2217,43 @@
         .progress-container:hover .progress-fill { background-color: var(--primary-red); }
         .progress-container:hover .progress-fill { background-color: var(--primary-red); }
 
+        /* Fixed Progress Bar Wrapper (di atas playbar) */
+        .player-progress-bar-wrapper {
+            position: fixed;
+            bottom: var(--player-height);
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.15);
+            cursor: pointer;
+            z-index: 19999;
+        }
+
+        /* On larger screens align with player-bar */
+        @media (min-width: 769px) {
+            .player-progress-bar-wrapper {
+                left: var(--sidebar-width);
+                width: calc(100% - var(--sidebar-width));
+            }
+        }
+
+        /* On mobile, ensure it spans full width and positions correctly */
+        @media (max-width: 768px) {
+            .player-progress-bar-wrapper {
+                left: 0;
+                right: 0;
+                width: 100%;
+                bottom: calc(var(--player-height) + var(--mobile-nav-height));
+            }
+        }
+
+        .player-progress-fill {
+            height: 100%;
+            background: var(--primary-red);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
         /* Fixed Progress Bar Wrapper (di bawah playbar) */
         .fixed-progress-wrapper {
             position: fixed;
@@ -7144,13 +7181,13 @@ input:checked + .toggle-slider:before {
         <!-- Toast Notification -->
         <div id="toast-container" style="position: fixed; bottom: 110px; right: 20px; z-index: 5000; display: flex; flex-direction: column; gap: 10px; max-width: 320px;"></div>
 
+        <!-- Progress Bar (above player-bar) -->
+        <div class="player-progress-bar-wrapper" id="player-progress-bar-wrapper">
+            <div class="player-progress-fill" id="player-progress-fill"></div>
+        </div>
+
         <!-- Player Bar -->
         <footer class="player-bar">
-            <!-- Progress Bar at Top -->
-            <div class="player-progress-container" id="player-progress-container" style="width: 100%; height: 3px; background: rgba(255,255,255,0.1); cursor: pointer; position: absolute; top: 0; left: 0;">
-                <div class="player-progress-fill" id="player-progress-fill" style="height: 100%; background: #e50914; width: 0%; transition: width 0.1s linear;"></div>
-            </div>
-            
             <div class="player-left">
                 <img src="https://picsum.photos/seed/music/60/60" alt="Album Art" class="current-art" id="player-art">
                 <div class="current-info">
@@ -7183,14 +7220,6 @@ input:checked + .toggle-slider:before {
     </div>
 </div>
         </footer>
-        </footer>
-
-        <!-- Progress Bar Fixed (di bawah playbar) -->
-        <div class="fixed-progress-wrapper">
-            <div class="progress-container" id="progress-container">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
-        </div>
 
         <!-- Mobile bottom navigation (visible on small screens) -->
         <!-- Mobile bottom navigation (visible on small screens) -->
@@ -13726,15 +13755,15 @@ function openArtistBandOverlay(artistData, songsList) {
         
 
         // Main Player Progress Bar Click - for background skip
-        const playerProgressContainer = document.getElementById('player-progress-container');
-        if (playerProgressContainer) {
-            playerProgressContainer.addEventListener('click', (e) => {
+        const playerProgressBarWrapper = document.getElementById('player-progress-bar-wrapper');
+        if (playerProgressBarWrapper) {
+            playerProgressBarWrapper.addEventListener('click', (e) => {
                 if (!audio.duration) return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const width = rect.width;
                 audio.currentTime = (x / width) * audio.duration;
-                console.log('⏭️ Skipped via player progress bar to', audio.currentTime);
+                console.log('⏭️ Skipped via progress bar to', audio.currentTime);
             });
         }
 
@@ -14290,8 +14319,11 @@ window.toggleShuffle = toggleShuffle;
             if (isNaN(duration)) return;
             const pct = (currentTime / duration) * 100;
             
-            // Footer Player
-            document.getElementById('progress-fill').style.width = `${pct}%`;
+            // Update Player Progress Bar (di sidebar)
+            const playerProgressFill = document.getElementById('player-progress-fill');
+            if (playerProgressFill) {
+                playerProgressFill.style.width = `${pct}%`;
+            }
             
             const fmt = t => {
                 const m = Math.floor(t/60);
@@ -14345,7 +14377,10 @@ function updateProgress(e, container) {
     
     if (isProgressDragging) {
         // Update visual only while dragging
-        document.getElementById('progress-fill').style.width = `${percent * 100}%`;
+        const fill = document.getElementById('player-progress-fill');
+        if (fill) {
+            fill.style.width = `${percent * 100}%`;
+        }
     } else {
         // Update audio time on click
         audio.currentTime = percent * audio.duration;
@@ -14354,7 +14389,8 @@ function updateProgress(e, container) {
 
 function progressMouseDown(e) {
     isProgressDragging = true;
-    const container = document.getElementById('progress-container');
+    const container = document.getElementById('player-progress-bar-wrapper');
+    if (!container) return;
     updateProgress(e, container);
     
     document.addEventListener('mousemove', progressMouseMove);
@@ -14363,14 +14399,16 @@ function progressMouseDown(e) {
 
 function progressMouseMove(e) {
     if (!isProgressDragging) return;
-    const container = document.getElementById('progress-container');
+    const container = document.getElementById('player-progress-bar-wrapper');
+    if (!container) return;
     updateProgress(e, container);
 }
 
 function progressMouseUp(e) {
     if (!isProgressDragging) return;
     
-    const container = document.getElementById('progress-container');
+    const container = document.getElementById('player-progress-bar-wrapper');
+    if (!container) return;
     const rect = container.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const width = rect.width;
@@ -14387,7 +14425,8 @@ function progressMouseUp(e) {
 // Touch support for mobile
 function progressTouchStart(e) {
     isProgressDragging = true;
-    const container = document.getElementById('progress-container');
+    const container = document.getElementById('player-progress-bar-wrapper');
+    if (!container) return;
     const touch = e.touches[0];
     const mouseEvent = { clientX: touch.clientX };
     updateProgress(mouseEvent, container);
@@ -14400,7 +14439,8 @@ function progressTouchMove(e) {
     if (!isProgressDragging) return;
     e.preventDefault();
     
-    const container = document.getElementById('progress-container');
+    const container = document.getElementById('player-progress-bar-wrapper');
+    if (!container) return;
     const touch = e.touches[0];
     const mouseEvent = { clientX: touch.clientX };
     updateProgress(mouseEvent, container);
@@ -14409,7 +14449,8 @@ function progressTouchMove(e) {
 function progressTouchEnd(e) {
     if (!isProgressDragging) return;
     
-    const container = document.getElementById('progress-container');
+    const container = document.getElementById('player-progress-bar-wrapper');
+    if (!container) return;
     const touch = e.changedTouches[0];
     const rect = container.getBoundingClientRect();
     const x = touch.clientX - rect.left;
@@ -14424,7 +14465,7 @@ function progressTouchEnd(e) {
 }
 
 // Initialize progress bar drag
-const progressContainer = document.getElementById('progress-container');
+const progressContainer = document.getElementById('player-progress-bar-wrapper');
 if (progressContainer) {
     progressContainer.addEventListener('mousedown', progressMouseDown);
     progressContainer.addEventListener('touchstart', progressTouchStart, { passive: false });
@@ -15212,7 +15253,15 @@ if ('serviceWorker' in navigator) {
             
             // Setup controls di notifikasi (Play/Pause/Next/Previous)
             navigator.mediaSession.setActionHandler('play', () => {
-                audio.play();
+                console.log('▶️ Play triggered from notification');
+                if (audio.paused) {
+                    audio.play().catch(err => {
+                        console.warn('Play error:', err);
+                        setTimeout(() => {
+                            audio.play().catch(err => console.warn('Retry play failed:', err));
+                        }, 100);
+                    });
+                }
                 isPlaying = true;
                 updatePlayBtn();
             });
@@ -16426,9 +16475,28 @@ function setupEnhancedMediaSession() {
     // ✅ Play action
     navigator.mediaSession.setActionHandler('play', () => {
         console.log('▶️ Play triggered from media control');
-        audio.play().catch(err => console.warn('Play error:', err));
+        
+        // Resume audio context if available (Web Audio API)
+        if (audio.paused) {
+            audio.play().catch(err => {
+                console.warn('Play error:', err);
+                // Try again after a short delay
+                setTimeout(() => {
+                    audio.play().catch(err => console.warn('Retry play failed:', err));
+                }, 100);
+            });
+        }
+        
         isPlaying = true;
         updatePlayBtn();
+        
+        // Broadcast to all tabs/windows
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'PLAY_CONTROL',
+                action: 'play'
+            });
+        }
     });
     
     // ✅ Pause action
