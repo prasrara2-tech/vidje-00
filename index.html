@@ -2227,6 +2227,14 @@
             background: rgba(255,255,255,0.15);
             cursor: pointer;
             z-index: 19999;
+            transition: height 0.2s ease;
+        }
+
+        /* Saat hover atau dragging, buat lebih visible */
+        .player-progress-bar-wrapper:hover,
+        .player-progress-bar-wrapper.dragging {
+            height: 6px;
+            background: rgba(255,255,255,0.25);
         }
 
         /* On larger screens align with player-bar */
@@ -2252,6 +2260,29 @@
             background: var(--primary-red);
             width: 0%;
             transition: width 0.1s linear;
+            box-shadow: 0 0 0 rgba(229, 9, 20, 0.3);
+        }
+
+        .player-progress-bar-wrapper:hover .player-progress-fill,
+        .player-progress-bar-wrapper.dragging .player-progress-fill {
+            box-shadow: 0 0 8px rgba(229, 9, 20, 0.8);
+        }
+
+        /* Progress Time Tooltip */
+        .progress-time-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.98);
+            color: var(--primary-red);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 20002;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--primary-red);
+        }
         }
 
         /* Fixed Progress Bar Wrapper (di bawah playbar) */
@@ -7184,6 +7215,7 @@ input:checked + .toggle-slider:before {
         <!-- Progress Bar (above player-bar) -->
         <div class="player-progress-bar-wrapper" id="player-progress-bar-wrapper">
             <div class="player-progress-fill" id="player-progress-fill"></div>
+            <div class="progress-time-tooltip" id="progress-time-tooltip" style="display: none;">00:00</div>
         </div>
 
         <!-- Player Bar -->
@@ -13756,7 +13788,96 @@ function openArtistBandOverlay(artistData, songsList) {
 
         // Main Player Progress Bar Click - for background skip
         const playerProgressBarWrapper = document.getElementById('player-progress-bar-wrapper');
+        const progressTimeTooltip = document.getElementById('progress-time-tooltip');
+        
         if (playerProgressBarWrapper) {
+            // Format waktu dari detik ke mm:ss
+            function formatTime(seconds) {
+                if (isNaN(seconds)) return '00:00';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // Show tooltip saat mouse move
+            playerProgressBarWrapper.addEventListener('mousemove', (e) => {
+                if (!audio.duration) return;
+                
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const width = rect.width;
+                const time = (x / width) * audio.duration;
+                
+                // Update tooltip position dan text
+                progressTimeTooltip.textContent = formatTime(time);
+                progressTimeTooltip.style.left = (rect.left + x) + 'px';
+                progressTimeTooltip.style.top = (rect.top - 35) + 'px';
+                progressTimeTooltip.style.transform = 'translateX(-50%)';
+                progressTimeTooltip.style.display = 'block';
+            });
+            
+            // Show tooltip saat enter
+            playerProgressBarWrapper.addEventListener('mouseenter', () => {
+                if (audio.duration) {
+                    progressTimeTooltip.style.display = 'block';
+                }
+            });
+            
+            // Handle mouse drag untuk skip di desktop
+            let isMouseDragging = false;
+            
+            playerProgressBarWrapper.addEventListener('mousedown', () => {
+                isMouseDragging = true;
+                playerProgressBarWrapper.classList.add('dragging');
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isMouseDragging || !playerProgressBarWrapper || !audio.duration) return;
+                
+                const rect = playerProgressBarWrapper.getBoundingClientRect();
+                
+                // Cek apakah mouse masih di atas progress bar
+                if (e.clientY >= rect.top && e.clientY <= rect.bottom && 
+                    e.clientX >= rect.left && e.clientX <= rect.right) {
+                    
+                    const x = e.clientX - rect.left;
+                    const width = rect.width;
+                    const time = (x / width) * audio.duration;
+                    
+                    progressTimeTooltip.textContent = formatTime(time);
+                    progressTimeTooltip.style.left = (rect.left + x) + 'px';
+                    progressTimeTooltip.style.top = (rect.top - 45) + 'px';
+                    progressTimeTooltip.style.transform = 'translateX(-50%)';
+                    progressTimeTooltip.style.display = 'block';
+                }
+            });
+            
+            document.addEventListener('mouseup', (e) => {
+                if (!isMouseDragging || !playerProgressBarWrapper || !audio.duration) return;
+                
+                const rect = playerProgressBarWrapper.getBoundingClientRect();
+                
+                // Hanya skip jika release di atas progress bar
+                if (e.clientY >= rect.top && e.clientY <= rect.bottom && 
+                    e.clientX >= rect.left && e.clientX <= rect.right) {
+                    
+                    const x = e.clientX - rect.left;
+                    const width = rect.width;
+                    audio.currentTime = (x / width) * audio.duration;
+                    console.log('⏭️ Skipped via mouse drag to', audio.currentTime);
+                }
+                
+                isMouseDragging = false;
+                playerProgressBarWrapper.classList.remove('dragging');
+                progressTimeTooltip.style.display = 'none';
+            });
+            
+            // Hide tooltip saat leave
+            playerProgressBarWrapper.addEventListener('mouseleave', () => {
+                progressTimeTooltip.style.display = 'none';
+            });
+            
+            // Handle click untuk skip
             playerProgressBarWrapper.addEventListener('click', (e) => {
                 if (!audio.duration) return;
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -13764,6 +13885,45 @@ function openArtistBandOverlay(artistData, songsList) {
                 const width = rect.width;
                 audio.currentTime = (x / width) * audio.duration;
                 console.log('⏭️ Skipped via progress bar to', audio.currentTime);
+            });
+            
+            // Handle touch untuk mobile drag
+            let isTouching = false;
+            playerProgressBarWrapper.addEventListener('touchstart', () => {
+                isTouching = true;
+                progressTimeTooltip.style.display = 'block';
+                playerProgressBarWrapper.classList.add('dragging');
+            });
+            
+            playerProgressBarWrapper.addEventListener('touchmove', (e) => {
+                if (!audio.duration || !isTouching) return;
+                
+                const rect = e.currentTarget.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const width = rect.width;
+                const time = (x / width) * audio.duration;
+                
+                progressTimeTooltip.textContent = formatTime(time);
+                progressTimeTooltip.style.left = (rect.left + x) + 'px';
+                progressTimeTooltip.style.top = (rect.top - 45) + 'px';
+                progressTimeTooltip.style.transform = 'translateX(-50%)';
+                progressTimeTooltip.style.display = 'block';
+            });
+            
+            playerProgressBarWrapper.addEventListener('touchend', (e) => {
+                if (!audio.duration) return;
+                
+                const rect = e.currentTarget.getBoundingClientRect();
+                const touch = e.changedTouches[0];
+                const x = touch.clientX - rect.left;
+                const width = rect.width;
+                audio.currentTime = (x / width) * audio.duration;
+                
+                isTouching = false;
+                playerProgressBarWrapper.classList.remove('dragging');
+                progressTimeTooltip.style.display = 'none';
+                console.log('⏭️ Skipped via touch to', audio.currentTime);
             });
         }
 
@@ -14305,6 +14465,25 @@ function openArtistBandOverlay(artistData, songsList) {
                 e.preventDefault();
                 const btn = document.getElementById('play-pause-btn');
                 if (btn) btn.click();
+            }
+            
+            // Arrow keys untuk seek (Left/Right)
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                const ae = document.activeElement;
+                const tag = ae && ae.tagName && ae.tagName.toLowerCase();
+                if (tag === 'input' || tag === 'textarea' || (ae && ae.isContentEditable)) return;
+                
+                e.preventDefault();
+                const audio = document.getElementById('audio-player');
+                if (!audio || !audio.duration) return;
+                
+                const skipAmount = e.shiftKey ? 30 : 5; // Shift + arrow = 30s, else = 5s
+                const newTime = e.key === 'ArrowRight' 
+                    ? Math.min(audio.duration, audio.currentTime + skipAmount)
+                    : Math.max(0, audio.currentTime - skipAmount);
+                
+                audio.currentTime = newTime;
+                console.log(`⏭️ Seek ${e.key === 'ArrowRight' ? 'forward' : 'backward'} ${skipAmount}s to ${newTime.toFixed(2)}s`);
             }
         });
 
@@ -15254,16 +15433,7 @@ if ('serviceWorker' in navigator) {
             // Setup controls di notifikasi (Play/Pause/Next/Previous)
             navigator.mediaSession.setActionHandler('play', () => {
                 console.log('▶️ Play triggered from notification');
-                if (audio.paused) {
-                    audio.play().catch(err => {
-                        console.warn('Play error:', err);
-                        setTimeout(() => {
-                            audio.play().catch(err => console.warn('Retry play failed:', err));
-                        }, 100);
-                    });
-                }
-                isPlaying = true;
-                updatePlayBtn();
+                playAudio();
             });
             
             navigator.mediaSession.setActionHandler('pause', () => {
@@ -16462,6 +16632,56 @@ function setupMediaControlListener() {
     }
 }
 
+// ✅ Helper function to play audio
+function playAudio() {
+    const audio = document.getElementById('audio-player');
+    if (!audio) return;
+    
+    if (!audio.src || audio.src === window.location.href) {
+        console.warn("⚠️ Audio source is empty, cannot play.");
+        return; 
+    }
+    
+    const playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(_ => {
+            isPlaying = true;
+            updatePlayBtn();
+            console.log('✅ Audio playback started');
+        })
+        .catch(error => {
+            console.error("❌ Audio Play Error:", error);
+            
+            // Retry jika ada temporary issue
+            if (error.name === 'NotAllowedError' || error.name === 'NotSupportedError') {
+                console.log('Retrying play after delay...');
+                setTimeout(() => {
+                    audio.play().catch(err => {
+                        console.error("❌ Retry play failed:", err);
+                        isPlaying = false;
+                        updatePlayBtn();
+                    });
+                }, 200);
+            } else {
+                isPlaying = false;
+                updatePlayBtn();
+            }
+        });
+    }
+}
+
+// ✅ Helper function to pause audio
+function pauseAudio() {
+    const audio = document.getElementById('audio-player');
+    if (!audio) return;
+    
+    audio.pause();
+    isPlaying = false;
+    updatePlayBtn();
+    console.log('✅ Audio paused');
+}
+
 // ✅ ENHANCED MEDIA SESSION dengan error handling
 function setupEnhancedMediaSession() {
     if (!('mediaSession' in navigator)) {
@@ -16475,28 +16695,7 @@ function setupEnhancedMediaSession() {
     // ✅ Play action
     navigator.mediaSession.setActionHandler('play', () => {
         console.log('▶️ Play triggered from media control');
-        
-        // Resume audio context if available (Web Audio API)
-        if (audio.paused) {
-            audio.play().catch(err => {
-                console.warn('Play error:', err);
-                // Try again after a short delay
-                setTimeout(() => {
-                    audio.play().catch(err => console.warn('Retry play failed:', err));
-                }, 100);
-            });
-        }
-        
-        isPlaying = true;
-        updatePlayBtn();
-        
-        // Broadcast to all tabs/windows
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-                type: 'PLAY_CONTROL',
-                action: 'play'
-            });
-        }
+        playAudio();
     });
     
     // ✅ Pause action
