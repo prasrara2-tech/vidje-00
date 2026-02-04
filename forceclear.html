@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Force Clear Cache - Vidje</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #222;
+        }
+        .success { border-left: 4px solid #0f0; }
+        .error { border-left: 4px solid #f00; }
+        .info { border-left: 4px solid #00f; }
+        button {
+            background: #e50914;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #f40612;
+        }
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Force Clear Cache - Vidje</h1>
+    <p>Gunakan halaman ini untuk membersihkan SEMUA cache dan service worker lama.</p>
+
+    <div id="status"></div>
+
+    <button onclick="clearEverything()">🗑️ Clear Everything</button>
+    <button onclick="registerNewSW()">✅ Register New SW</button>
+    <button onclick="checkCache()">🔍 Check Current Cache</button>
+    <button onclick="location.href='/'">🏠 Back to Home</button>
+
+    <script>
+        const log = (msg, type = 'info') => {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${msg}`;
+            document.getElementById('status').appendChild(div);
+        };
+
+        async function clearEverything() {
+            log('🚀 Starting complete cleanup...', 'info');
+
+            try {
+                // 1. Unregister ALL service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    log(`Found ${registrations.length} service worker(s)`, 'info');
+                    
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        log('✅ Unregistered service worker', 'success');
+                    }
+                }
+
+                // 2. Clear ALL caches
+                const cacheNames = await caches.keys();
+                log(`Found ${cacheNames.length} cache(s): ${cacheNames.join(', ')}`, 'info');
+                
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    log(`✅ Deleted cache: ${cacheName}`, 'success');
+                }
+
+                // 3. Clear localStorage
+                localStorage.clear();
+                log('✅ Cleared localStorage', 'success');
+
+                // 4. Clear sessionStorage
+                sessionStorage.clear();
+                log('✅ Cleared sessionStorage', 'success');
+
+                log('🎉 ALL CLEARED! Sekarang register service worker baru.', 'success');
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function registerNewSW() {
+            log('📝 Registering new service worker...', 'info');
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.register('./sw.js', {
+                        updateViaCache: 'none' // Important: don't cache SW itself
+                    });
+                    
+                    log('✅ New service worker registered!', 'success');
+                    log(`Scope: ${registration.scope}`, 'info');
+
+                    // Force update
+                    registration.update();
+                    log('🔄 Forcing update check...', 'info');
+
+                    // Wait for activation
+                    if (registration.waiting) {
+                        registration.waiting.postMessage({type: 'SKIP_WAITING'});
+                    }
+
+                    setTimeout(() => {
+                        log('✅ DONE! Refresh halaman untuk melihat perubahan.', 'success');
+                    }, 2000);
+                }
+            } catch (error) {
+                log(`❌ Error registering SW: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function checkCache() {
+            log('🔍 Checking current cache...', 'info');
+
+            try {
+                const cacheNames = await caches.keys();
+                
+                if (cacheNames.length === 0) {
+                    log('ℹ️ No caches found', 'info');
+                    return;
+                }
+
+                for (let cacheName of cacheNames) {
+                    const cache = await caches.open(cacheName);
+                    const keys = await cache.keys();
+                    
+                    log(`<strong>Cache: ${cacheName}</strong> (${keys.length} files)`, 'info');
+                    
+                    const urls = keys.map(req => {
+                        const url = new URL(req.url);
+                        return url.pathname + url.search;
+                    });
+                    
+                    log(`<pre>${urls.join('\n')}</pre>`, 'info');
+                }
+
+                // Check service worker
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    log(`Active Service Workers: ${registrations.length}`, 'info');
+                    
+                    registrations.forEach((reg, i) => {
+                        log(`SW ${i+1} - Scope: ${reg.scope}`, 'info');
+                        if (reg.active) log(`  Active: ${reg.active.scriptURL}`, 'info');
+                        if (reg.waiting) log(`  Waiting: ${reg.waiting.scriptURL}`, 'info');
+                    });
+                }
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            log('📱 Page loaded. Ready to clear cache.', 'info');
+            checkCache();
+        });
+    </script>
+</body>
+</html>
