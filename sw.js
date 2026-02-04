@@ -72,6 +72,11 @@ self.addEventListener('message', (event) => {
   const { type, data } = event.data || {};
   
   switch(type) {
+    case 'SKIP_WAITING':
+      // Force activate immediately
+      self.skipWaiting();
+      break;
+      
     case 'CACHE_MUSIC':
       // ✅ FIX: Validate data before passing
       if (data && data.url) {
