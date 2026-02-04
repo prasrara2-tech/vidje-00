@@ -1,21 +1,21 @@
-// Service Worker untuk Vidje - Simple Cache Strategy
-const CACHE_NAME = 'vidje-v3'; // ✅ UPDATED to v3 for force refresh
+// Service Worker untuk Vidje - v999 FORCE UPDATE
+const CACHE_NAME = 'vidje-v999';
 
 // Store reference untuk komunikasi dengan client
 let clients_store = [];
 
 // Install event - cache essential files
 self.addEventListener('install', (event) => {
-  console.log('SW: Installing v3...');
-  self.skipWaiting(); // Force immediate activation
+  console.log('SW v999: Installing...');
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('SW: Caching assets with v3');
+      console.log('SW v999: Caching assets');
       return cache.addAll([
         './',
         './index.html',
-        './manifest.json?v=3',
-        './assets/logo.png?v=3' // ✅ Cache busting for logo
+        './manifest.json?v=999',
+        './assets/logo.png?v=999'
       ]).catch(err => {
         console.warn('SW: Cache addAll error (some files may not exist)', err);
       });
@@ -23,28 +23,28 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - clean ALL old caches
+// Activate event - DELETE ALL old caches
 self.addEventListener('activate', (event) => {
-  console.log('SW: Activating v3 and cleaning old caches...');
+  console.log('SW v999: Activating and cleaning ALL old caches...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          // Delete ANY cache that's not the current version
+          // Delete ANY cache that's not v999
           if (cacheName !== CACHE_NAME) {
-            console.log('SW: Deleting old cache:', cacheName);
+            console.log('SW v999: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      console.log('SW: v3 activated and claiming clients');
+      console.log('SW v999: All old caches deleted, claiming clients');
       return self.clients.claim();
     })
   );
 });
 
-// ✅ Handle media control dari lock screen / notification
+// Handle media control dari lock screen / notification
 self.addEventListener('message', (event) => {
   console.log('SW: Message received:', event.data);
   
@@ -56,7 +56,7 @@ self.addEventListener('message', (event) => {
   });
 });
 
-// Fetch event - network first, fallback to cache
+// Fetch event - NETWORK FIRST for logo, normal for others
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -71,7 +71,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ✅ FORCE network-first for logo files to always get latest
+  // FORCE network-first for logo to always get latest version
   if (url.pathname.includes('/assets/logo.png')) {
     event.respondWith(
       fetch(request)
