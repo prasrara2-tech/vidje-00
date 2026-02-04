@@ -13,7 +13,15 @@ console.log('🔧 Offline Manager v2.1 Loading...');
 // 1. REGISTER SERVICE WORKER - WAJIB!
 // ============================================================
 
-if ('serviceWorker' in navigator) {
+// Check if running on file:// protocol
+if (location.protocol === 'file:') {
+    console.warn('⚠️ Running on file:// protocol. Service Worker disabled.');
+    console.log('💡 Solusi:');
+    console.log('   1. Install sebagai PWA (sudah bisa offline)');
+    console.log('   2. Atau jalankan: python -m http.server 8000');
+    
+    // Still show offline detection, just skip SW registration
+} else if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
         try {
             // Unregister old service workers first
@@ -40,12 +48,36 @@ if ('serviceWorker' in navigator) {
                 registration.update();
             }, 60 * 60 * 1000); // Every hour
             
-            // Listen for updates
+            // Listen for updates - AUTO RELOAD (Once only)
+            let hasReloaded = sessionStorage.getItem('sw-reloaded');
+            
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
+                
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        showUpdateAvailable();
+                        console.log('🔄 New SW detected');
+                        
+                        // Prevent infinite reload loop
+                        if (hasReloaded) {
+                            console.log('⚠️ Already reloaded once, skipping auto-reload');
+                            showUpdateAvailable(); // Show manual button instead
+                            return;
+                        }
+                        
+                        // Tell new SW to skip waiting
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        
+                        // Listen for controller change
+                        let refreshing = false;
+                        navigator.serviceWorker.addEventListener('controllerchange', () => {
+                            if (!refreshing) {
+                                refreshing = true;
+                                sessionStorage.setItem('sw-reloaded', 'true');
+                                console.log('🔄 New SW activated, reloading once...');
+                                setTimeout(() => location.reload(), 500);
+                            }
+                        });
                     }
                 });
             });
