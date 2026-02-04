@@ -6,8 +6,8 @@
     <title>Vidje - Musik Platform</title>
     <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/jpeg" href="assets/logo.png">
-    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="icon" type="image/png" href="assets/logo.png?v=2">
+    <link rel="apple-touch-icon" href="assets/logo.png?v=2">
     <meta name="theme-color" content="#e50914">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17721,15 +17721,51 @@ function setupPublicSongsListener() {
 
 
 
-// ===== REGISTER SERVICE WORKER =====
+// ===== REGISTER SERVICE WORKER WITH FORCE UPDATE =====
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-        .then(reg => {
-            console.log('✅ Service Worker Registered:', reg);
-        })
-        .catch(err => {
-            console.error('❌ Service Worker Registration Failed:', err);
+    // First, unregister old service workers
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(reg => {
+            // Unregister old versions
+            if (reg.active && reg.active.scriptURL.includes('sw.js')) {
+                reg.unregister();
+                console.log('🗑️ Unregistered old SW');
+            }
         });
+        
+        // Wait a bit then register new SW
+        setTimeout(() => {
+            // Register new service worker with cache busting
+            navigator.serviceWorker.register('sw.js?v=3', {
+                updateViaCache: 'none' // ✅ Don't cache the SW file itself
+            })
+            .then(reg => {
+                console.log('✅ Service Worker v3 Registered:', reg);
+                
+                // Force update check
+                reg.update();
+                
+                // Handle updates
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    console.log('🔄 New SW version found, installing...');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('✨ New SW installed! Page will reload in 2 seconds...');
+                            // Auto reload to activate new SW
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }
+                    });
+                });
+            })
+            .catch(err => {
+                console.error('❌ Service Worker Registration Failed:', err);
+            });
+        }, 500);
+    });
 }
 
         // ===== MEDIA SESSION API (UNTUK NOTIFIKASI MUSIK) =====
