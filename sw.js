@@ -108,13 +108,17 @@ async function cacheMusicFile(url, metadata) {
     
     const cache = await caches.open(MUSIC_CACHE);
     
-    // Fetch dengan proper CORS
+    // Fetch dengan proper CORS - force full request (not range)
     const response = await fetch(url, {
       mode: 'cors',
-      credentials: 'omit'
+      credentials: 'omit',
+      headers: {
+        // Don't include Range header to get full response
+      }
     });
     
-    if (response.ok) {
+    // ✅ FIX: Only cache full responses (200), not partial (206)
+    if (response.ok && response.status === 200) {
       // Clone response untuk disimpan
       const responseToCache = response.clone();
       
@@ -132,6 +136,8 @@ async function cacheMusicFile(url, metadata) {
         url: url,
         metadata: metadata
       });
+    } else {
+      console.warn(`⚠️ Cannot cache response with status ${response.status} (need 200)`);
     }
   } catch (error) {
     console.error('❌ Failed to cache music:', error);
@@ -342,10 +348,44 @@ self.addEventListener('fetch', (event) => {
           // Not in cache - fetch from network
           console.log('📡 Fetching from network:', url.pathname);
           
-          const networkResponse = await fetch(request, {
-            mode: 'cors',
-            credentials: 'omit'
-          });
+          // ✅ ADD: Retry logic for network failures
+          let networkResponse;
+          let lastError;
+          const maxRetries = 2;
+          
+          for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+              networkResponse = await fetch(request, {
+                mode: 'cors',
+                credentials: 'omit'
+              });
+              
+              // If successful, break the retry loop
+              if (networkResponse.ok || networkResponse.status === 206) {
+                break;
+              }
+              
+              // If 503/429, wait and retry
+              if ([503, 429].includes(networkResponse.status) && attempt < maxRetries) {
+                console.warn(`⚠️ Got ${networkResponse.status}, retrying (${attempt}/${maxRetries})...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                continue;
+              }
+              
+              break;
+            } catch (err) {
+              lastError = err;
+              if (attempt < maxRetries) {
+                console.warn(`⚠️ Fetch failed, retrying (${attempt}/${maxRetries})...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              }
+            }
+          }
+          
+          // If all retries failed, throw last error
+          if (!networkResponse) {
+            throw lastError || new Error('Network request failed after retries');
+          }
           
           // ✅ FIX: Only cache full responses (200), not partial (206)
           if (networkResponse.ok && networkResponse.status === 200) {
