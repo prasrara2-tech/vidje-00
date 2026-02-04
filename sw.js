@@ -1,5 +1,5 @@
 // Service Worker untuk Vidje - Simple Cache Strategy
-const CACHE_NAME = 'vidje-v1';
+const CACHE_NAME = 'vidje-v2'; // ✅ UPDATED: Changed to v2 to force cache refresh
 
 // Store reference untuk komunikasi dengan client
 let clients_store = [];
@@ -7,14 +7,15 @@ let clients_store = [];
 // Install event - cache essential files
 self.addEventListener('install', (event) => {
   console.log('SW: Installing...');
-  self.skipWaiting();
+  self.skipWaiting(); // ✅ Force immediate activation
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('SW: Caching assets');
       return cache.addAll([
         './',
         './index.html',
-        './manifest.json'
+        './manifest.json',
+        './assets/logo.png' // ✅ ADDED: Cache logo explicitly
       ]).catch(err => {
         console.warn('SW: Cache addAll error (some files may not exist)', err);
       });
