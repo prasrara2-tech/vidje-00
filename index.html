@@ -209,6 +209,11 @@
         }
         @keyframes rotation {
             0% { transform: rotate(0deg); }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
             100% { transform: rotate(360deg); }
         }
         .loader-text { display: none; }
@@ -340,6 +345,94 @@
             }
             50% { 
                 transform: scale(1.03);
+            }
+        }
+
+        /* Offline Notice in Loading Screen */
+        .loading-offline-notice {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 59, 48, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 59, 48, 0.5);
+            padding: 16px 32px;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 2;
+            animation: notice-slide-up 0.5s ease;
+        }
+
+        .loading-offline-notice.show {
+            display: flex;
+        }
+
+        @keyframes notice-slide-up {
+            from { 
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .loading-offline-notice i {
+            font-size: 24px;
+            color: #ff3b30;
+            animation: pulse-icon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { 
+                opacity: 0.7;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.1);
+            }
+        }
+
+        .loading-offline-notice .notice-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .loading-offline-notice .notice-text .notice-title {
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #ff3b30;
+        }
+
+        .loading-offline-notice .notice-text .notice-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .loading-offline-notice {
+                bottom: 40px;
+                padding: 12px 24px;
+                max-width: 90%;
+            }
+            
+            .loading-offline-notice i {
+                font-size: 20px;
+            }
+            
+            .loading-offline-notice .notice-text .notice-title {
+                font-size: 14px;
+            }
+            
+            .loading-offline-notice .notice-text .notice-subtitle {
+                font-size: 12px;
             }
         }
         
@@ -6198,6 +6291,46 @@ input:checked + .toggle-slider:before {
             background: rgba(0,0,0,0.9) !important;
             transform: scale(1.1);
         }
+
+        /* Offline Mode Indicator - Responsive */
+        #offline-mode-indicator {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 80px;
+            background: rgba(255, 152, 0, 0.15);
+            border: 1px solid rgba(255, 152, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ff9800;
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        @media (max-width: 768px) {
+            #offline-mode-indicator {
+                top: 10px;
+                right: 60px;
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+            
+            #offline-mode-indicator span {
+                display: none; /* Hide text on mobile, show icon only */
+            }
+        }
+        
+        /* Offline song dimming */
+        .song-row.offline-unavailable {
+            opacity: 0.4 !important;
+            pointer-events: none !important;
+            filter: grayscale(1) !important;
+        }
+
 </style>
 
     <script>
@@ -6403,8 +6536,8 @@ const songLyrics = {
 
 // Function to get lyrics for a song
 window.getSongLyrics = function(songId) {
-    console.log('🔍 getSongLyrics called with:', songId, 'Type:', typeof songId);
-    console.log('📚 Available song IDs:', Object.keys(songLyrics));
+    console.log('[DEBUG] getSongLyrics called with:', songId, 'Type:', typeof songId);
+    console.log('[DATA] Available song IDs:', Object.keys(songLyrics));
     
     // Try both as-is and as number
     let result = songLyrics[songId];
@@ -6412,7 +6545,7 @@ window.getSongLyrics = function(songId) {
         result = songLyrics[parseInt(songId)];
     }
     
-    console.log('📖 Result:', result ? '✅ Found' : '❌ Not found');
+    console.log('[RESULT] Result:', result ? '✅ Found' : '❌ Not found');
     return result || null;
 };
 
@@ -6438,7 +6571,7 @@ function parseLyrics(lrcText) {
 
 // Update lyrics display when song changes
 function updateLyricsDisplay(songId) {
-    console.log('🎵 updateLyricsDisplay called with songId:', songId, 'Type:', typeof songId);
+    console.log('[MUSIC] updateLyricsDisplay called with songId:', songId, 'Type:', typeof songId);
     
     const lyricsData = window.getSongLyrics(songId);
     
@@ -6450,7 +6583,7 @@ function updateLyricsDisplay(songId) {
         return;
     }
     
-    console.log('✅ Loading lyrics for:', lyricsData.title, 'by', lyricsData.artist);
+    console.log('[OK] Loading lyrics for:', lyricsData.title, 'by', lyricsData.artist);
     
     const parsedLyrics = parseLyrics(lyricsData.lyrics);
     
@@ -6466,20 +6599,20 @@ function updateLyricsDisplay(songId) {
         }))
     };
     
-    console.log('✅ Lyrics stored in memory:', parsedLyrics.length, 'lines');
-    console.log('📦 window.currentPerungguLyrics:', window.currentPerungguLyrics);
+    console.log('[OK] Lyrics stored in memory:', parsedLyrics.length, 'lines');
+    console.log('[CACHE] window.currentPerungguLyrics:', window.currentPerungguLyrics);
     
     // If art-lyrics-content exists (overlay is already open), render immediately
     const artLyricsContent = document.getElementById('art-lyrics-content');
     if (artLyricsContent) {
-        console.log('🎨 art-lyrics-content found, rendering immediately');
+        console.log('[UI] art-lyrics-content found, rendering immediately');
         let html = '';
         parsedLyrics.forEach((line, index) => {
             html += `<div class="lyrics-line" data-time="${line.time}" data-index="${index}">${line.text}</div>`;
         });
         artLyricsContent.innerHTML = html;
     } else {
-        console.log('⏳ art-lyrics-content not found yet, will render when overlay opens');
+        console.log('[WAIT] art-lyrics-content not found yet, will render when overlay opens');
     }
 }
 
@@ -6540,7 +6673,7 @@ function initLyricsSystem() {
         audio.addEventListener('timeupdate', syncLyrics);
     }
     
-    console.log('✅ Lyrics system initialized for Perunggu songs');
+    console.log('[OK] Lyrics system initialized for Perunggu songs');
 }
 
 // Call init when DOM is ready
@@ -6550,7 +6683,7 @@ if (document.readyState === 'loading') {
     initLyricsSystem();
 }
 
-console.log('✅ Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'songs');
+console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'songs');
 
 // ===== END LYRICS SECTION =====
 
@@ -6592,12 +6725,27 @@ console.log('✅ Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'song
 
 </head>
 <body>
+    <!-- Offline Mode Indicator -->
+    <div id="offline-mode-indicator">
+        <i class="ph-fill ph-wifi-slash"></i>
+        <span>Offline Mode</span>
+    </div>
+
 
     <!-- 1. LOADING SCREEN -->
     <div id="loading-screen">
         <div class="loading-center">
             <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/assets/logo.png" alt="VIDJE" class="app-logo centered-logo">
             <div class="loading-title">VIDJE</div>
+        </div>
+        
+        <!-- Offline Notice -->
+        <div class="loading-offline-notice" id="loading-offline-notice">
+            <i class="ph-fill ph-wifi-slash"></i>
+            <div class="notice-text">
+                <div class="notice-title">Mode Offline</div>
+                <div class="notice-subtitle">Koneksi tidak tersedia</div>
+            </div>
         </div>
     </div>
 
@@ -6795,6 +6943,9 @@ console.log('✅ Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'song
                 </button>
                 <button class="share-btn-album" onclick="window.shareCurrentPlaylist()" title="Bagikan Playlist">
                     <i class="ph ph-share-network" style="font-size: 24px;"></i>
+                </button>
+                <button class="share-btn-album" onclick="window.downloadPlaylistForOffline()" title="Download untuk Offline" id="download-offline-btn">
+                    <i class="ph ph-download-simple" style="font-size: 24px;"></i>
                 </button>
             </div>
         </div>
@@ -7876,6 +8027,20 @@ console.log('✅ Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'song
                                             <i class="ph ph-pencil" style="margin-right: 12px;"></i> <span>Edit Profile</span>
                                         </button>
                                         <div style="height: 1px; background: rgba(229, 9, 20, 0.2);"></div>
+                                        <button onclick="window.toggleOfflineMenuDropdown();" style="padding: 14px 20px; border: none; background: transparent; color: white; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                            <span style="display: flex; align-items: center;"><i class="ph ph-wifi-slash" style="margin-right: 12px;"></i> <span>Offline Mode</span></span>
+                                            <i class="ph ph-caret-down" style="margin-left: 8px;"></i>
+                                        </button>
+                                        <div id="profile-offline-submenu" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 8px; background: linear-gradient(135deg, #1a1a1a, #222222); border: 1px solid rgba(229, 9, 20, 0.4); border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); min-width: 220px; z-index: 1001;">
+                                            <button onclick="window.showSetupPINDialog(); window.toggleProfileMenu();" style="padding: 14px 20px; border: none; background: transparent; color: white; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; width: 100%; border-radius: 10px 10px 0 0;">
+                                                <i class="ph ph-lock" style="margin-right: 12px;"></i> <span>Setup PIN</span>
+                                            </button>
+                                            <div style="height: 1px; background: rgba(229, 9, 20, 0.2);"></div>
+                                            <button onclick="window.showOfflineStatus(); window.toggleProfileMenu();" style="padding: 14px 20px; border: none; background: transparent; color: white; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; width: 100%; border-radius: 0 0 10px 10px;">
+                                                <i class="ph ph-info" style="margin-right: 12px;"></i> <span>Status Offline</span>
+                                            </button>
+                                        </div>
+                                        <div style="height: 1px; background: rgba(229, 9, 20, 0.2);"></div>
                                         <button onclick="window.toggleLanguageMenuDropdown(); " style="padding: 14px 20px; border: none; background: transparent; color: white; cursor: pointer; text-align: left; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; width: 100%; border-radius: 0 0 10px 10px;" data-i18n="setting-language">
                                             <span style="display: flex; align-items: center;"><i class="ph ph-globe" style="margin-right: 12px;"></i> <span>Setting Language</span></span>
                                             <i class="ph ph-caret-down" style="margin-left: 8px;"></i>
@@ -8709,7 +8874,336 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-console.log('✅ Supabase initialized');
+console.log('[OK] Supabase initialized');
+
+
+// ===================================================================
+// VIDJE OFFLINE AUTH - INTEGRATION PATCH
+// ===================================================================
+
+// ============================================================
+// 1. LOAD HYBRID AUTH SYSTEM
+// ============================================================
+
+(function loadHybridAuth() {
+    const script = document.createElement('script');
+    script.innerHTML = `
+// ===================================================================
+// VIDJE HYBRID AUTH - INLINE VERSION
+// ===================================================================
+
+(function() {
+    'use strict';
+
+    class VidjeHybridAuth {
+        constructor() {
+            this.STORAGE_KEY = 'vidje_offline_session';
+            this.PIN_KEY = 'vidje_offline_pin';
+            this.QUEUE_KEY = 'vidje_offline_queue';
+        }
+
+        // Save offline session saat login online
+        async saveOfflineSession(firebaseUser, userDataFromDB) {
+            try {
+                const offlineSession = {
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: userDataFromDB?.displayName || firebaseUser.displayName || firebaseUser.email.split('@')[0],
+                    photoURL: userDataFromDB?.photoURL || firebaseUser.photoURL || '',
+                    userId: userDataFromDB?.userId || firebaseUser.email.split('@')[0],
+                    
+                    userData: {
+                        playlists: userDataFromDB?.playlists || {},
+                        likedSongs: userDataFromDB?.likedSongs || {},
+                        likedCover: userDataFromDB?.likedCover || '',
+                        bio: userDataFromDB?.bio || ''
+                    },
+                    
+                    savedAt: Date.now(),
+                    lastLogin: Date.now()
+                };
+
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(offlineSession));
+                console.log('[OK] Offline session saved for:', firebaseUser.email);
+                return true;
+                
+            } catch (error) {
+                console.error('[ERROR] Failed to save offline session:', error);
+                return false;
+            }
+        }
+
+        // Setup PIN
+        async setupPIN(pin) {
+            if (!pin || pin.length !== 4 || !/^\\d{4}$/.test(pin)) {
+                return { success: false, error: 'PIN harus 4 digit angka' };
+            }
+
+            const session = this.getOfflineSession();
+            if (!session) {
+                return { success: false, error: 'Belum ada session offline. Login online dulu!' };
+            }
+
+            try {
+                const hashedPIN = await this.hashPIN(pin);
+                
+                const pinData = {
+                    uid: session.uid,
+                    pin: hashedPIN,
+                    setupAt: Date.now()
+                };
+                
+                localStorage.setItem(this.PIN_KEY, JSON.stringify(pinData));
+                console.log('[OK] PIN setup berhasil');
+                return { success: true };
+                
+            } catch (error) {
+                console.error('[ERROR] PIN setup gagal:', error);
+                return { success: false, error: 'Gagal setup PIN' };
+            }
+        }
+
+        // Login offline
+        async loginOffline(pin = null) {
+            const session = this.getOfflineSession();
+            
+            if (!session) {
+                return { 
+                    success: false, 
+                    error: 'Tidak ada session offline. Login online dulu untuk cache akun!' 
+                };
+            }
+
+            const pinData = this.getPINData();
+            if (pinData && pinData.pin) {
+                if (!pin) {
+                    return { success: false, error: 'PIN required', needPIN: true };
+                }
+
+                const hashedInputPIN = await this.hashPIN(pin);
+                if (hashedInputPIN !== pinData.pin) {
+                    return { success: false, error: 'PIN salah!' };
+                }
+            }
+
+            const activeSession = {
+                ...session,
+                isOffline: true,
+                offlineLoginAt: Date.now()
+            };
+
+            sessionStorage.setItem('vidje_active_session', JSON.stringify(activeSession));
+            
+            console.log('[OK] Offline login berhasil untuk:', session.email);
+            
+            window.dispatchEvent(new CustomEvent('offline-auth-success', {
+                detail: { user: activeSession }
+            }));
+
+            return { success: true, user: activeSession };
+        }
+
+        // Auto-login saat offline
+        async attemptAutoOfflineLogin() {
+            if (navigator.onLine) {
+                return { success: false, reason: 'online' };
+            }
+
+            const session = this.getOfflineSession();
+            if (!session) {
+                return { success: false, reason: 'no_session' };
+            }
+
+            const pinData = this.getPINData();
+            if (pinData && pinData.pin) {
+                return { success: false, reason: 'pin_required', needPIN: true };
+            }
+
+            return await this.loginOffline();
+        }
+
+        // Queue tracking untuk offline
+        queueTrackingData(trackingData) {
+            try {
+                const queue = this.getTrackingQueue();
+                queue.push({
+                    ...trackingData,
+                    queuedAt: Date.now()
+                });
+                
+                localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue));
+                console.log('[CACHE] Tracking queued for offline:', trackingData.song_name);
+                return true;
+            } catch (error) {
+                console.error('[ERROR] Failed to queue tracking:', error);
+                return false;
+            }
+        }
+
+        // Sync tracking queue saat online
+        async syncTrackingQueue() {
+            const queue = this.getTrackingQueue();
+            
+            if (queue.length === 0) {
+                console.log('[INFO] No tracking data to sync');
+                return { success: true, synced: 0 };
+            }
+
+            console.log(\`[SYNC] Syncing \${queue.length} queued tracks...\`);
+            
+            let synced = 0;
+            const failed = [];
+
+            for (const item of queue) {
+                try {
+                    if (window.vidjeTracking && window.vidjeTracking.trackSongPlay) {
+                        await window.vidjeTracking.trackSongPlay({
+                            song_name: item.song_name,
+                            artist_name: item.artist_name,
+                            duration: item.duration,
+                            cover_url: item.cover_url,
+                            audio_url: item.audio_url
+                        });
+                        synced++;
+                    }
+                } catch (error) {
+                    console.error('[ERROR] Failed to sync:', item.song_name, error);
+                    failed.push(item);
+                }
+            }
+
+            // Clear queue jika semua berhasil
+            if (failed.length === 0) {
+                localStorage.removeItem(this.QUEUE_KEY);
+                console.log(\`[OK] All \${synced} tracks synced successfully!\`);
+            } else {
+                // Simpan yang gagal untuk retry nanti
+                localStorage.setItem(this.QUEUE_KEY, JSON.stringify(failed));
+                console.log(\`[WARN] \${synced} synced, \${failed.length} failed\`);
+            }
+
+            return { success: true, synced, failed: failed.length };
+        }
+
+        getOfflineSession() {
+            const stored = localStorage.getItem(this.STORAGE_KEY);
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        getPINData() {
+            const stored = localStorage.getItem(this.PIN_KEY);
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        getActiveSession() {
+            const stored = sessionStorage.getItem('vidje_active_session');
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        getTrackingQueue() {
+            const stored = localStorage.getItem(this.QUEUE_KEY);
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        hasPIN() {
+            const pinData = this.getPINData();
+            return !!(pinData && pinData.pin);
+        }
+
+        hasOfflineSession() {
+            return !!this.getOfflineSession();
+        }
+
+        async hashPIN(pin) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(pin + 'vidje-2025-salt');
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        clearOfflineSession() {
+            localStorage.removeItem(this.STORAGE_KEY);
+            localStorage.removeItem(this.PIN_KEY);
+            sessionStorage.removeItem('vidje_active_session');
+            console.log('[OK] Offline session cleared');
+        }
+
+        updateOfflineSession(updates) {
+            const session = this.getOfflineSession();
+            if (session) {
+                const updated = { ...session, ...updates, savedAt: Date.now() };
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
+                console.log('[OK] Offline session updated');
+            }
+        }
+    }
+
+    window.VidjeHybridAuth = new VidjeHybridAuth();
+    console.log('[OK] Vidje Hybrid Auth System Loaded');
+
+})();
+    `;
+    document.head.appendChild(script);
+    console.log('[OK] Hybrid Auth injected');
+})();
+
+// ============================================================
+// 2. MODIFY TRACKING TO SUPPORT OFFLINE QUEUE
+// ============================================================
+
+// Override trackSongPlay untuk support offline queue
+(function overrideTracking() {
+    const originalTrackSongPlay = window.vidjeTracking?.trackSongPlay;
+    
+    if (originalTrackSongPlay) {
+        window.vidjeTracking.trackSongPlay = async function(songData) {
+            // Jika offline, queue tracking
+            if (!navigator.onLine) {
+                console.log('📴 Offline - Queueing track:', songData.song_name);
+                window.VidjeHybridAuth.queueTrackingData(songData);
+                return { queued: true };
+            }
+            
+            // Jika online, track normal
+            return await originalTrackSongPlay.call(this, songData);
+        };
+        
+        console.log('[OK] Tracking system modified for offline support');
+    }
+})();
+
+// ============================================================
+// 3. AUTO-SYNC SAAT KEMBALI ONLINE
+// ============================================================
+
+window.addEventListener('online', async () => {
+    console.log('[ONLINE] Back online! Syncing queued data...');
+    
+    // Sync tracking queue
+    const result = await window.VidjeHybridAuth.syncTrackingQueue();
+    
+    if (result.synced > 0) {
+        // Show notification
+        const toast = document.createElement('div');
+        toast.innerHTML = `
+            <div style="position: fixed; bottom: 120px; right: 20px; 
+                        background: linear-gradient(135deg, #34C759 0%, #30B350 100%); 
+                        color: white; padding: 16px 24px; border-radius: 12px; 
+                        font-weight: 600; z-index: 99999; 
+                        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                        animation: slideIn 0.3s ease;">
+                <strong>Synced!</strong> ${result.synced} lagu di-sync ke Wrapped!
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 4000);
+    }
+});
+
+// ============================================================
+
 
 // ============================================================
 // 🎵 VIDJE TRACKING INTEGRATION - ULTIMATE FIX
@@ -8717,7 +9211,7 @@ console.log('✅ Supabase initialized');
 // Kode ini mengakses langsung variabel global: songs & currentSongIndex
 // ============================================================
 
-console.log('🎵 Initializing Vidje tracking integration (ULTIMATE FIX)...');
+console.log('[MUSIC] Initializing Vidje tracking integration (ULTIMATE FIX)...');
 
 // Load vidje-tracking.js script if not already loaded
 if (!window.vidjeTracking) {
@@ -8725,16 +9219,16 @@ if (!window.vidjeTracking) {
     const script = document.createElement('script');
     script.src = 'vidje-tracking.js';
     script.onload = function() {
-        console.log('✅ vidje-tracking.js loaded');
+        console.log('[OK] vidje-tracking.js loaded');
         initializeTracking();
     };
     script.onerror = function() {
-        console.error('❌ Failed to load vidje-tracking.js');
+        console.error('[ERROR] Failed to load vidje-tracking.js');
         console.error('Make sure vidje-tracking.js is in the same directory as index.html');
     };
     document.head.appendChild(script);
 } else {
-    console.log('✅ vidje-tracking.js already loaded');
+    console.log('[OK] vidje-tracking.js already loaded');
     initializeTracking();
 }
 
@@ -8792,7 +9286,7 @@ function initializeTracking() {
         let songInfo = getCurrentSongFromGlobalVariable();
         
         if (songInfo) {
-            console.log('✅ Got song from global variable:', songInfo.title);
+            console.log('[OK] Got song from global variable:', songInfo.title);
             return songInfo;
         }
         
@@ -8847,7 +9341,7 @@ function initializeTracking() {
                     if (songInfo && window.vidjeTracking) {
                         const duration = songInfo.duration || audio.duration || 210;
                         
-                        console.log('🎵 Now playing:', songInfo.title, 'by', songInfo.artist);
+                        console.log('[MUSIC] Now playing:', songInfo.title, 'by', songInfo.artist);
                         console.log('⏱️ Duration:', duration, 'seconds');
                         
                         // Track the song play
@@ -8859,10 +9353,10 @@ function initializeTracking() {
                             audio_url: audio.src || null
                         }).then(result => {
                             if (result) {
-                                console.log('✅ Tracked successfully:', songInfo.title);
+                                console.log('[OK] Tracked successfully:', songInfo.title);
                             }
                         }).catch(error => {
-                            console.error('❌ Tracking failed:', error);
+                            console.error('[ERROR] Tracking failed:', error);
                         });
                     } else {
                         console.warn('⚠️ Could not track - song info or tracking system not available');
@@ -8870,7 +9364,7 @@ function initializeTracking() {
                 }, 300); // Wait 300ms for variables to update
             });
             
-            console.log('✅ Auto-tracker activated!');
+            console.log('[OK] Auto-tracker activated!');
         } else {
             console.warn('⚠️ Audio element not found');
         }
@@ -8896,7 +9390,7 @@ function initializeTracking() {
                 audio_url: null
             });
             
-            console.log('✅ Test result:', result);
+            console.log('[OK] Test result:', result);
         } else if (!songInfo) {
             console.log('⚠️ No song currently playing, using dummy data...');
             
@@ -8908,15 +9402,15 @@ function initializeTracking() {
                 audio_url: null
             });
             
-            console.log('✅ Test result:', result);
+            console.log('[OK] Test result:', result);
         } else {
-            console.error('❌ Tracking system not loaded');
+            console.error('[ERROR] Tracking system not loaded');
         }
     };
     
     window.viewMyStats = async function() {
         if (!window.vidjeTracking) {
-            console.error('❌ Tracking not loaded');
+            console.error('[ERROR] Tracking not loaded');
             return;
         }
         
@@ -8932,7 +9426,7 @@ function initializeTracking() {
         console.log('  - Unique Songs:', stats.uniqueSongs);
         console.log('  - Unique Artists:', stats.uniqueArtists);
         console.log('');
-        console.log('🎵 Your Top 10 Songs:');
+        console.log('[MUSIC] Your Top 10 Songs:');
         console.table(topSongs);
         console.log('🎤 Your Top 5 Artists:');
         console.table(topArtists);
@@ -8943,7 +9437,7 @@ function initializeTracking() {
     window.getCurrentSongInfo = getCurrentSongInfo;
     
     window.debugSongInfo = function() {
-        console.log('🔍 Debugging song info...');
+        console.log('[DEBUG] Debugging song info...');
         console.log('');
         
         // Check global variables
@@ -8973,7 +9467,7 @@ function initializeTracking() {
         console.log('  - Combined:', getCurrentSongInfo());
     };
     
-    console.log('✅ Vidje tracking integration ready!');
+    console.log('[OK] Vidje tracking integration ready!');
     console.log('💡 Available commands:');
     console.log('  - testTracking()       - Test tracking with current song');
     console.log('  - viewMyStats()        - View your listening statistics');
@@ -8989,7 +9483,7 @@ function initializeTracking() {
 // ============================================================
 // 🎵 VIDJE LISTENING HISTORY AUTO-TRACKER (FIXED VERSION)
 // ============================================================
-console.log('🎵 Initializing Vidje listening tracker (FIXED)...');
+console.log('[MUSIC] Initializing Vidje listening tracker (FIXED)...');
 
 // STEP 1: Function untuk log ke database
 async function logSong(songName, artistName, duration, coverUrl) {
@@ -9019,12 +9513,12 @@ async function logSong(songName, artistName, duration, coverUrl) {
             }]);
 
         if (error) {
-            console.error('❌ Error logging to Supabase:', error);
+            console.error('[ERROR] Error logging to Supabase:', error);
         } else {
-            console.log('✅ Logged:', songName, 'by', artistName, '| Cover:', coverUrl ? '✓' : '✗');
+            console.log('[OK] Logged:', songName, 'by', artistName, '| Cover:', coverUrl ? '✓' : '✗');
         }
     } catch (error) {
-        console.error('❌ Unexpected error:', error);
+        console.error('[ERROR] Unexpected error:', error);
     }
 }
 
@@ -9079,7 +9573,7 @@ setTimeout(() => {
                 
                 if (songInfo) {
                     const duration = audio.duration || 210; // default 3.5 menit
-                    console.log('🎵 Now playing:', songInfo.title, 'by', songInfo.artist);
+                    console.log('[MUSIC] Now playing:', songInfo.title, 'by', songInfo.artist);
                     logSong(songInfo.title, songInfo.artist, duration, songInfo.cover);
                 } else {
                     console.log('⚠️ Could not detect song info');
@@ -9087,7 +9581,7 @@ setTimeout(() => {
             }, 500); // Tunggu 500ms untuk DOM update
         });
         
-        console.log('✅ Auto-tracker activated!');
+        console.log('[OK] Auto-tracker activated!');
     } else {
         console.warn('⚠️ Audio element not found');
     }
@@ -9097,7 +9591,7 @@ setTimeout(() => {
 window.addEventListener('songChanged', function(event) {
     if (event.detail && event.detail.song) {
         const song = event.detail.song;
-        console.log('🎵 Song changed event:', song.title);
+        console.log('[MUSIC] Song changed event:', song.title);
         logSong(song.title, song.artist, song.duration || 210, song.cover);
     }
 });
@@ -9105,7 +9599,7 @@ window.addEventListener('songChanged', function(event) {
 // BONUS: Testing commands
 window.testLog = function() {
     logSong('Test Song', 'Test Artist', 180, 'https://example.com/cover.jpg');
-    console.log('✅ Test log sent! Check Supabase dashboard.');
+    console.log('[OK] Test log sent! Check Supabase dashboard.');
 };
 
 window.myStats = async function() {
@@ -9123,25 +9617,25 @@ window.myStats = async function() {
             .limit(10);
         
         if (error) {
-            console.error('❌ Error:', error);
+            console.error('[ERROR] Error:', error);
             return;
         }
         
-        console.log('🎵 Your last 10 songs:');
+        console.log('[MUSIC] Your last 10 songs:');
         console.table(data);
         return data;
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('[ERROR] Error:', error);
     }
 };
 
 window.getCurrentSong = function() {
     const info = getCurrentSongInfo();
-    console.log('🎵 Current song:', info);
+    console.log('[MUSIC] Current song:', info);
     return info;
 };
 
-console.log('✅ Vidje tracker ready! (FIXED VERSION)');
+console.log('[OK] Vidje tracker ready! (FIXED VERSION)');
 console.log('💡 Commands:');
 console.log('   testLog()        - Test logging');
 console.log('   myStats()        - See your last 10 songs');
@@ -10572,6 +11066,9 @@ console.log('   getCurrentSong() - Check what song is detected');
             ...beatlesNewSongs, ...maroon5NewSongs
         ];
 
+        // Initialize global songs array for offline download and other features
+        window.allSongs = songs;
+
 // DISABLED:         // Restore previously played song if it exists
 // DISABLED:         const savedSongId = localStorage.getItem('currentSongId');
 // DISABLED:         if (savedSongId) {
@@ -10634,7 +11131,7 @@ console.log('   getCurrentSong() - Check what song is detected');
                     
                     if (foundIndex >= 0) {
                         currentSongIndex = foundIndex;
-                        console.log('✅ Restored to song index:', currentSongIndex, songs[currentSongIndex].title);
+                        console.log('[OK] Restored to song index:', currentSongIndex, songs[currentSongIndex].title);
                         return true;
                     }
                 }
@@ -10647,7 +11144,7 @@ console.log('   getCurrentSong() - Check what song is detected');
                     
                     if (foundIndex >= 0) {
                         currentSongIndex = foundIndex;
-                        console.log('✅ Restored to song index:', currentSongIndex, songs[currentSongIndex].title);
+                        console.log('[OK] Restored to song index:', currentSongIndex, songs[currentSongIndex].title);
                         return true;
                     }
                 }
@@ -10656,7 +11153,7 @@ console.log('   getCurrentSong() - Check what song is detected');
                 currentSongIndex = 0;
                 return false;
             } catch (error) {
-                console.error('❌ Error restoring playback state:', error);
+                console.error('[ERROR] Error restoring playback state:', error);
                 currentSongIndex = 0;
                 return false;
             }
@@ -12080,6 +12577,12 @@ function renderFriendPlaylists(playlists) {
                 openLikedView();
             }
             
+            if(viewName === 'offline') {
+                if (window.loadOfflineMusic) {
+                    window.loadOfflineMusic();
+                }
+            }
+            
             if(viewName === 'search') {
                 document.getElementById('search-input').value = '';
                 handleSearch(''); // Reset to history view
@@ -12098,6 +12601,7 @@ function renderFriendPlaylists(playlists) {
                 'nav-home': 'Beranda',
                 'nav-search': 'Cari',
                 'nav-liked': 'Lagu Disukai',
+                'nav-offline': 'Musik Offline',
                 // Sidebar
                 'playlist-title': 'Playlist Anda',
                 'create-playlist': 'Buat Playlist',
@@ -12127,6 +12631,12 @@ function renderFriendPlaylists(playlists) {
                 'add': 'Tambah',
                 'remove': 'Hapus',
                 'share': 'Bagikan',
+                'download-offline': 'Download untuk Offline',
+                'offline-music-title': 'Musik Offline',
+                'cached-songs': 'Lagu Tersimpan',
+                'clear-all-cache': 'Hapus Semua Cache',
+                'offline-playlists': 'Playlist Offline',
+                'offline-songs': 'Lagu Offline',
                 'loading': 'Memuat...',
                 'no-playlists': 'Belum ada playlist',
                 'all-playlists': 'Semua Playlist',
@@ -12219,6 +12729,7 @@ function renderFriendPlaylists(playlists) {
                 'nav-home': 'Home',
                 'nav-search': 'Search',
                 'nav-liked': 'Liked Songs',
+                'nav-offline': 'Offline Music',
                 // Sidebar
                 'playlist-title': 'Your Playlists',
                 'create-playlist': 'Create Playlist',
@@ -12248,6 +12759,12 @@ function renderFriendPlaylists(playlists) {
                 'add': 'Add',
                 'remove': 'Remove',
                 'share': 'Share',
+                'download-offline': 'Download for Offline',
+                'offline-music-title': 'Offline Music',
+                'cached-songs': 'Cached Songs',
+                'clear-all-cache': 'Clear All Cache',
+                'offline-playlists': 'Offline Playlists',
+                'offline-songs': 'Offline Songs',
                 'loading': 'Loading...',
                 'no-playlists': 'No playlists yet',
                 'all-playlists': 'All Playlists',
@@ -12493,18 +13010,18 @@ function renderFriendPlaylists(playlists) {
         
         // Open new lyrics overlay
         function openNewLyricsOverlay() {
-            console.log('🎵 Opening NEW lyrics overlay...');
+            console.log('[MUSIC] Opening NEW lyrics overlay...');
             
             const overlay = document.getElementById('new-lyrics-overlay');
             if (!overlay) {
-                console.error('❌ new-lyrics-overlay not found');
+                console.error('[ERROR] new-lyrics-overlay not found');
                 return;
             }
             
             // Get current song
             const currentSong = songs[currentSongIndex];
             if (!currentSong) {
-                console.error('❌ No song playing');
+                console.error('[ERROR] No song playing');
                 return;
             }
             
@@ -12537,7 +13054,7 @@ function renderFriendPlaylists(playlists) {
             // Start sync
             startNewLyricsSync();
             
-            console.log('✅ NEW overlay opened for:', currentSong.title);
+            console.log('[OK] NEW overlay opened for:', currentSong.title);
         }
         
         // Close new lyrics overlay
@@ -12562,7 +13079,7 @@ function renderFriendPlaylists(playlists) {
             const container = document.getElementById('new-lyrics-content');
             
             if (!container) {
-                console.error('❌ new-lyrics-content not found');
+                console.error('[ERROR] new-lyrics-content not found');
                 return;
             }
             
@@ -12585,7 +13102,7 @@ function renderFriendPlaylists(playlists) {
                 container.appendChild(lineEl);
             });
             
-            console.log('✅ Rendered', lyrics.lines.length, 'lyrics lines in NEW overlay');
+            console.log('[OK] Rendered', lyrics.lines.length, 'lyrics lines in NEW overlay');
         }
         
         // Start lyrics sync for new overlay
@@ -12786,7 +13303,7 @@ function renderFriendPlaylists(playlists) {
         window.newSeekToTime = newSeekToTime;
         window.newSeekToPosition = newSeekToPosition;
         
-        console.log('✅ NEW Lyrics Overlay functions loaded early');
+        console.log('[OK] NEW Lyrics Overlay functions loaded early');
 
         // --- NAVIGATION HISTORY FOR BACK BUTTON ---
         let navigationHistory = ['home']; // Start with home
@@ -13093,6 +13610,9 @@ function renderFriendPlaylists(playlists) {
         return;
     }
 
+    // Store songs data globally for offline download feature
+    window.allSongs = data;
+
     container.innerHTML = data.map((s, i) => {
         let actionButtonsHTML = '';
 
@@ -13130,6 +13650,10 @@ function renderFriendPlaylists(playlists) {
                         <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-share-network"></i>
                             <span data-i18n="share">Share</span>
+                        <button class="menu-item menu-download-${s.id}" onclick="event.stopPropagation(); window.downloadSongFromMenu(${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-download-simple"></i>
+                            <span data-i18n="download-offline">Download for Offline</span>
+                        </button>
                         </button>
                     </div>
                 </div>
@@ -13170,6 +13694,9 @@ function renderFriendPlaylists(playlists) {
         if(container) container.innerHTML = '<div style="padding:20px; color:#666;">' + window.t('no-songs') + '</div>';
         return;
     }
+
+    // Store songs data globally for offline download feature
+    window.allSongs = data;
 
     container.innerHTML = data.map((s, i) => {
         return `
@@ -13212,6 +13739,10 @@ function renderFriendPlaylists(playlists) {
                         <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-share-network"></i>
                             <span data-i18n="share">Share</span>
+                        <button class="menu-item menu-download-${s.id}" onclick="event.stopPropagation(); window.downloadSongFromMenu(${s.id}); window.toggleSongMenu(${s.id})">
+                            <i class="ph ph-download-simple"></i>
+                            <span data-i18n="download-offline">Download for Offline</span>
+                        </button>
                         </button>
                     </div>
                 </div>
@@ -13219,6 +13750,11 @@ function renderFriendPlaylists(playlists) {
         </div>
         `;
     }).join('');
+    
+    // After rendering, check offline status and update song availability
+    if (window.updateSongListForOfflineMode) {
+        setTimeout(() => window.updateSongListForOfflineMode(), 100);
+    }
 }
 
         // --- RENDERERS ---
@@ -14503,6 +15039,11 @@ function renderProfilePublicPlaylists() {
         }
 
         // Toggle Language Submenu
+        function toggleOfflineMenuDropdown() {
+            const submenu = document.getElementById('profile-offline-submenu');
+            submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        }
+
         function toggleLanguageMenuDropdown() {
             const submenu = document.getElementById('profile-language-submenu');
             submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
@@ -14511,6 +15052,7 @@ function renderProfilePublicPlaylists() {
         // Expose profile functions
         window.toggleProfileEdit = toggleProfileEdit;
         window.toggleProfileMenu = toggleProfileMenu;
+        window.toggleOfflineMenuDropdown = toggleOfflineMenuDropdown;
         window.toggleLanguageMenuDropdown = toggleLanguageMenuDropdown;
         window.handleProfileAvatarUpload = handleProfileAvatarUpload;
         window.saveProfileChanges = saveProfileChanges;
@@ -14695,8 +15237,34 @@ function renderProfilePublicPlaylists() {
         window.addToLiked = addToLiked;
         window.toggleCurrentSongLike = toggleCurrentSongLike;
 
+        // Update Download Button Status in Menu
+        window.updateDownloadButtonStatus = async function(songId) {
+            const song = window.allSongs?.find(s => s.id == songId || s.id === String(songId) || s.id === Number(songId));
+            if (!song) return;
+            
+            const audioUrl = song.src || song.url || song.audio_url;
+            if (!audioUrl) return;
+            
+            const menuButton = document.querySelector(`.menu-download-${songId}`);
+            if (!menuButton) return;
+            
+            const isCached = await isInCache(audioUrl);
+            const icon = menuButton.querySelector('i');
+            
+            if (icon) {
+                if (isCached) {
+                    icon.className = 'ph-fill ph-check-circle';
+                    icon.style.color = '#34C759';
+                } else {
+                    icon.className = 'ph ph-download-simple';
+                    icon.style.color = '';
+                }
+            }
+        };
+
+
         // Toggle Song Action Menu
-        window.toggleSongMenu = function(songId) {
+        window.toggleSongMenu = async function(songId) {
             const menu = document.getElementById(`menu-${songId}`);
             if(!menu) return;
             // Close all other menus
@@ -14710,11 +15278,125 @@ function renderProfilePublicPlaylists() {
             if(menu.style.display === 'none' || menu.style.display === '') {
                 menu.style.display = 'block';
                 menu.classList.add('active-slide');
+                
+                // Update download button status when menu opens
+                await updateDownloadButtonStatus(songId);
             } else {
                 menu.style.display = 'none';
                 menu.classList.remove('active-slide');
             }
         };
+
+        // Download Song from Menu
+        window.downloadSongFromMenu = async function(songId) {
+            // Find song data from current songs list
+            // Handle both string and number IDs
+            const song = window.allSongs?.find(s => s.id == songId || s.id === String(songId) || s.id === Number(songId));
+            
+            if (!song) {
+                console.error('Song not found:', songId);
+                console.log('Available songs:', window.allSongs?.map(s => ({id: s.id, title: s.title})));
+                showToast('⚠️ Lagu tidak ditemukan', 'warning');
+                return;
+            }
+            
+            // Prepare song data for download
+            const songData = {
+                id: song.id,
+                name: song.title || song.name,
+                artist: song.artist,
+                audio_url: song.src || song.url || song.audio_url,
+                cover_url: song.cover || song.cover_url
+            };
+
+            
+            // Check if already cached
+            const isCached = await isInCache(songData.audio_url);
+            
+            // Get menu button to update
+            const menuButton = document.querySelector(`.menu-download-${songId}`);
+            
+            if (isCached) {
+                // Already cached, ask to delete
+                const confirmed = confirm(
+                    `🗑️ Lagu "${songData.name}" sudah tersimpan offline.\n\n` +
+                    `Hapus dari cache offline?`
+                );
+                
+                if (confirmed) {
+                    await removeFromCache(songData.audio_url);
+                    showToast(`🗑️ "${songData.name}" dihapus dari offline`, 'success');
+                    
+                    // Update menu button
+                    if (menuButton) {
+                        const icon = menuButton.querySelector('i');
+                        if (icon) {
+                            icon.className = 'ph ph-download-simple';
+                        }
+                    }
+                }
+            } else {
+                // Not cached, download it
+                // Update menu button to loading
+                if (menuButton) {
+                    const icon = menuButton.querySelector('i');
+                    if (icon) {
+                        icon.className = 'ph ph-circle-notch';
+                        icon.style.animation = 'spin 1s linear infinite';
+                    }
+                    menuButton.disabled = true;
+                }
+                
+                try {
+                    // Send message to service worker to cache
+                    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'CACHE_MUSIC',
+                            data: {
+                                url: songData.audio_url,
+                                metadata: {
+                                    id: songData.id,
+                                    name: songData.name,
+                                    artist: songData.artist,
+                                    cover_url: songData.cover_url
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Also pre-fetch to trigger caching
+                    await fetch(songData.audio_url, { mode: 'no-cors' });
+                    
+                    // Success
+                    showToast(`✅ "${songData.name}" tersimpan untuk offline`, 'success');
+                    
+                    // Update menu button
+                    if (menuButton) {
+                        const icon = menuButton.querySelector('i');
+                        if (icon) {
+                            icon.className = 'ph-fill ph-check-circle';
+                            icon.style.animation = '';
+                        }
+                        menuButton.disabled = false;
+                    }
+                    
+                } catch (error) {
+                    console.error('Download failed:', error);
+                    showToast(`❌ Gagal download "${songData.name}"`, 'error');
+                    
+                    // Reset menu button
+                    if (menuButton) {
+                        const icon = menuButton.querySelector('i');
+                        if (icon) {
+                            icon.className = 'ph ph-download-simple';
+                            icon.style.animation = '';
+                        }
+                        menuButton.disabled = false;
+                    }
+                }
+            }
+        };
+
 
         // Close dropdown saat menu item diklik
         document.addEventListener('click', function(e) {
@@ -14753,7 +15435,31 @@ function renderProfilePublicPlaylists() {
         }
 
         // Show toast notification
-        function showToast(message, type = 'info', duration = 3000) {
+        // Helper: Check if URL is in cache
+        async function isInCache(url) {
+            if (!('caches' in window)) return false;
+            try {
+                const musicCache = await caches.open('vidje-music-v3000');
+                const response = await musicCache.match(url);
+                return !!response;
+            } catch (error) {
+                console.error('Failed to check cache:', error);
+                return false;
+            }
+        }
+
+        // Helper: Remove URL from cache
+        async function removeFromCache(url) {
+            if (!('caches' in window)) return;
+            try {
+                const musicCache = await caches.open('vidje-music-v3000');
+                await musicCache.delete(url);
+            } catch (error) {
+                console.error('Failed to remove from cache:', error);
+            }
+        }
+
+                function showToast(message, type = 'info', duration = 3000) {
             const container = document.getElementById('toast-container');
             if (!container) return;
 
@@ -14929,7 +15635,7 @@ function renderProfilePublicPlaylists() {
                 if (lyrics) {
                     const overlayLyricsContent = document.getElementById('overlay-lyrics-content');
                     if (overlayLyricsContent) {
-                        console.log('✅ Rendering to overlay-lyrics-content');
+                        console.log('[OK] Rendering to overlay-lyrics-content');
                         renderOverlayLyricsContent(lyrics);
                         overlayLyricsContent.style.display = 'block';
                         overlayLyricsContent.style.visibility = 'visible';
@@ -14938,7 +15644,7 @@ function renderProfilePublicPlaylists() {
                         lyricsState.isOpen = true;
                         startLyricsSync();
                     } else {
-                        console.error('❌ overlay-lyrics-content not found!');
+                        console.error('[ERROR] overlay-lyrics-content not found!');
                     }
                 } else {
                     console.warn('⚠️ No lyrics for:', s.title);
@@ -15092,7 +15798,7 @@ function renderProfilePublicPlaylists() {
             const contentEl = document.getElementById('overlay-lyrics-content');
             
             if (!contentEl) {
-                console.error('❌ overlay-lyrics-content element not found!');
+                console.error('[ERROR] overlay-lyrics-content element not found!');
                 return;
             }
             
@@ -15133,7 +15839,7 @@ function renderProfilePublicPlaylists() {
                 contentEl.appendChild(lineEl);
             });
             
-            console.log('✅ Rendered', lyrics.lines.length, 'lines');
+            console.log('[OK] Rendered', lyrics.lines.length, 'lines');
             console.log('📍 Final innerHTML length:', contentEl.innerHTML.length);
             console.log('📍 Children count:', contentEl.children.length);
             
@@ -15550,18 +16256,18 @@ function renderProfilePublicPlaylists() {
             // Render lirik di overlay
             let lyrics = lyricsDatabase && lyricsDatabase[s.title] ? lyricsDatabase[s.title] : null;
             
-            console.log('🔍 Looking for lyrics for:', s.title);
-            console.log('📚 lyricsDatabase has it?', !!lyrics);
-            console.log('🎵 window.currentPerungguLyrics exists?', !!window.currentPerungguLyrics);
+            console.log('[DEBUG] Looking for lyrics for:', s.title);
+            console.log('[DATA] lyricsDatabase has it?', !!lyrics);
+            console.log('[MUSIC] window.currentPerungguLyrics exists?', !!window.currentPerungguLyrics);
             
             // Check for Perunggu lyrics if not found in lyricsDatabase
             if (!lyrics && window.currentPerungguLyrics) {
-                console.log('✅ Using Perunggu lyrics from window.currentPerungguLyrics');
-                console.log('📖 Perunggu lyrics data:', window.currentPerungguLyrics);
+                console.log('[OK] Using Perunggu lyrics from window.currentPerungguLyrics');
+                console.log('[RESULT] Perunggu lyrics data:', window.currentPerungguLyrics);
                 lyrics = window.currentPerungguLyrics;
             }
             
-            console.log('🎨 Opening art overlay for:', s.title, 'Lyrics found:', !!lyrics);
+            console.log('[UI] Opening art overlay for:', s.title, 'Lyrics found:', !!lyrics);
             if (lyrics && lyrics.lines) {
                 console.log('📝 Number of lyrics lines:', lyrics.lines.length);
             }
@@ -15918,14 +16624,14 @@ function openArtistBandOverlay(artistData, songsList) {
         
         songEl.style.cursor = 'pointer';
         songEl.addEventListener('click', () => {
-            console.log('🎵 Clicked song:', song.id, song.title);
+            console.log('[MUSIC] Clicked song:', song.id, song.title);
             const track = songs.find(s => s.id === song.id);
             if (track) {
-                console.log('✅ Found in global array:', track.title, 'by', track.artist);
+                console.log('[OK] Found in global array:', track.title, 'by', track.artist);
                 window.loadSong(track);
                 window.window.playAudio();
             } else {
-                console.error('❌ NOT FOUND in global array!', song.id);
+                console.error('[ERROR] NOT FOUND in global array!', song.id);
             }
             
             // Update visualizer
@@ -16196,9 +16902,9 @@ function openArtistBandOverlay(artistData, songsList) {
             cover_url: song.cover || null,
             duration: 0 // Will be calculated from audio duration
         }).then(record => {
-            console.log('✅ Song tracked:', song.title);
+            console.log('[OK] Song tracked:', song.title);
         }).catch(err => {
-            console.error('❌ Tracking failed:', err);
+            console.error('[ERROR] Tracking failed:', err);
         });
     }
     
@@ -16210,7 +16916,7 @@ function openArtistBandOverlay(artistData, songsList) {
     
     // Load lyrics for Perunggu songs if available
     if (typeof updateLyricsDisplay === 'function') {
-        console.log('🎵 Calling updateLyricsDisplay with song ID:', song.id, 'Type:', typeof song.id);
+        console.log('[MUSIC] Calling updateLyricsDisplay with song ID:', song.id, 'Type:', typeof song.id);
         updateLyricsDisplay(song.id);
     } else {
         console.log('❌ updateLyricsDisplay function not found');
@@ -16245,13 +16951,13 @@ function openArtistBandOverlay(artistData, songsList) {
     if (playerProgressBar) {
         playerProgressBar.classList.add('active');
         playerProgressBar.style.removeProperty('display'); // Remove inline style to let CSS handle it
-        console.log('✅ Progress bar shown with player bar');
+        console.log('[OK] Progress bar shown with player bar');
     }
     
     // Show new overlay progress bar
     const newProgressContainer = document.querySelector('.new-progress-container');
     if (newProgressContainer) {
-        console.log('✅ Showing new progress container');
+        console.log('[OK] Showing new progress container');
         newProgressContainer.classList.add('visible');
     } else {
         console.log('❌ new-progress-container not found');
@@ -16260,7 +16966,7 @@ function openArtistBandOverlay(artistData, songsList) {
     // Show new overlay controls
     const newControls = document.querySelector('.new-controls');
     if (newControls) {
-        console.log('✅ Showing new controls');
+        console.log('[OK] Showing new controls');
         newControls.classList.add('visible');
     } else {
         console.log('❌ new-controls not found');
@@ -16269,7 +16975,7 @@ function openArtistBandOverlay(artistData, songsList) {
     // Show entire new left panel
     const newLeftPanel = document.querySelector('.new-left-panel');
     if (newLeftPanel) {
-        console.log('✅ Showing new left panel');
+        console.log('[OK] Showing new left panel');
         newLeftPanel.classList.add('visible');
     } else {
         console.log('❌ new-left-panel not found');
@@ -16350,7 +17056,7 @@ function openArtistBandOverlay(artistData, songsList) {
     
     // 8. Update lirik untuk lagu saat ini
     const lyrics = lyricsDatabase[song.title];
-    console.log('🎵 Loading song:', song.title, 'Has lyrics:', !!lyrics);
+    console.log('[MUSIC] Loading song:', song.title, 'Has lyrics:', !!lyrics);
     
     if (lyrics) {
         console.log('📝 Rendering lyrics with', lyrics.lines.length, 'lines');
@@ -16358,18 +17064,18 @@ function openArtistBandOverlay(artistData, songsList) {
         // Update lirik di overlay player
         const overlayLyricsContent = document.getElementById('overlay-lyrics-content');
         if (overlayLyricsContent) {
-            console.log('✅ Found overlay-lyrics-content element');
+            console.log('[OK] Found overlay-lyrics-content element');
             renderOverlayLyricsContent(lyrics);
             overlayLyricsContent.style.display = 'block';
             overlayLyricsContent.style.visibility = 'visible';
         } else {
-            console.error('❌ overlay-lyrics-content element not found');
+            console.error('[ERROR] overlay-lyrics-content element not found');
         }
         
         // Update lirik di fullscreen lyrics page  
         const lyricsPageContent = document.querySelector('#lyrics-overlay-container .lyrics-text');
         if (lyricsPageContent) {
-            console.log('✅ Found fullscreen lyrics element');
+            console.log('[OK] Found fullscreen lyrics element');
             lyricsPageContent.innerHTML = '';
             lyricsPageContent.style.display = 'block';
             lyricsPageContent.style.visibility = 'visible';
@@ -16398,7 +17104,7 @@ function openArtistBandOverlay(artistData, songsList) {
                 lyricsPageContent.appendChild(lineEl);
             });
         } else {
-            console.error('❌ Fullscreen lyrics element not found');
+            console.error('[ERROR] Fullscreen lyrics element not found');
         }
         
         const lyricsContainer = document.getElementById('lyrics-overlay-container');
@@ -16961,7 +17667,7 @@ if (progressContainer) {
     progressContainer.style.webkitTouchCallout = 'none';
 }
 
-console.log('✅ Progress bar drag functionality initialized');
+console.log('[OK] Progress bar drag functionality initialized');
 
 
 // ===== DRAG FUNCTIONALITY FOR VOLUME (DESKTOP ONLY) =====
@@ -17018,7 +17724,7 @@ if (!isMobileDevice) {
         volContainer.style.webkitUserSelect = 'none';
     }
     
-    console.log('✅ Volume drag functionality initialized (desktop)');
+    console.log('[OK] Volume drag functionality initialized (desktop)');
 }
 
 
@@ -17533,7 +18239,7 @@ window.submitImportMusic = async function() {
         let coverUrl = `https://picsum.photos/seed/${songId}/300/300`;
 
         // Save to Firebase only
-        console.log('ℹ️ Saving to Firebase...');
+        console.log('[INFO] Saving to Firebase...');
         showToast('⏳ Menyimpan metadata lagu...', 'info');
         
         const songData = {
@@ -17551,13 +18257,13 @@ window.submitImportMusic = async function() {
             storage: 'firebase'
         };
 
-        console.log('ℹ️ songData saved');
+        console.log('[INFO] songData saved');
         
         try {
             await set(ref(db, `importedSongs/${userId}/${songId}`), songData);
-            console.log('✅ importedSongs saved');
+            console.log('[OK] importedSongs saved');
         } catch (dbErr) {
-            console.error('❌ Failed to write importedSongs:', dbErr);
+            console.error('[ERROR] Failed to write importedSongs:', dbErr);
             showToast('❌ Gagal menyimpan metadata: ' + (dbErr.message || dbErr), 'error');
             throw dbErr;
         }
@@ -17565,9 +18271,9 @@ window.submitImportMusic = async function() {
         if (isPublic) {
             try {
                 await set(ref(db, `publicImportedSongs/${songId}`), songData);
-                console.log('✅ publicImportedSongs saved');
+                console.log('[OK] publicImportedSongs saved');
             } catch (pubErr) {
-                console.error('❌ Failed to write publicImportedSongs:', pubErr);
+                console.error('[ERROR] Failed to write publicImportedSongs:', pubErr);
             }
         }
 
@@ -17581,7 +18287,7 @@ window.submitImportMusic = async function() {
         renderTrending();
 
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('[ERROR] Error:', error);
         showToast('❌ Gagal mengimpor musik: ' + (error?.message || error), 'error');
     }
 };
@@ -17641,7 +18347,7 @@ async function loadImportedSongs() {
         const userSongsSnap = await get(ref(db, `importedSongs/${userId}`));
         if (userSongsSnap.exists()) {
             const userSongs = Object.values(userSongsSnap.val());
-            console.log('✅ User songs loaded:', userSongs.length);
+            console.log('[OK] User songs loaded:', userSongs.length);
             
             userSongs.forEach(song => {
                 if (!songs.find(s => s.id === song.id)) {
@@ -17657,7 +18363,7 @@ async function loadImportedSongs() {
             const publicSongs = Object.values(publicSongsSnap.val())
                 .filter(song => song.uploadedBy !== userId); // Kecuali punya sendiri
             
-            console.log('✅ Public songs from others:', publicSongs.length);
+            console.log('[OK] Public songs from others:', publicSongs.length);
             
             publicSongs.forEach(song => {
                 if (!songs.find(s => s.id === song.id)) {
@@ -17667,10 +18373,10 @@ async function loadImportedSongs() {
             });
         }
 
-        console.log('🎵 Total songs in library:', songs.length);
+        console.log('[MUSIC] Total songs in library:', songs.length);
 
     } catch (error) {
-        console.error('❌ Error loading imported songs:', error);
+        console.error('[ERROR] Error loading imported songs:', error);
     }
 }
 
@@ -17693,7 +18399,53 @@ onAuthStateChanged(auth, async (user) => {
         // ✅ Setup real-time listener untuk lagu publik baru
         setupPublicSongsListener();
         
-        console.log('✅ Total songs available:', songs.length);
+        console.log('[OK] Total songs available:', songs.length);
+        
+        // ✅✅✅ SAVE OFFLINE SESSION (PENTING!) ✅✅✅
+        const userRef = ref(db, 'users/' + user.uid);
+        const snapshot = await get(userRef);
+        const userData = snapshot.val();
+        
+        await window.VidjeHybridAuth.saveOfflineSession(user, userData);
+        console.log('💾 Offline session saved for future offline access');
+    } else {
+        // No Firebase user - check offline mode
+        if (!navigator.onLine) {
+            console.log('🔴 Offline mode - attempting offline login...');
+            
+            if (window.VidjeHybridAuth.hasOfflineSession()) {
+                if (window.VidjeHybridAuth.hasPIN()) {
+                    console.log('🔒 PIN required - will show PIN screen');
+                    // PIN screen akan ditampilkan otomatis
+                } else {
+                    console.log('🔓 Auto-login offline (no PIN)');
+                    const result = await window.VidjeHybridAuth.loginOffline();
+                    
+                    if (result.success) {
+                        // Load app with offline data
+                        const offlineUser = result.user;
+                        console.log('[OK] Logged in offline as:', offlineUser.email);
+                        
+                        // Set currentUserData dari offline session
+                        window.currentUserData = {
+                            uid: offlineUser.uid,
+                            email: offlineUser.email,
+                            displayName: offlineUser.displayName,
+                            photoURL: offlineUser.photoURL,
+                            userId: offlineUser.userId,
+                            ...offlineUser.userData,
+                            isOfflineMode: true
+                        };
+                        
+                        // Load imported songs jika ada
+                        await loadImportedSongs();
+                        console.log('[OK] App loaded in OFFLINE mode');
+                    }
+                }
+            } else {
+                console.log('[INFO] No offline session - need to login online first');
+            }
+        }
     }
 });
 
@@ -17702,6 +18454,138 @@ function setupPublicSongsListener() {
     const publicSongsRef = ref(db, 'publicImportedSongs');
     
     onValue(publicSongsRef, (snapshot) => {
+
+// ============================================================
+// OFFLINE MODE MANAGER
+// ============================================================
+(function initOfflineMode() {
+    let isOfflineMode = false;
+    
+    // Check offline status
+    function updateOfflineStatus() {
+        const wasOffline = isOfflineMode;
+        isOfflineMode = !navigator.onLine;
+        
+        const indicator = document.getElementById('offline-mode-indicator');
+        if (indicator) {
+            indicator.style.display = isOfflineMode ? 'flex' : 'none';
+        }
+        
+        // Update song list visibility based on cache status
+        if (isOfflineMode !== wasOffline) {
+            updateSongListForOfflineMode();
+        }
+        
+        return isOfflineMode;
+    }
+    
+    // Update song list untuk offline mode
+    async function updateSongListForOfflineMode() {
+        if (!isOfflineMode) {
+            // Online mode - show all songs normally
+            document.querySelectorAll('.song-row').forEach(row => {
+                row.style.opacity = '1';
+                row.style.pointerEvents = 'auto';
+                row.style.filter = 'none';
+            });
+            return;
+        }
+        
+        // Offline mode - check which songs are cached
+        const songRows = document.querySelectorAll('.song-row');
+        
+        for (const row of songRows) {
+            const songId = row.id.replace('row-', '');
+            const song = window.allSongs?.find(s => s.id == songId);
+            
+            if (song) {
+                const audioUrl = song.src || song.url || song.audio_url;
+                if (audioUrl) {
+                    const isCached = await isInCache(audioUrl);
+                    
+                    if (isCached) {
+                        // Song is cached - normal display
+                        row.style.opacity = '1';
+                        row.style.pointerEvents = 'auto';
+                        row.style.filter = 'none';
+                    } else {
+                        // Song not cached - dim and disable
+                        row.style.opacity = '0.4';
+                        row.style.pointerEvents = 'none';
+                        row.style.filter = 'grayscale(1)';
+                    }
+                }
+            }
+        }
+    }
+    
+    // Attempt auto offline login
+    async function attemptOfflineLogin() {
+        if (!navigator.onLine && window.VidjeHybridAuth) {
+            console.log('[OFFLINE] Attempting offline login...');
+            const result = await window.VidjeHybridAuth.attemptAutoOfflineLogin();
+            
+            if (result.success) {
+                console.log('[OFFLINE] Auto-login successful');
+                // Trigger UI update
+                window.dispatchEvent(new CustomEvent('offline-auth-success', {
+                    detail: { user: result.user }
+                }));
+            } else if (result.needPIN) {
+                console.log('[OFFLINE] PIN required for offline login');
+                // Show PIN dialog if needed
+            } else {
+                console.log('[OFFLINE] Auto-login failed:', result.reason);
+            }
+        }
+    }
+    
+    // Listen to online/offline events
+    window.addEventListener('online', () => {
+        console.log('[ONLINE] Connection restored');
+        updateOfflineStatus();
+    });
+    
+    window.addEventListener('offline', () => {
+        console.log('[OFFLINE] Connection lost');
+        updateOfflineStatus();
+        attemptOfflineLogin();
+    });
+    
+    // Listen to offline auth success
+    window.addEventListener('offline-auth-success', (e) => {
+        console.log('[OFFLINE] Auth success, updating UI...');
+        // Load user data from offline session
+        const user = e.detail.user;
+        
+        // Update profile display
+        if (user) {
+            const profileName = document.getElementById('profile-user-name');
+            const profileEmail = document.getElementById('profile-user-email');
+            
+            if (profileName) profileName.textContent = user.displayName || user.email;
+            if (profileEmail) profileEmail.textContent = user.email;
+        }
+        
+        // Update song list for offline mode
+        updateSongListForOfflineMode();
+    });
+    
+    // Initial check
+    setTimeout(() => {
+        updateOfflineStatus();
+        if (!navigator.onLine) {
+            attemptOfflineLogin();
+        }
+    }, 1000);
+    
+    // Expose untuk digunakan di tempat lain
+    window.updateSongListForOfflineMode = updateSongListForOfflineMode;
+    window.isOfflineMode = () => isOfflineMode;
+    
+})();
+
+
         const publicSongs = snapshot.val();
         if (!publicSongs) return;
         
@@ -17712,7 +18596,7 @@ function setupPublicSongsListener() {
             
             // Tambahkan lagu publik baru
             songs.push(song);
-            console.log('🎵 New public song added:', song.title, 'by', song.uploaderName);
+            console.log('[MUSIC] New public song added:', song.title, 'by', song.uploaderName);
         });
     });
 }
@@ -17730,15 +18614,15 @@ if ('serviceWorker' in navigator) {
         
         // Register new SW after clearing old ones
         setTimeout(() => {
-            navigator.serviceWorker.register('sw.js?v=999', {
+            navigator.serviceWorker.register('sw.js?v=3000', {
                 updateViaCache: 'none'
             })
             .then(reg => {
-                console.log('✅ Service Worker v999 Registered');
+                console.log('[OK] Service Worker v3000 Registered');
                 reg.update();
             })
             .catch(err => {
-                console.error('❌ SW Registration Failed:', err);
+                console.error('[ERROR] SW Registration Failed:', err);
             });
         }, 500);
     });
@@ -17817,7 +18701,7 @@ if ('serviceWorker' in navigator) {
                 // Save playback state
                 savePlaybackState();
                 
-                console.log('🎵 Audio playing - current source:', audio.src ? 'Valid' : 'MISSING');
+                console.log('[MUSIC] Audio playing - current source:', audio.src ? 'Valid' : 'MISSING');
                 
                 // Update new overlay progress
                 if (typeof updateNewProgress === 'function') {
@@ -17853,7 +18737,7 @@ if ('serviceWorker' in navigator) {
             audio.addEventListener('error', (event) => {
                 const error = audio.error;
                 if (error) {
-                    console.error('❌ Audio Error Code:', error.code, 'Message:', error.message);
+                    console.error('[ERROR] Audio Error Code:', error.code, 'Message:', error.message);
                     // MEDIA_ERR_ABORTED: 1
                     // MEDIA_ERR_NETWORK: 2
                     // MEDIA_ERR_DECODE: 3
@@ -17983,7 +18867,7 @@ if ('serviceWorker' in navigator) {
         let deferredPrompt;
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('✅ PWA Install Prompt Available');
+            console.log('[OK] PWA Install Prompt Available');
             e.preventDefault();
             deferredPrompt = e;
 
@@ -18022,7 +18906,7 @@ if ('serviceWorker' in navigator) {
         });
 
         window.addEventListener('appinstalled', () => {
-            console.log('✅ App installed successfully!');
+            console.log('[OK] App installed successfully!');
             deferredPrompt = null;
         });
 
@@ -18137,7 +19021,7 @@ window.executeShareAlbum = function(targetUid) {
 };
 
 // Helper function untuk console log debugging
-console.log('✅ Share functions loaded:', {
+console.log('[OK] Share functions loaded:', {
     shareAlbum: typeof window.shareAlbum,
     shareCurrentPlaylist: typeof window.shareCurrentPlaylist,
     executeShareAlbum: typeof window.executeShareAlbum
@@ -18228,11 +19112,11 @@ window.savePlaylistSettings = function() {
 // === FINAL SAFEGUARD: SETUP LISTEN TOGETHER LISTENER ===
 // Pastikan listener terpasang meskipun onclick inline gagal
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ DOMContentLoaded: Setting up Listen Together button...');
+    console.log('[OK] DOMContentLoaded: Setting up Listen Together button...');
     const ltBtn = document.getElementById('btn-open-listen-together');
     
     if (ltBtn) {
-        console.log('✅ Button Listen Together ditemukan!');
+        console.log('[OK] Button Listen Together ditemukan!');
         ltBtn.addEventListener('click', function(e) {
             e.preventDefault();
             console.log('👆 Tombol Dengar Bareng diklik (Event Listener)!');
@@ -18243,7 +19127,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     } else {
-        console.error('❌ Button Listen Together TIDAK DITEMUKAN');
+        console.error('[ERROR] Button Listen Together TIDAK DITEMUKAN');
     }
     
     // 🔄 RESET: Clear playback state on refresh
@@ -18252,7 +19136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('currentSongId');
     localStorage.removeItem('currentSongPaused');
     localStorage.removeItem('vidjePlaybackState');
-    console.log('✅ Playback state cleared - user must select a song manually');
+    console.log('[OK] Playback state cleared - user must select a song manually');
 });
 
 // ===== DIAGNOSTIC TOOLS =====
@@ -18292,7 +19176,7 @@ async function loadSongsFromSupabase() {
             });
 
         if (folderError) {
-            console.error('❌ Error listing folders:', folderError);
+            console.error('[ERROR] Error listing folders:', folderError);
             return 0;
         }
 
@@ -18331,7 +19215,7 @@ async function loadSongsFromSupabase() {
             }
 
             if (!musicFiles || musicFiles.length === 0) {
-                console.log(`⚠️ No files in ${folderName}`);
+                console.log(`[WARN] No files in ${folderName}`);
                 continue;
             }
 
@@ -18398,7 +19282,7 @@ async function loadSongsFromSupabase() {
         return loadedCount;
 
     } catch (error) {
-        console.error('❌ Error loading songs from Supabase:', error);
+        console.error('[ERROR] Error loading songs from Supabase:', error);
         return 0;
     }
 }
@@ -18479,11 +19363,11 @@ function cleanSongTitle(filename) {
 
 // TEST: Tambahkan dummy text saat page load untuk debug
 window.addEventListener('DOMContentLoaded', () => {
-    console.log('🔍 DEBUG: Testing lyrics elements...');
+    console.log('[DEBUG] DEBUG: Testing lyrics elements...');
     
     const overlayLyricsContent = document.getElementById('overlay-lyrics-content');
     if (overlayLyricsContent) {
-        console.log('✅ overlay-lyrics-content found');
+        console.log('[OK] overlay-lyrics-content found');
         console.log('  - Display:', window.getComputedStyle(overlayLyricsContent).display);
         console.log('  - Visibility:', window.getComputedStyle(overlayLyricsContent).visibility);
         console.log('  - Opacity:', window.getComputedStyle(overlayLyricsContent).opacity);
@@ -18493,16 +19377,16 @@ window.addEventListener('DOMContentLoaded', () => {
         // Tambahkan test text
         overlayLyricsContent.innerHTML = '<div style="color: red; font-size: 24px; padding: 20px;">TEST LIRIK - Jika Anda melihat ini, element berfungsi!</div>';
     } else {
-        console.error('❌ overlay-lyrics-content NOT found');
+        console.error('[ERROR] overlay-lyrics-content NOT found');
     }
     
     const overlayPlayer = document.getElementById('overlay-player');
     if (overlayPlayer) {
-        console.log('✅ overlay-player found');
+        console.log('[OK] overlay-player found');
         console.log('  - Display:', window.getComputedStyle(overlayPlayer).display);
         console.log('  - Has active class:', overlayPlayer.classList.contains('active'));
     } else {
-        console.error('❌ overlay-player NOT found');
+        console.error('[ERROR] overlay-player NOT found');
     }
 });
 
@@ -18545,7 +19429,7 @@ if (originalLoadSong) {
     };
 }
 
-console.log('✅ Lyrics button indicator ready');
+console.log('[OK] Lyrics button indicator ready');
 
 
 // ============================================
@@ -18566,7 +19450,7 @@ let backgroundPlaybackState = {
 
 // Initialize background playback
 function initBackgroundPlayback() {
-    console.log('🎵 Initializing background playback support...');
+    console.log('[MUSIC] Initializing background playback support...');
     
     // Check if browser supports background playback
     if (!navigator.mediaSession) {
@@ -18588,7 +19472,7 @@ function initBackgroundPlayback() {
     // ✅ 4. Prevent app from being garbage collected
     setupBackgroundKeepAlive();
     
-    console.log('✅ Background playback initialized');
+    console.log('[OK] Background playback initialized');
 }
 
 // ✅ WAKE LOCK: Keep device awake while playing
@@ -18704,7 +19588,7 @@ function playAudio() {
         playPromise.then(_ => {
             isPlaying = true;
             updatePlayBtn();
-            console.log('✅ Audio playback started');
+            console.log('[OK] Audio playback started');
         })
         .catch(error => {
             console.error("❌ Audio Play Error:", error);
@@ -18735,7 +19619,7 @@ function pauseAudio() {
     audio.pause();
     isPlaying = false;
     updatePlayBtn();
-    console.log('✅ Audio paused');
+    console.log('[OK] Audio paused');
 }
 
 // Export to window for media session handlers
@@ -18807,7 +19691,7 @@ function setupEnhancedMediaSession() {
         }
     });
     
-    console.log('✅ Enhanced Media Session handlers registered');
+    console.log('[OK] Enhanced Media Session handlers registered');
 }
 
 // ✅ KEEP ALIVE MECHANISM: Prevent app termination di background
@@ -18867,7 +19751,7 @@ function setupBackgroundKeepAlive() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🎵 Initializing Background Playback...');
+    console.log('[MUSIC] Initializing Background Playback...');
     initBackgroundPlayback();
 });
 
@@ -18885,7 +19769,7 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
-console.log('✅ Background Playback System Ready - Music akan jalan di background!');
+console.log('[OK] Background Playback System Ready - Music akan jalan di background!');
 
 // ✅ FORCE HIDE PLAYER ON PAGE LOAD - Only show when user plays a song
 document.addEventListener('DOMContentLoaded', () => {
@@ -18899,7 +19783,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // If player bar is already active (from restored state), show progress bar too
         if (playerProgressBar) {
             playerProgressBar.classList.add('active');
-            console.log('✅ Progress bar activated with restored player state');
+            console.log('[OK] Progress bar activated with restored player state');
         }
     }
     
@@ -18907,7 +19791,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tidak perlu force hide lagi - akan muncul bersamaan dengan player bar
     
     
-    console.log('🎵 Player visibility initialized - progress bar will show with player');
+    console.log('[MUSIC] Player visibility initialized - progress bar will show with player');
 });
 
 
@@ -19082,12 +19966,510 @@ window.addEventListener('DOMContentLoaded', function() {
         audio.addEventListener('loadedmetadata', updateProgress);
     }
     
-    console.log('✅ Playbar progress with drag initialized');
+    console.log('[OK] Playbar progress with drag initialized');
 })();
 
 
 
 
 </script>
+</body>
+</html>
+
+// ===== LOADING SCREEN OFFLINE DETECTION =====
+(function() {
+    function checkOfflineStatus() {
+        const offlineNotice = document.getElementById('loading-offline-notice');
+        
+        if (!navigator.onLine && offlineNotice) {
+            // Show offline notice
+            offlineNotice.classList.add('show');
+            console.log('⚠️ Loading in OFFLINE mode');
+        } else if (offlineNotice) {
+            // Hide offline notice
+            offlineNotice.classList.remove('show');
+        }
+    }
+
+    // Check on page load
+    checkOfflineStatus();
+
+    // Listen for online/offline events during loading
+    window.addEventListener('online', checkOfflineStatus);
+    window.addEventListener('offline', checkOfflineStatus);
+})();
+
+<!-- ===== VIDJE OFFLINE MUSIC MANAGER ===== -->
+<script>
+// Vidje Offline Music Manager - Auto-cache songs for offline playback
+
+(function() {
+    'use strict';
+
+    const OfflineManager = {
+        // Check if song is cached
+        async isSongCached(songUrl) {
+            if (!('caches' in window)) return false;
+            
+            try {
+                const cache = await caches.open('vidje-music-v2000');
+                const response = await cache.match(songUrl);
+                return !!response;
+            } catch (error) {
+                console.error('Error checking cache:', error);
+                return false;
+            }
+        },
+
+        // Cache a song for offline playback
+        async cacheSong(songUrl, metadata = {}) {
+            if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+                console.warn('Service Worker not ready');
+                return false;
+            }
+
+            try {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'CACHE_MUSIC',
+                    url: songUrl,
+                    metadata: metadata
+                });
+                return true;
+            } catch (error) {
+                console.error('Error caching song:', error);
+                return false;
+            }
+        },
+
+        // Get cache statistics
+        async getCacheInfo() {
+            if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+                return null;
+            }
+
+            return new Promise((resolve) => {
+                const channel = new MessageChannel();
+                
+                channel.port1.onmessage = (event) => {
+                    resolve(event.data);
+                };
+
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'GET_CACHE_SIZE'
+                }, [channel.port2]);
+            });
+        },
+
+        // Clear all music cache
+        async clearMusicCache() {
+            if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+                return false;
+            }
+
+            navigator.serviceWorker.controller.postMessage({
+                type: 'CLEAR_MUSIC_CACHE'
+            });
+            return true;
+        },
+
+        // Check network status
+        isOnline() {
+            return navigator.onLine;
+        },
+
+        // Auto-cache currently playing song
+        autoCacheCurrentSong() {
+            const audio = document.getElementById('audio-player');
+            if (audio && audio.src && !audio.src.startsWith('blob:')) {
+                // Get song metadata from player
+                const metadata = {
+                    title: document.querySelector('.song-title')?.textContent || 'Unknown',
+                    artist: document.querySelector('.song-artist')?.textContent || 'Unknown',
+                    cover: document.querySelector('.playing-cover')?.src || '',
+                    cachedAt: Date.now()
+                };
+
+                this.cacheSong(audio.src, metadata);
+                console.log('[MUSIC] Auto-caching current song for offline');
+            }
+        },
+
+        // Show offline indicator
+        showOfflineIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'offline-indicator';
+            indicator.innerHTML = `
+                <style>
+                    #offline-indicator {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: rgba(255, 59, 48, 0.95);
+                        color: white;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        z-index: 99999;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        animation: slideIn 0.3s ease;
+                    }
+                    @keyframes slideIn {
+                        from { transform: translateX(400px); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    #offline-indicator.online {
+                        background: rgba(52, 199, 89, 0.95);
+                    }
+                </style>
+                <span>📡</span>
+                <span>Mode Offline - Hanya lagu yang sudah di-cache</span>
+            `;
+            document.body.appendChild(indicator);
+            return indicator;
+        },
+
+        // Initialize offline support
+        init() {
+            console.log('[MUSIC] Initializing Offline Music Manager...');
+
+            // Listen for online/offline events
+            window.addEventListener('online', () => {
+                console.log('[OK] Back online!');
+                const indicator = document.getElementById('offline-indicator');
+                if (indicator) {
+                    indicator.classList.add('online');
+                    indicator.innerHTML = '<span style="color: #4CAF50;">●</span><span>Kembali Online!</span>';
+                    setTimeout(() => indicator.remove(), 3000);
+                }
+            });
+
+            window.addEventListener('offline', () => {
+                console.log('[OFFLINE] Gone offline!');
+                this.showOfflineIndicator();
+            });
+
+            // Auto-cache song when it starts playing
+            const audio = document.getElementById('audio-player');
+            if (audio) {
+                audio.addEventListener('play', () => {
+                    if (this.isOnline()) {
+                        setTimeout(() => this.autoCacheCurrentSong(), 2000);
+                    }
+                });
+            }
+
+            // Add UI button for cache management (optional)
+            this.addCacheManagementUI();
+
+            console.log('[OK] Offline Music Manager Ready');
+        },
+
+        // Add cache management UI (optional)
+        addCacheManagementUI() {
+            // Functions accessible via window object
+            window.showCacheInfo = async () => {
+                const info = await this.getCacheInfo();
+                if (info) {
+                    alert(`📊 Cache Info:
+                    
+Lagu di-cache: ${info.musicCount}/${info.musicLimit}
+Gambar di-cache: ${info.imageCount}/${info.imageLimit}
+
+Lagu yang sudah di-cache bisa diputar saat offline!`);
+                }
+            };
+
+            window.clearOfflineCache = async () => {
+                if (confirm('Hapus semua lagu offline? Kamu perlu online lagi untuk cache ulang.')) {
+                    await this.clearMusicCache();
+                    alert('✅ Cache musik dihapus!');
+                }
+            };
+        }
+    };
+
+    // Auto-initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => OfflineManager.init());
+    } else {
+        OfflineManager.init();
+    }
+
+    // Expose to window for manual usage
+    window.VidjeOffline = OfflineManager;
+
+    console.log('[OK] Vidje Offline Manager Loaded');
+})();
+
+// ============================================================
+// OFFLINE MODE FUNCTIONS - SETUP PIN & STATUS
+// ============================================================
+
+async function showSetupPINDialog() {
+    const pin = prompt('Masukkan PIN 4 digit untuk akses offline:');
+    
+    if (!pin) return;
+    
+    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        alert('❌ PIN harus 4 digit angka!');
+        return;
+    }
+    
+    const confirm = prompt('Konfirmasi PIN (masukkan lagi):');
+    
+    if (pin !== confirm) {
+        alert('❌ PIN tidak cocok!');
+        return;
+    }
+    
+    const result = await window.VidjeHybridAuth.setupPIN(pin);
+    
+    if (result.success) {
+        alert('✅ PIN berhasil disetup!\n\nKamu sekarang bisa login offline dengan PIN saat tidak ada koneksi internet.');
+    } else {
+        alert('❌ ' + result.error);
+    }
+}
+
+function showOfflineStatus() {
+    const hasSession = window.VidjeHybridAuth.hasOfflineSession();
+    const hasPIN = window.VidjeHybridAuth.hasPIN();
+    const queue = window.VidjeHybridAuth.getTrackingQueue();
+    
+    let message = '📊 STATUS OFFLINE MODE\n\n';
+    message += `Offline Session: ${hasSession ? '✅ Tersedia' : '❌ Belum setup'}\n`;
+    message += `PIN Security: ${hasPIN ? '✅ Aktif' : '⚠️ Tidak aktif'}\n`;
+    message += `Tracking Queue: ${queue.length} lagu menunggu sync\n\n`;
+    
+    if (hasSession) {
+        const session = window.VidjeHybridAuth.getOfflineSession();
+        message += `Email: ${session.email}\n`;
+        message += `Tersimpan sejak: ${new Date(session.savedAt).toLocaleString('id-ID')}\n`;
+    } else {
+        message += 'Login online sekali untuk aktifkan offline mode.';
+    }
+    
+    alert(message);
+}
+
+window.showSetupPINDialog = showSetupPINDialog;
+window.showOfflineStatus = showOfflineStatus;
+
+console.log('[OK] Offline mode functions loaded');
+
+
+// ============================================================
+// OFFLINE DOWNLOAD - Download Playlist for Offline
+// ============================================================
+
+window.downloadPlaylistForOffline = async function() {
+    const playlistId = window.currentPlaylistId;
+    if (!playlistId) {
+        alert('⚠️ Tidak ada playlist yang sedang dibuka');
+        return;
+    }
+
+    const playlist = window.playlists && window.playlists[playlistId];
+    if (!playlist || !playlist.songs || playlist.songs.length === 0) {
+        alert('⚠️ Playlist kosong, tidak ada lagu untuk di-download');
+        return;
+    }
+
+    const songs = playlist.songs;
+    const totalSongs = songs.length;
+
+    // Confirm download
+    const confirmed = confirm(
+        `📥 Download ${totalSongs} lagu untuk offline?\n\n` +
+        `Ini akan menggunakan sekitar ${Math.ceil(totalSongs * 5)} MB data.\n` +
+        `Lagu-lagu akan tersimpan di cache browser untuk akses offline.`
+    );
+
+    if (!confirmed) return;
+
+    // Show progress toast
+    const progressToast = document.createElement('div');
+    progressToast.id = 'offline-download-progress';
+    progressToast.innerHTML = `
+        <div style="position: fixed; bottom: 120px; right: 20px; 
+                    background: linear-gradient(135deg, #1a1a1a, #2a2a2a); 
+                    color: white; padding: 20px 24px; border-radius: 12px; 
+                    font-weight: 600; z-index: 99999; 
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                    min-width: 280px;
+                    border: 1px solid rgba(229, 9, 20, 0.3);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <i class="ph-fill ph-download-simple" style="font-size: 24px; color: var(--primary-red);"></i>
+                <div>
+                    <div style="font-size: 14px; font-weight: 700;">Downloading for Offline</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.6);" id="download-status">0 / ${totalSongs} lagu</div>
+                </div>
+            </div>
+            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                <div id="download-progress-bar" style="width: 0%; height: 100%; background: var(--primary-red); transition: width 0.3s;"></div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(progressToast);
+
+    let downloaded = 0;
+    let failed = 0;
+
+    // Download each song
+    for (let i = 0; i < songs.length; i++) {
+        const song = songs[i];
+        
+        try {
+            // Send message to service worker to cache this song
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'CACHE_MUSIC',
+                    data: {
+                        url: song.audio_url,
+                        metadata: {
+                            id: song.id,
+                            name: song.name,
+                            artist: song.artist,
+                            cover_url: song.cover_url
+                        }
+                    }
+                });
+            }
+
+            // Also pre-fetch to trigger caching
+            await fetch(song.audio_url, { mode: 'no-cors' });
+
+            downloaded++;
+        } catch (error) {
+            console.error('Failed to download:', song.name, error);
+            failed++;
+        }
+
+        // Update progress
+        const progress = Math.round(((i + 1) / totalSongs) * 100);
+        document.getElementById('download-progress-bar').style.width = progress + '%';
+        document.getElementById('download-status').textContent = `${downloaded + failed} / ${totalSongs} lagu`;
+    }
+
+    // Remove progress toast
+    setTimeout(() => {
+        progressToast.remove();
+    }, 500);
+
+    // Show result
+    setTimeout(() => {
+        const resultToast = document.createElement('div');
+        
+        if (failed === 0) {
+            resultToast.innerHTML = `
+                <div style="position: fixed; bottom: 120px; right: 20px; 
+                            background: linear-gradient(135deg, #34C759 0%, #30B350 100%); 
+                            color: white; padding: 16px 24px; border-radius: 12px; 
+                            font-weight: 600; z-index: 99999; 
+                            box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
+                    ✅ ${downloaded} lagu berhasil di-download untuk offline!
+                </div>
+            `;
+        } else {
+            resultToast.innerHTML = `
+                <div style="position: fixed; bottom: 120px; right: 20px; 
+                            background: linear-gradient(135deg, #ff9500 0%, #ff8800 100%); 
+                            color: white; padding: 16px 24px; border-radius: 12px; 
+                            font-weight: 600; z-index: 99999; 
+                            box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
+                    ⚠️ ${downloaded} berhasil, ${failed} gagal di-download
+                </div>
+            `;
+        }
+        
+        document.body.appendChild(resultToast);
+        setTimeout(() => resultToast.remove(), 4000);
+    }, 600);
+
+    // Update button state
+    const downloadBtn = document.getElementById('download-offline-btn');
+    if (downloadBtn) {
+        downloadBtn.innerHTML = '<i class="ph-fill ph-check-circle" style="font-size: 24px; color: #34C759;"></i>';
+        downloadBtn.title = 'Sudah di-download untuk offline';
+        
+        // Reset after 3 seconds
+        setTimeout(() => {
+            downloadBtn.innerHTML = '<i class="ph ph-download-simple" style="font-size: 24px;"></i>';
+            downloadBtn.title = 'Download untuk Offline';
+        }, 3000);
+    }
+};
+
+// ============================================================
+// AUTO-DOWNLOAD INDICATOR - Show which songs are cached
+// ============================================================
+
+window.updateOfflineCacheIndicators = async function() {
+    if (!('caches' in window)) return;
+
+    try {
+        const musicCache = await caches.open('vidje-music-v3000');
+        const cachedUrls = (await musicCache.keys()).map(req => req.url);
+
+        // Update song items with cache indicator
+        document.querySelectorAll('.song-item').forEach(item => {
+            const audioUrl = item.dataset.audioUrl;
+            if (audioUrl && cachedUrls.includes(audioUrl)) {
+                // Add cached indicator if not exists
+                if (!item.querySelector('.offline-cached-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'offline-cached-badge';
+                    badge.innerHTML = '<i class="ph-fill ph-download-simple" style="font-size: 12px; color: #34C759;"></i>';
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: 8px;
+                        right: 8px;
+                        background: rgba(52, 199, 89, 0.2);
+                        border: 1px solid rgba(52, 199, 89, 0.4);
+                        border-radius: 50%;
+                        width: 24px;
+                        height: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10;
+                    `;
+                    badge.title = 'Tersedia offline';
+                    
+                    const songCover = item.querySelector('.song-cover');
+                    if (songCover) {
+                        songCover.style.position = 'relative';
+                        songCover.appendChild(badge);
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Failed to update cache indicators:', error);
+    }
+};
+
+// Run on page load and after playing songs
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => window.updateOfflineCacheIndicators(), 1000);
+    });
+} else {
+    setTimeout(() => window.updateOfflineCacheIndicators(), 1000);
+}
+
+console.log('[OK] Offline download functions loaded');
+
+</script>
+
+<!-- ============================================================ -->
+<!-- OFFLINE MANAGER - Enhanced Offline Support v2               -->
+<!-- ============================================================ -->
+<script src="offline-manager.js"></script>
+
 </body>
 </html>
