@@ -73,7 +73,12 @@ self.addEventListener('message', (event) => {
   
   switch(type) {
     case 'CACHE_MUSIC':
-      cacheMusicFile(data.url, data.metadata);
+      // ✅ FIX: Validate data before passing
+      if (data && data.url) {
+        cacheMusicFile(data.url, data.metadata);
+      } else {
+        console.warn('⚠️ Invalid CACHE_MUSIC data:', data);
+      }
       break;
       
     case 'CLEAR_MUSIC_CACHE':
@@ -342,11 +347,14 @@ self.addEventListener('fetch', (event) => {
             credentials: 'omit'
           });
           
-          if (networkResponse.ok) {
+          // ✅ FIX: Only cache full responses (200), not partial (206)
+          if (networkResponse.ok && networkResponse.status === 200) {
             // Cache for future offline use
             const responseToCache = networkResponse.clone();
             await cache.put(request, responseToCache);
             console.log('✅ Cached new music:', url.pathname);
+          } else if (networkResponse.status === 206) {
+            console.log('⚠️ Skipping cache for partial response (206)');
           }
           
           return networkResponse;
