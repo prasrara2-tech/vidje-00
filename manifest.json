@@ -9,14 +9,15 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "./assets/vidje-icon.jpg",
+      "src": "./assets/logo.png",
       "sizes": "192x192",
       "type": "image/jpeg"
     },
     {
-      "src": "./assets/vidje-icon.jpg",
+      "src": "./assets/logo.png",
       "sizes": "512x512",
       "type": "image/jpeg"
     }
   ]
 }
+
