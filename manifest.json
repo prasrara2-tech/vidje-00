@@ -7,6 +7,21 @@
   "background_color": "#000000",
   "theme_color": "#e50914",
   "orientation": "portrait-primary",
+  "categories": ["music"],
+  "screenshots": [
+    {
+      "src": "./assets/logo.png",
+      "sizes": "540x720",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./assets/logo.png",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    }
+  ],
   "icons": [
     {
       "src": "./assets/logo.png",
@@ -20,4 +35,3 @@
     }
   ]
 }
-
