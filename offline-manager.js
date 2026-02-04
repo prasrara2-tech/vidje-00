@@ -1,512 +1,562 @@
 // ===================================================================
-// Service Worker untuk Vidje - v3002 FIXED OFFLINE PLAYBACK
+// VIDJE OFFLINE MANAGER - FIXED VERSION v2.1
 // ===================================================================
 // FIXES:
-// ✅ Range Request support untuk audio seeking
-// ✅ Proper CORS handling untuk audio files
-// ✅ Flexible cache matching (ignores query params)
-// ✅ Opaque response support untuk no-cors requests
+// ✅ Removed broadcastToClients (only for SW context)
+// ✅ Proper window context only
+// ✅ Better error handling
 // ===================================================================
 
-const CACHE_NAME = 'vidje-v3002';
-const MUSIC_CACHE = 'vidje-music-v3002';
-const IMAGE_CACHE = 'vidje-images-v3002';
-
-const MAX_MUSIC_CACHE = 50;
-const MAX_IMAGE_CACHE = 100;
+console.log('🔧 Offline Manager v2.1 Loading...');
 
 // ============================================================
-// INSTALL EVENT
+// 1. REGISTER SERVICE WORKER - WAJIB!
 // ============================================================
 
-self.addEventListener('install', (event) => {
-  console.log('✅ SW v3002: Installing FIXED version...');
-  self.skipWaiting();
-  
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('📦 SW v3002: Caching core assets');
-      return cache.addAll([
-        './',
-        './index.html'
-      ]).catch(err => {
-        console.warn('⚠️ SW: Cache addAll error', err);
-      });
-    })
-  );
-});
-
-// ============================================================
-// ACTIVATE EVENT
-// ============================================================
-
-self.addEventListener('activate', (event) => {
-  console.log('🔄 SW v3002: Activating...');
-  
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          // Delete old versions
-          if (cacheName.startsWith('vidje-') && 
-              cacheName !== CACHE_NAME && 
-              cacheName !== MUSIC_CACHE && 
-              cacheName !== IMAGE_CACHE) {
-            console.log('🗑️ Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      console.log('✅ SW v3002: Ready - Offline playback FIXED!');
-      return self.clients.claim();
-    })
-  );
-});
-
-// ============================================================
-// MESSAGE HANDLER
-// ============================================================
-
-self.addEventListener('message', (event) => {
-  const { type, data } = event.data || {};
-  
-  switch(type) {
-    case 'CACHE_MUSIC':
-      cacheMusicFile(data.url, data.metadata);
-      break;
-      
-    case 'CLEAR_MUSIC_CACHE':
-      clearMusicCache();
-      break;
-      
-    case 'GET_CACHE_SIZE':
-      getCacheSize().then(size => {
-        if (event.ports && event.ports[0]) {
-          event.ports[0].postMessage(size);
-        }
-      });
-      break;
-      
-    default:
-      broadcastToClients(event.data);
-  }
-});
-
-// ============================================================
-// CACHE MUSIC FILE - IMPROVED
-// ============================================================
-
-async function cacheMusicFile(url, metadata) {
-  try {
-    console.log('📥 Caching music:', url);
-    
-    const cache = await caches.open(MUSIC_CACHE);
-    
-    // Fetch dengan proper CORS
-    const response = await fetch(url, {
-      mode: 'cors',
-      credentials: 'omit'
-    });
-    
-    if (response.ok) {
-      // Clone response untuk disimpan
-      const responseToCache = response.clone();
-      
-      // Store in cache
-      await cache.put(url, responseToCache);
-      
-      console.log('✅ Music cached successfully:', url);
-      
-      // Cleanup old cache
-      await cleanupMusicCache();
-      
-      // Notify clients
-      broadcastToClients({
-        type: 'MUSIC_CACHED',
-        url: url,
-        metadata: metadata
-      });
-    }
-  } catch (error) {
-    console.error('❌ Failed to cache music:', error);
-    
-    // Coba dengan mode no-cors sebagai fallback
-    try {
-      const response = await fetch(url, { mode: 'no-cors' });
-      const cache = await caches.open(MUSIC_CACHE);
-      await cache.put(url, response);
-      console.log('✅ Music cached (no-cors mode):', url);
-    } catch (err) {
-      console.error('❌ No-cors fallback also failed:', err);
-    }
-  }
-}
-
-// ============================================================
-// CLEANUP OLD MUSIC CACHE
-// ============================================================
-
-async function cleanupMusicCache() {
-  try {
-    const cache = await caches.open(MUSIC_CACHE);
-    const keys = await cache.keys();
-    
-    if (keys.length > MAX_MUSIC_CACHE) {
-      const itemsToRemove = keys.length - MAX_MUSIC_CACHE;
-      for (let i = 0; i < itemsToRemove; i++) {
-        await cache.delete(keys[i]);
-      }
-      console.log('🗑️ Removed', itemsToRemove, 'old cached items');
-    }
-  } catch (error) {
-    console.error('❌ Cleanup failed:', error);
-  }
-}
-
-// ============================================================
-// CLEAR ALL MUSIC CACHE
-// ============================================================
-
-async function clearMusicCache() {
-  try {
-    const cache = await caches.open(MUSIC_CACHE);
-    const keys = await cache.keys();
-    await Promise.all(keys.map(key => cache.delete(key)));
-    console.log('🗑️ All music cache cleared');
-    
-    broadcastToClients({ type: 'CACHE_CLEARED' });
-  } catch (error) {
-    console.error('❌ Clear cache failed:', error);
-  }
-}
-
-// ============================================================
-// GET CACHE SIZE INFO
-// ============================================================
-
-async function getCacheSize() {
-  try {
-    const musicCache = await caches.open(MUSIC_CACHE);
-    const imageCache = await caches.open(IMAGE_CACHE);
-    
-    const musicKeys = await musicCache.keys();
-    const imageKeys = await imageCache.keys();
-    
-    return {
-      musicCount: musicKeys.length,
-      imageCount: imageKeys.length,
-      musicLimit: MAX_MUSIC_CACHE,
-      imageLimit: MAX_IMAGE_CACHE
-    };
-  } catch (error) {
-    return {
-      musicCount: 0,
-      imageCount: 0,
-      musicLimit: MAX_MUSIC_CACHE,
-      imageLimit: MAX_IMAGE_CACHE
-    };
-  }
-}
-
-// ============================================================
-// BROADCAST TO ALL CLIENTS
-// ============================================================
-
-async function broadcastToClients(message) {
-  try {
-    const clients = await self.clients.matchAll();
-    clients.forEach(client => {
-      client.postMessage(message);
-    });
-  } catch (error) {
-    console.error('❌ Broadcast failed:', error);
-  }
-}
-
-// ============================================================
-// HANDLE RANGE REQUESTS - CRITICAL FOR AUDIO PLAYBACK!
-// ============================================================
-
-async function handleRangeRequest(request, cachedResponse) {
-  const rangeHeader = request.headers.get('range');
-  
-  if (!rangeHeader) {
-    return cachedResponse;
-  }
-  
-  // Parse range header: "bytes=0-1023"
-  const rangeMatch = rangeHeader.match(/bytes=(\d+)-(\d*)/);
-  if (!rangeMatch) {
-    return cachedResponse;
-  }
-  
-  const start = parseInt(rangeMatch[1], 10);
-  const arrayBuffer = await cachedResponse.arrayBuffer();
-  const end = rangeMatch[2] ? parseInt(rangeMatch[2], 10) : arrayBuffer.byteLength - 1;
-  
-  // Validate range
-  if (start >= arrayBuffer.byteLength || end >= arrayBuffer.byteLength || start > end) {
-    return new Response(null, {
-      status: 416,
-      statusText: 'Range Not Satisfiable',
-      headers: {
-        'Content-Range': `bytes */${arrayBuffer.byteLength}`
-      }
-    });
-  }
-  
-  // Create sliced response
-  const slicedBuffer = arrayBuffer.slice(start, end + 1);
-  
-  return new Response(slicedBuffer, {
-    status: 206,
-    statusText: 'Partial Content',
-    headers: {
-      'Content-Type': cachedResponse.headers.get('Content-Type') || 'audio/mpeg',
-      'Content-Length': slicedBuffer.byteLength,
-      'Content-Range': `bytes ${start}-${end}/${arrayBuffer.byteLength}`,
-      'Accept-Ranges': 'bytes',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-      'Access-Control-Allow-Headers': 'Range'
-    }
-  });
-}
-
-// ============================================================
-// MAIN FETCH HANDLER - FIXED FOR OFFLINE PLAYBACK
-// ============================================================
-
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Only handle GET and HEAD requests
-  if (!['GET', 'HEAD'].includes(request.method) || !url.protocol.startsWith('http')) {
-    return;
-  }
-
-  // Skip Firebase
-  if (url.hostname.includes('firebase')) {
-    return;
-  }
-
-  // ============================================================
-  // MUSIC FILES - DENGAN RANGE REQUEST SUPPORT
-  // ============================================================
-  
-  if (url.hostname.includes('supabase') && 
-      (url.pathname.includes('/audio/') || 
-       url.pathname.includes('/music/') ||
-       url.pathname.endsWith('.mp3') ||
-       url.pathname.endsWith('.m4a') ||
-       url.pathname.endsWith('.wav'))) {
-    
-    event.respondWith(
-      (async () => {
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
         try {
-          const cache = await caches.open(MUSIC_CACHE);
-          
-          // Cari di cache (ignore query params untuk matching)
-          const cachedResponse = await cache.match(request, {
-            ignoreSearch: true,
-            ignoreVary: true
-          });
-          
-          if (cachedResponse) {
-            console.log('🎵 Playing from cache:', url.pathname);
-            
-            // Handle range requests untuk seeking
-            if (request.headers.get('range')) {
-              return await handleRangeRequest(request, cachedResponse);
+            // Unregister old service workers first
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+                await registration.unregister();
+                console.log('🗑️ Unregistered old SW');
             }
             
-            // Return full response dengan proper headers
-            const headers = new Headers(cachedResponse.headers);
-            headers.set('Access-Control-Allow-Origin', '*');
-            headers.set('Accept-Ranges', 'bytes');
-            
-            return new Response(cachedResponse.body, {
-              status: 200,
-              statusText: 'OK',
-              headers: headers
+            // Register new fixed service worker
+            const registration = await navigator.serviceWorker.register('/sw.js', {
+                scope: '/',
+                updateViaCache: 'none' // Always check for updates
             });
-          }
-          
-          // Not in cache - fetch from network
-          console.log('📡 Fetching from network:', url.pathname);
-          
-          const networkResponse = await fetch(request, {
-            mode: 'cors',
-            credentials: 'omit'
-          });
-          
-          if (networkResponse.ok) {
-            // Cache for future offline use
-            const responseToCache = networkResponse.clone();
-            await cache.put(request, responseToCache);
-            console.log('✅ Cached new music:', url.pathname);
-          }
-          
-          return networkResponse;
-          
-        } catch (error) {
-          console.error('❌ Music fetch failed:', error);
-          
-          // Try one more time with cache (broader search)
-          const cache = await caches.open(MUSIC_CACHE);
-          const allRequests = await cache.keys();
-          
-          // Find by URL path only
-          const matchingRequest = allRequests.find(req => {
-            const reqUrl = new URL(req.url);
-            return reqUrl.pathname === url.pathname;
-          });
-          
-          if (matchingRequest) {
-            const fallbackResponse = await cache.match(matchingRequest);
-            if (fallbackResponse) {
-              console.log('🎵 Found in cache (fallback):', url.pathname);
-              
-              if (request.headers.get('range')) {
-                return await handleRangeRequest(request, fallbackResponse);
-              }
-              
-              return fallbackResponse;
-            }
-          }
-          
-          // No cache available
-          return new Response(JSON.stringify({ 
-            error: 'Offline',
-            message: 'Lagu ini belum di-download untuk offline. Putar sekali saat online untuk menyimpannya.'
-          }), { 
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*'
-            }
-          });
+            
+            console.log('✅ Service Worker registered:', registration.scope);
+            
+            // Wait for SW to be ready
+            await navigator.serviceWorker.ready;
+            console.log('✅ Service Worker ready!');
+            
+            // Check for updates periodically
+            setInterval(() => {
+                registration.update();
+            }, 60 * 60 * 1000); // Every hour
+            
+            // Listen for updates
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showUpdateAvailable();
+                    }
+                });
+            });
+            
+        } catch (err) {
+            console.error('❌ SW Registration failed:', err);
+            showSWError();
         }
-      })()
-    );
-    return;
-  }
+    });
+} else {
+    console.error('❌ Service Worker not supported');
+    showSWNotSupported();
+}
 
-  // ============================================================
-  // IMAGE FILES
-  // ============================================================
-  
-  if (url.hostname.includes('supabase') && 
-      (url.pathname.includes('/assets/') || 
-       url.pathname.includes('/albumphoto/') || 
-       url.pathname.endsWith('.jpg') || 
-       url.pathname.endsWith('.png') || 
-       url.pathname.endsWith('.webp'))) {
+function showUpdateAvailable() {
+    const toast = document.createElement('div');
+    toast.innerHTML = `
+        <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+                    background: linear-gradient(135deg, #34C759, #30B350);
+                    color: white; padding: 16px 24px; border-radius: 12px;
+                    font-weight: 600; z-index: 99999; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                    display: flex; align-items: center; gap: 12px;">
+            <i class="ph-fill ph-arrow-clockwise" style="font-size: 20px;"></i>
+            <div>
+                <div style="font-size: 14px;">Update Tersedia</div>
+                <button onclick="location.reload()" 
+                        style="margin-top: 8px; background: white; color: #34C759; 
+                               border: none; padding: 6px 12px; border-radius: 6px;
+                               font-weight: 600; cursor: pointer; font-size: 12px;">
+                    Refresh Sekarang
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+}
+
+function showSWError() {
+    alert('⚠️ Service Worker gagal diaktifkan.\n\nMode offline mungkin tidak berfungsi sempurna.');
+}
+
+function showSWNotSupported() {
+    alert('❌ Browser Anda tidak mendukung Service Worker.\n\nGunakan Chrome, Firefox, Safari, atau Edge terbaru untuk mode offline.');
+}
+
+// ============================================================
+// 2. OFFLINE DETECTION
+// ============================================================
+
+let isOffline = !navigator.onLine;
+let offlineStartTime = null;
+
+function updateOnlineStatus() {
+    const wasOffline = isOffline;
+    isOffline = !navigator.onLine;
     
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(IMAGE_CACHE);
-        const cachedResponse = await cache.match(request, { ignoreSearch: true });
+    if (isOffline && !wasOffline) {
+        offlineStartTime = Date.now();
+        showOfflineNotification();
+        document.body.classList.add('offline-mode');
+    } else if (!isOffline && wasOffline) {
+        const offlineDuration = offlineStartTime ? Math.round((Date.now() - offlineStartTime) / 1000) : 0;
+        showOnlineNotification(offlineDuration);
+        document.body.classList.remove('offline-mode');
+        offlineStartTime = null;
         
-        if (cachedResponse) {
-          // Return cached, but also update in background
-          fetch(request).then(response => {
-            if (response.ok) {
-              cache.put(request, response.clone());
-            }
-          }).catch(() => {});
-          
-          return cachedResponse;
+        // Sync data when back online
+        syncOfflineData();
+    }
+    
+    updateOfflineIndicator();
+}
+
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+document.addEventListener('DOMContentLoaded', updateOnlineStatus);
+
+function showOfflineNotification() {
+    const toast = document.createElement('div');
+    toast.id = 'offline-toast';
+    toast.innerHTML = `
+        <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+                    background: linear-gradient(135deg, #ff9500, #ff8800);
+                    color: white; padding: 16px 24px; border-radius: 12px;
+                    font-weight: 600; z-index: 99999; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                    display: flex; align-items: center; gap: 12px; min-width: 320px;">
+            <i class="ph-fill ph-wifi-slash" style="font-size: 24px;"></i>
+            <div style="flex: 1;">
+                <div style="font-size: 14px; font-weight: 700;">Mode Offline</div>
+                <div style="font-size: 12px; opacity: 0.9; margin-top: 4px;">
+                    Hanya lagu yang sudah di-download yang bisa diputar
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
+function showOnlineNotification(duration) {
+    const toast = document.createElement('div');
+    const durationText = duration > 0 ? ` (offline ${duration}s)` : '';
+    toast.innerHTML = `
+        <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+                    background: linear-gradient(135deg, #34C759, #30B350);
+                    color: white; padding: 16px 24px; border-radius: 12px;
+                    font-weight: 600; z-index: 99999; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                    display: flex; align-items: center; gap: 12px;">
+            <i class="ph-fill ph-wifi-high" style="font-size: 24px;"></i>
+            <div>
+                <div style="font-size: 14px;">Kembali Online${durationText}</div>
+                <div style="font-size: 12px; opacity: 0.9; margin-top: 2px;">Sinkronisasi data...</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function updateOfflineIndicator() {
+    let indicator = document.getElementById('offline-indicator');
+    
+    if (isOffline) {
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'offline-indicator';
+            indicator.innerHTML = `
+                <div style="position: fixed; top: 16px; right: 16px; z-index: 9998;
+                            background: rgba(255, 149, 0, 0.95); color: white;
+                            padding: 8px 16px; border-radius: 20px; font-size: 12px;
+                            font-weight: 700; display: flex; align-items: center; gap: 8px;
+                            backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <i class="ph-fill ph-wifi-slash"></i>
+                    <span>OFFLINE</span>
+                </div>
+            `;
+            document.body.appendChild(indicator);
+        }
+    } else {
+        if (indicator) {
+            indicator.style.transition = 'opacity 0.3s';
+            indicator.style.opacity = '0';
+            setTimeout(() => indicator.remove(), 300);
+        }
+    }
+}
+
+// ============================================================
+// 3. DOWNLOAD PLAYLIST FOR OFFLINE - FIXED!
+// ============================================================
+
+window.downloadPlaylistForOffline = async function() {
+    const playlistId = window.currentPlaylistId;
+    if (!playlistId) {
+        alert('⚠️ Tidak ada playlist yang sedang dibuka');
+        return;
+    }
+
+    const playlist = window.playlists?.[playlistId];
+    if (!playlist?.songs || playlist.songs.length === 0) {
+        alert('⚠️ Playlist kosong');
+        return;
+    }
+
+    // Check if SW is ready
+    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+        const retry = confirm(
+            '❌ Service Worker belum aktif.\n\n' +
+            'Refresh halaman dan coba lagi?\n\n' +
+            '(Diperlukan untuk mode offline)'
+        );
+        if (retry) {
+            location.reload();
+        }
+        return;
+    }
+
+    const songs = playlist.songs;
+    const totalSongs = songs.length;
+    const estimatedMB = Math.ceil(totalSongs * 5);
+
+    const confirmed = confirm(
+        `📥 Download ${totalSongs} lagu untuk offline?\n\n` +
+        `Perkiraan ukuran: ~${estimatedMB} MB\n` +
+        `Lagu akan disimpan di cache browser.\n\n` +
+        `Pastikan koneksi internet stabil.`
+    );
+
+    if (!confirmed) return;
+
+    // Show progress UI
+    const progressDiv = document.createElement('div');
+    progressDiv.id = 'offline-download-progress';
+    progressDiv.innerHTML = `
+        <div style="position: fixed; bottom: 120px; right: 20px;
+                    background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+                    color: white; padding: 20px 24px; border-radius: 16px;
+                    font-weight: 600; z-index: 99999;
+                    box-shadow: 0 12px 24px rgba(0,0,0,0.5);
+                    min-width: 340px; max-width: 400px;
+                    border: 1px solid rgba(229, 9, 20, 0.4);">
+            
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                <i class="ph-fill ph-download-simple" 
+                   style="font-size: 28px; color: var(--primary-red);"></i>
+                <div style="flex: 1;">
+                    <div style="font-size: 15px; font-weight: 700;">Downloading Offline</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px;">
+                        <span id="download-count-display">0</span> / ${totalSongs} lagu
+                    </div>
+                </div>
+            </div>
+            
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); 
+                        border-radius: 3px; overflow: hidden; margin-bottom: 10px;">
+                <div id="download-progress-bar" 
+                     style="width: 0%; height: 100%; background: var(--primary-red); 
+                            transition: width 0.3s ease; border-radius: 3px;"></div>
+            </div>
+            
+            <div id="current-song-name" 
+                 style="font-size: 11px; color: rgba(255,255,255,0.6); 
+                        text-overflow: ellipsis; overflow: hidden; 
+                        white-space: nowrap; font-weight: 500;"></div>
+        </div>
+    `;
+    document.body.appendChild(progressDiv);
+
+    let downloaded = 0;
+    let failed = 0;
+    const failedSongs = [];
+
+    // Download each song
+    for (let i = 0; i < songs.length; i++) {
+        const song = songs[i];
+        
+        // Update UI
+        const currentSongEl = document.getElementById('current-song-name');
+        if (currentSongEl) {
+            currentSongEl.textContent = `${song.name} - ${song.artist}`;
         }
         
-        // Not cached, fetch from network
         try {
-          const response = await fetch(request);
-          if (response.ok) {
-            cache.put(request, response.clone());
-          }
-          return response;
-        } catch (error) {
-          // Return placeholder image
-          return new Response(
-            '<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><rect fill="#181818" width="300" height="300"/><text fill="#666" x="50%" y="50%" text-anchor="middle" font-size="14">Offline</text></svg>',
-            { 
-              headers: { 
-                'Content-Type': 'image/svg+xml',
-                'Access-Control-Allow-Origin': '*'
-              } 
+            // Method 1: Fetch to trigger SW caching
+            console.log(`📥 Downloading [${i+1}/${totalSongs}]:`, song.name);
+            
+            const response = await fetch(song.audio_url, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'omit',
+                cache: 'reload' // Force fresh download
+            });
+
+            if (response.ok) {
+                // Read the full response to ensure it's cached
+                const blob = await response.blob();
+                console.log(`✅ Downloaded: ${song.name} (${(blob.size/1024/1024).toFixed(2)} MB)`);
+                
+                // Send to SW for explicit caching
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'CACHE_MUSIC',
+                        data: {
+                            url: song.audio_url,
+                            metadata: {
+                                id: song.id,
+                                name: song.name,
+                                artist: song.artist,
+                                cover_url: song.cover_url
+                            }
+                        }
+                    });
+                }
+                
+                downloaded++;
+            } else {
+                throw new Error(`HTTP ${response.status}`);
             }
-          );
+
+        } catch (error) {
+            console.error(`❌ Failed [${i+1}/${totalSongs}]:`, song.name, error);
+            failed++;
+            failedSongs.push(song.name);
         }
-      })()
-    );
-    return;
-  }
 
-  // ============================================================
-  // SUPABASE API CALLS
-  // ============================================================
-  
-  if (url.hostname.includes('supabase')) {
-    event.respondWith(
-      fetch(request).catch(() => {
-        return new Response(JSON.stringify({ 
-          error: 'Offline',
-          offline: true,
-          message: 'Database tidak tersedia offline'
-        }), {
-          status: 503,
-          headers: { 
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      })
-    );
-    return;
-  }
+        // Update progress
+        const progress = Math.round(((i + 1) / totalSongs) * 100);
+        const progressBar = document.getElementById('download-progress-bar');
+        const countDisplay = document.getElementById('download-count-display');
+        
+        if (progressBar) progressBar.style.width = progress + '%';
+        if (countDisplay) countDisplay.textContent = (downloaded + failed);
+        
+        // Small delay to prevent overwhelming the browser
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
-  // ============================================================
-  // LOCAL FILES (HTML, CSS, JS)
-  // ============================================================
-  
-  event.respondWith(
-    caches.match(request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+    // Remove progress UI
+    setTimeout(() => {
+        progressDiv.style.transition = 'opacity 0.3s';
+        progressDiv.style.opacity = '0';
+        setTimeout(() => progressDiv.remove(), 300);
+    }, 500);
 
-      return fetch(request).then(response => {
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, responseToCache);
-          });
+    // Show result
+    setTimeout(() => {
+        const resultToast = document.createElement('div');
+        
+        if (failed === 0) {
+            resultToast.innerHTML = `
+                <div style="position: fixed; bottom: 120px; right: 20px;
+                            background: linear-gradient(135deg, #34C759, #30B350);
+                            color: white; padding: 18px 24px; border-radius: 12px;
+                            font-weight: 600; z-index: 99999;
+                            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                            display: flex; align-items: center; gap: 12px;">
+                    <i class="ph-fill ph-check-circle" style="font-size: 28px;"></i>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700;">Download Selesai!</div>
+                        <div style="font-size: 12px; opacity: 0.9; margin-top: 2px;">
+                            ${downloaded} lagu siap diputar offline
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const failedList = failedSongs.slice(0, 3).join(', ') + (failedSongs.length > 3 ? '...' : '');
+            resultToast.innerHTML = `
+                <div style="position: fixed; bottom: 120px; right: 20px;
+                            background: linear-gradient(135deg, #ff9500, #ff8800);
+                            color: white; padding: 18px 24px; border-radius: 12px;
+                            font-weight: 600; z-index: 99999;
+                            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+                            max-width: 360px;">
+                    <div style="display: flex; align-items: start; gap: 12px;">
+                        <i class="ph-fill ph-warning" style="font-size: 24px; margin-top: 2px;"></i>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 700;">
+                                ${downloaded} berhasil, ${failed} gagal
+                            </div>
+                            <div style="font-size: 11px; opacity: 0.9; margin-top: 4px;">
+                                Gagal: ${failedList}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-        return response;
-      }).catch(() => {
-        return new Response('Offline - Halaman tidak tersedia', { 
-          status: 503,
-          headers: { 'Content-Type': 'text/plain' }
-        });
-      });
-    })
-  );
-});
+        
+        document.body.appendChild(resultToast);
+        setTimeout(() => {
+            resultToast.style.transition = 'opacity 0.3s';
+            resultToast.style.opacity = '0';
+            setTimeout(() => resultToast.remove(), 300);
+        }, 5000);
+    }, 700);
+
+    // Update button state
+    const downloadBtn = document.getElementById('download-offline-btn');
+    if (downloadBtn) {
+        downloadBtn.innerHTML = '<i class="ph-fill ph-check-circle" style="font-size: 24px; color: #34C759;"></i>';
+        downloadBtn.title = `${downloaded} lagu tersedia offline`;
+        
+        setTimeout(() => {
+            downloadBtn.innerHTML = '<i class="ph ph-download-simple" style="font-size: 24px;"></i>';
+            downloadBtn.title = 'Download untuk Offline';
+        }, 4000);
+    }
+    
+    // Update cache indicators
+    setTimeout(() => {
+        if (window.updateOfflineCacheIndicators) {
+            window.updateOfflineCacheIndicators();
+        }
+    }, 1000);
+};
 
 // ============================================================
-// BACKGROUND SYNC
+// 4. CHECK CACHED SONGS
 // ============================================================
 
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-tracking') {
-    console.log('🔄 Background sync: tracking queue');
-    event.waitUntil(broadcastToClients({ type: 'SYNC_TRACKING_REQUEST' }));
-  }
+window.getCachedSongs = async function() {
+    if (!('caches' in window)) {
+        return [];
+    }
+    
+    try {
+        const musicCache = await caches.open('vidje-music-v3002');
+        const requests = await musicCache.keys();
+        return requests.map(req => req.url);
+    } catch (error) {
+        console.error('Failed to get cached songs:', error);
+        return [];
+    }
+};
+
+// ============================================================
+// 5. SYNC OFFLINE DATA
+// ============================================================
+
+async function syncOfflineData() {
+    console.log('🔄 Syncing offline data...');
+    
+    // Sync tracking queue
+    if (window.syncTrackingQueue) {
+        try {
+            await window.syncTrackingQueue();
+        } catch (error) {
+            console.error('Failed to sync tracking queue:', error);
+        }
+    }
+    
+    // Notify user
+    const toast = document.createElement('div');
+    toast.innerHTML = `
+        <div style="position: fixed; bottom: 120px; right: 20px;
+                    background: rgba(52, 199, 89, 0.95);
+                    color: white; padding: 12px 20px; border-radius: 8px;
+                    font-size: 13px; font-weight: 600; z-index: 99999;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            ✅ Data tersinkronisasi
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+// ============================================================
+// 6. PWA INSTALL PROMPT
+// ============================================================
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show install button/banner
+    showInstallPrompt();
 });
 
-console.log('✅ Vidje SW v3002 - FIXED Offline Playback Ready!');
-console.log('🎵 Features: Range Requests, CORS Support, Flexible Caching');
+function showInstallPrompt() {
+    // Only show if not already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('✅ Already installed as PWA');
+        return;
+    }
+    
+    const installBanner = document.createElement('div');
+    installBanner.id = 'pwa-install-banner';
+    installBanner.innerHTML = `
+        <div style="position: fixed; bottom: calc(90px + 16px); left: 12px; right: 12px;
+                    background: linear-gradient(135deg, #e50914, #ff1f2c);
+                    color: white; padding: 16px 20px; border-radius: 12px;
+                    font-weight: 600; z-index: 20000;
+                    box-shadow: 0 8px 20px rgba(229, 9, 20, 0.4);
+                    display: flex; align-items: center; gap: 12px;">
+            <div style="flex: 1;">
+                <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">
+                    📱 Install Vidje
+                </div>
+                <div style="font-size: 12px; opacity: 0.95;">
+                    Akses offline, login offline, notifikasi
+                </div>
+            </div>
+            <button onclick="installPWA()" 
+                    style="background: white; color: #e50914; border: none;
+                           padding: 10px 18px; border-radius: 8px; font-weight: 700;
+                           cursor: pointer; font-size: 13px;">
+                Install
+            </button>
+            <button onclick="dismissInstallPrompt()" 
+                    style="background: transparent; color: white; border: none;
+                           padding: 8px; cursor: pointer; font-size: 20px;">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+    `;
+    document.body.appendChild(installBanner);
+}
+
+window.installPWA = async function() {
+    if (!deferredPrompt) {
+        alert('Install prompt tidak tersedia. Gunakan menu browser untuk install.');
+        return;
+    }
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('✅ PWA installed');
+    } else {
+        console.log('❌ PWA install declined');
+    }
+    
+    deferredPrompt = null;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.remove();
+};
+
+window.dismissInstallPrompt = function() {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.remove();
+    localStorage.setItem('pwa-install-dismissed', Date.now());
+};
+
+// Check if already installed
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('✅ Running as installed PWA');
+    document.body.classList.add('pwa-installed');
+}
+
+console.log('✅ Offline Manager v2.1 Loaded - Ready for offline use!');
