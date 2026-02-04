@@ -1,21 +1,20 @@
-// Service Worker untuk Vidje - v999 FORCE UPDATE
-const CACHE_NAME = 'vidje-v999';
+// Service Worker untuk Vidje - v1000 LOGO FIX
+const CACHE_NAME = 'vidje-v1000';
 
 // Store reference untuk komunikasi dengan client
 let clients_store = [];
 
-// Install event - cache essential files
+// Install event - cache essential files (TANPA logo karena sudah di Supabase)
 self.addEventListener('install', (event) => {
-  console.log('SW v999: Installing...');
+  console.log('SW v1000: Installing...');
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('SW v999: Caching assets');
+      console.log('SW v1000: Caching assets');
       return cache.addAll([
         './',
         './index.html',
-        './manifest.json?v=999',
-        './assets/logo.png?v=999'
+        './manifest.json'
       ]).catch(err => {
         console.warn('SW: Cache addAll error (some files may not exist)', err);
       });
@@ -25,20 +24,20 @@ self.addEventListener('install', (event) => {
 
 // Activate event - DELETE ALL old caches
 self.addEventListener('activate', (event) => {
-  console.log('SW v999: Activating and cleaning ALL old caches...');
+  console.log('SW v1000: Activating and cleaning ALL old caches...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          // Delete ANY cache that's not v999
+          // Delete ANY cache that's not v1000
           if (cacheName !== CACHE_NAME) {
-            console.log('SW v999: Deleting old cache:', cacheName);
+            console.log('SW v1000: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      console.log('SW v999: All old caches deleted, claiming clients');
+      console.log('SW v1000: All old caches deleted, claiming clients');
       return self.clients.claim();
     })
   );
@@ -56,7 +55,7 @@ self.addEventListener('message', (event) => {
   });
 });
 
-// Fetch event - NETWORK FIRST for logo, normal for others
+// Fetch event - SKIP logo.png dari Supabase, biarkan langsung fetch
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -66,33 +65,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip firebase and external requests
-  if (url.hostname.includes('firebase') || url.hostname.includes('supabase')) {
+  // ✅ SKIP semua request ke Supabase - biarkan langsung ke server
+  if (url.hostname.includes('supabase')) {
     return;
   }
 
-  // FORCE network-first for logo to always get latest version
-  if (url.pathname.includes('/assets/logo.png')) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response && response.status === 200) {
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, responseToCache);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Only fallback to cache if network fails
-          return caches.match(request);
-        })
-    );
+  // Skip firebase
+  if (url.hostname.includes('firebase')) {
     return;
   }
 
-  // Normal fetch strategy for other files
+  // Normal fetch strategy untuk file lokal saja
   event.respondWith(
     fetch(request)
       .then(response => {
