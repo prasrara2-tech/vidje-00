@@ -11097,16 +11097,27 @@ console.log('   getCurrentSong() - Check what song is detected');
         // --- SAVE/RESTORE PLAYBACK STATE ---
         function savePlaybackState() {
             if (songs && songs[currentSongIndex]) {
+                const currentSong = songs[currentSongIndex];
                 const state = {
                     songIndex: currentSongIndex,
-                    songId: songs[currentSongIndex].id,
-                    songTitle: songs[currentSongIndex].title,
+                    songId: currentSong.id,
+                    songTitle: currentSong.title,
+                    songArtist: currentSong.artist,
+                    songAlbum: currentSong.album,
+                    songCover: currentSong.cover,
+                    songUrl: currentSong.url,
                     currentTime: audio ? audio.currentTime : 0,
                     isPlaying: isPlaying,
                     timestamp: Date.now()
                 };
                 localStorage.setItem('vidjePlaybackState', JSON.stringify(state));
-                console.log('💾 Saved playback state:', state);
+                
+                // CRITICAL: Simpan juga audio source secara terpisah untuk recovery cepat
+                if (audio && audio.src) {
+                    localStorage.setItem('vidjeAudioSource', audio.src);
+                }
+                
+                console.log('💾 Saved playback state with audio source:', state);
             }
         }
         
@@ -16836,17 +16847,25 @@ function openArtistBandOverlay(artistData, songsList) {
     localStorage.setItem('currentSongId', song.id);
     localStorage.setItem('currentSongPaused', !isPlaying);
     
-    // ALSO save comprehensive playback state
+    // CRITICAL: Save comprehensive playback state with full song data
     const playbackState = {
         songIndex: songs.indexOf(song),
         songId: song.id,
         songTitle: song.title,
+        songArtist: song.artist,
+        songAlbum: song.album,
+        songCover: song.cover,
+        songUrl: newSrc,
         currentTime: 0,
         isPlaying: isPlaying,
         timestamp: Date.now()
     };
     localStorage.setItem('vidjePlaybackState', JSON.stringify(playbackState));
-    console.log('💾 Saved playback state:', playbackState);
+    
+    // CRITICAL: Save audio source separately for instant recovery
+    localStorage.setItem('vidjeAudioSource', newSrc);
+    
+    console.log('💾 Saved complete playback state with audio source:', playbackState);
     
     // Show playbar when song is loaded (by adding 'active' class)
     const playerBar = document.querySelector('.player-bar');
@@ -18596,6 +18615,53 @@ console.log('[INFO] Offline mode disabled - app runs online only');
         
         console.log('📂 Loading saved song from', new Date(saved.timestamp).toLocaleString());
         
+        // CRITICAL: Try to restore audio source directly if available
+        const savedAudioSource = localStorage.getItem('vidjeAudioSource');
+        const audio = document.getElementById('audio-player');
+        
+        if (savedAudioSource && audio) {
+            console.log('🎵 Restoring audio source directly:', savedAudioSource);
+            
+            // Set audio source without full page reload
+            audio.src = savedAudioSource;
+            audio.preload = 'metadata';
+            
+            // Restore metadata from saved state
+            if (saved.songTitle && 'mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: saved.songTitle || 'Unknown',
+                    artist: saved.songArtist || 'Unknown Artist',
+                    album: saved.songAlbum || 'Unknown Album',
+                    artwork: [
+                        { src: saved.songCover || 'https://picsum.photos/512', sizes: '512x512', type: 'image/jpeg' }
+                    ]
+                });
+                console.log('📱 Media Session metadata restored');
+            }
+            
+            // Restore playback position
+            if (saved.currentTime) {
+                audio.addEventListener('loadedmetadata', () => {
+                    audio.currentTime = Math.min(saved.currentTime, audio.duration || 0);
+                    console.log('✅ Position restored to:', saved.currentTime.toFixed(1) + 's');
+                }, { once: true });
+            }
+            
+            // If was playing, try to resume
+            if (saved.isPlaying) {
+                audio.play().then(() => {
+                    window.isPlaying = true;
+                    if (window.updatePlayBtn) window.updatePlayBtn();
+                    console.log('✅ Playback resumed from saved state');
+                }).catch(err => {
+                    console.warn('⚠️ Auto-play blocked, waiting for user interaction:', err);
+                });
+            }
+            
+            return true;
+        }
+        
+        // Fallback: Try loading from song index
         if (saved.songIndex !== undefined && window.songs && window.songs[saved.songIndex]) {
             try {
                 await window.playSong(saved.songIndex);
@@ -18693,14 +18759,6 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             navigator.mediaSession.setActionHandler('previoustrack', () => {
                 console.log('⏮️ Previous track triggered from notification');
                 window.playPrevious();
-            });
-            
-            navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-                audio.currentTime = Math.max(audio.currentTime - 10, 0);
-            });
-            
-            navigator.mediaSession.setActionHandler('seekforward', (details) => {
-                audio.currentTime = Math.min(audio.currentTime + 10, audio.duration);
             });
             
             // ✅ Arbitrary seek from lock screen progress bar
@@ -18813,6 +18871,7 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             });
             
             // Update position state (untuk seek bar di notifikasi)
+            let lastSaveTime = 0;
             audio.addEventListener('timeupdate', () => {
                 if ('setPositionState' in navigator.mediaSession && !isNaN(audio.duration)) {
                     navigator.mediaSession.setPositionState({
@@ -18820,6 +18879,15 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                         playbackRate: audio.playbackRate,
                         position: audio.currentTime
                     });
+                }
+                
+                // CRITICAL: Auto-save playback state every 5 seconds
+                const now = Date.now();
+                if (now - lastSaveTime > 5000) { // 5 seconds
+                    lastSaveTime = now;
+                    if (window.savePlaybackState) {
+                        window.savePlaybackState();
+                    }
                 }
             });
         }
@@ -18924,20 +18992,6 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                     playPrevious();
                 });
                 
-                navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-                    const audio = document.getElementById('audio-player');
-                    if (audio) {
-                        audio.currentTime = Math.max(0, audio.currentTime - (details.seekOffset || 10));
-                    }
-                });
-                
-                navigator.mediaSession.setActionHandler('seekforward', (details) => {
-                    const audio = document.getElementById('audio-player');
-                    if (audio) {
-                        audio.currentTime = Math.min(audio.currentTime + (details.seekOffset || 10), audio.duration || 0);
-                    }
-                });
-                
                 navigator.mediaSession.setActionHandler('seekto', (details) => {
                     const audio = document.getElementById('audio-player');
                     if (audio && details.seekTime !== undefined) {
@@ -19018,39 +19072,92 @@ console.log('[INFO] Offline mode disabled - app runs online only');
         // Layer 2: Restore state saat page load (bahkan setelah berhari-hari)
         function restoreAudioState() {
             try {
-                const saved = localStorage.getItem('vidjeAudioPersistence');
-                if (!saved) return false;
+                // CRITICAL: Try using saved audio source first for instant recovery
+                const savedAudioSource = localStorage.getItem('vidjeAudioSource');
+                const savedState = localStorage.getItem('vidjePlaybackState');
                 
-                const state = JSON.parse(saved);
+                if (!savedState) {
+                    // Fallback ke sistem lama
+                    const oldSaved = localStorage.getItem('vidjeAudioPersistence');
+                    if (!oldSaved) return false;
+                    
+                    const state = JSON.parse(oldSaved);
+                    const hoursSinceLastSave = (Date.now() - state.timestamp) / (1000 * 60 * 60);
+                    
+                    console.log('🔄 Restoring audio state from', hoursSinceLastSave.toFixed(1), 'hours ago');
+                    
+                    const audio = document.getElementById('audio-player');
+                    if (!audio) return false;
+                    
+                    // Load song by index
+                    if (songs[state.songIndex]) {
+                        loadSong(songs[state.songIndex]);
+                        
+                        // Wait for audio to be ready, then restore position
+                        audio.addEventListener('loadedmetadata', () => {
+                            audio.currentTime = state.currentTime;
+                            console.log('✅ Audio restored to', state.currentTime.toFixed(1), 'seconds');
+                            
+                            // Update Media Session dengan state yang benar
+                            updateMediaSessionMetadata();
+                            
+                            // Jangan auto-play jika sebelumnya pause
+                            if (!state.isPaused && state.isPlaying) {
+                                audio.play().catch(err => {
+                                    console.log('ℹ️ Auto-play blocked (user interaction required)');
+                                });
+                            }
+                        }, { once: true });
+                        
+                        return true;
+                    }
+                    return false;
+                }
+                
+                // NEW: Use comprehensive saved state
+                const state = JSON.parse(savedState);
                 const hoursSinceLastSave = (Date.now() - state.timestamp) / (1000 * 60 * 60);
                 
-                console.log('🔄 Restoring audio state from', hoursSinceLastSave.toFixed(1), 'hours ago');
+                console.log('🔄 Restoring from comprehensive state saved', hoursSinceLastSave.toFixed(1), 'hours ago');
                 
                 const audio = document.getElementById('audio-player');
                 if (!audio) return false;
                 
-                // Load song by index
-                if (songs[state.songIndex]) {
-                    loadSong(songs[state.songIndex]);
+                // INSTANT RESTORE: Set audio source directly
+                if (savedAudioSource) {
+                    console.log('⚡ Instant restore from saved audio source');
+                    audio.src = savedAudioSource;
+                    audio.preload = 'metadata';
                     
-                    // Wait for audio to be ready, then restore position
+                    // Restore Media Session metadata
+                    if ('mediaSession' in navigator && state.songTitle) {
+                        navigator.mediaSession.metadata = new MediaMetadata({
+                            title: state.songTitle || 'Unknown',
+                            artist: state.songArtist || 'Unknown Artist',
+                            album: state.songAlbum || 'Unknown Album',
+                            artwork: [
+                                { src: state.songCover || 'https://picsum.photos/512', sizes: '512x512', type: 'image/jpeg' }
+                            ]
+                        });
+                    }
+                    
+                    // Restore playback position
                     audio.addEventListener('loadedmetadata', () => {
-                        audio.currentTime = state.currentTime;
-                        console.log('✅ Audio restored to', state.currentTime.toFixed(1), 'seconds');
+                        if (state.currentTime) {
+                            audio.currentTime = Math.min(state.currentTime, audio.duration || 0);
+                            console.log('✅ Position restored to', state.currentTime.toFixed(1), 'seconds');
+                        }
                         
-                        // Update Media Session dengan state yang benar
+                        // Update Media Session
                         updateMediaSessionMetadata();
                         
-                        // Jangan auto-play jika sebelumnya pause
-                        if (!state.isPaused && state.isPlaying) {
-                            audio.play().catch(err => {
-                                console.log('ℹ️ Auto-play blocked (user interaction required)');
-                            });
-                        }
+                        // Don't auto-play, wait for user interaction
+                        console.log('ℹ️ Audio ready - waiting for user to press play');
                     }, { once: true });
                     
                     return true;
                 }
+                
             } catch (err) {
                 console.error('❌ Failed to restore audio state:', err);
             }
