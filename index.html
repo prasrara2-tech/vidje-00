@@ -101,11 +101,201 @@
             display: none;
         }
 
-        /* Desktop: Hide play screen */
+        /* Mobile: Simplified CSS - let scroll work naturally */
+        @media (max-width: 768px) {
+            #play-screen-cover {
+                width: 300px !important;
+                height: 300px !important;
+                margin-bottom: 32px !important;
+            }
+
+            #play-screen-song-title {
+                font-size: 24px !important;
+            }
+
+            #play-screen-song-artist {
+                font-size: 14px !important;
+            }
+
+            #play-screen-lyrics-title {
+                font-size: 20px !important;
+            }
+        }
+
+        /* Desktop: Show play screen with side-by-side layout */
         @media (min-width: 769px) {
             #play-screen-unified {
                 display: none !important;
             }
+
+            #play-screen-unified.active {
+                display: flex !important;
+                flex-direction: row !important;
+                z-index: 100000 !important;
+            }
+
+            #play-screen-scroll {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                width: auto !important;
+                height: 100vh !important;
+                overflow-y: hidden !important;
+                scroll-snap-type: none !important;
+                display: flex !important;
+                flex: 1;
+                transition: all 0.4s ease !important;
+            }
+
+            /* Album view centered by default, shifts left when lyrics show */
+            #play-screen-album {
+                height: 100vh !important;
+                width: 100% !important;
+                padding: 40px 20px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                scroll-snap-align: unset !important;
+                scroll-snap-stop: unset !important;
+                transition: width 0.4s ease !important;
+            }
+
+            /* Desktop: Hide navigate to lyrics button (last child button in album) */
+            #play-screen-album button:last-child {
+                display: none !important;
+                pointer-events: none !important;
+            }
+
+            /* When lyrics shown, album becomes 35% width */
+            #play-screen-scroll.lyrics-visible #play-screen-album {
+                width: 35% !important;
+            }
+
+            /* Lyrics panel */
+            #play-screen-lyrics {
+                width: 0 !important;
+                height: 100vh !important;
+                overflow-y: hidden !important;
+                overflow-x: hidden !important;
+                padding: 0 !important;
+                scroll-snap-align: unset !important;
+                scroll-snap-stop: unset !important;
+                transition: width 0.4s ease !important;
+                border-left: none !important;
+                min-width: 0 !important;
+                display: none !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                visibility: hidden !important;
+            }
+
+            /* Hide scrollbar in lyrics */
+            #play-screen-lyrics::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            #play-screen-lyrics {
+                -ms-overflow-style: none !important;
+                scrollbar-width: none !important;
+            }
+
+            /* When shown, lyrics becomes 65% width */
+            #play-screen-scroll.lyrics-visible #play-screen-lyrics {
+                width: 65% !important;
+                display: flex !important;
+                visibility: visible !important;
+            }
+
+            /* Lyrics container centered */
+            #play-screen-lyrics-container {
+                width: 100% !important;
+                text-align: center !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+
+            /* Hide all divs (progress bar, controls) in lyrics except container */
+            #play-screen-lyrics > div:not(#play-screen-lyrics-container) {
+                display: none !important;
+            }
+
+            #play-screen-lyrics.show {
+                display: flex !important;
+            }
+
+            /* Hide mobile nav buttons on desktop */
+            .mobile-nav-btn {
+                display: none !important;
+            }
+
+            /* Show desktop toggle button on desktop */
+            .desktop-toggle-lyrics {
+                display: flex !important;
+            }
+
+            /* Enlarge lyrics text on desktop (from index30) */
+            .play-screen-lyric-line {
+                font-size: 32px !important;
+                margin: 16px 0 !important;
+                line-height: 1.4 !important;
+            }
+
+            .play-screen-lyric-line.active {
+                font-size: 38px !important;
+            }
+
+            /* Lyrics container centered visually with flex-start for scrolling */
+            #play-screen-lyrics-container {
+                width: 100% !important;
+                max-height: 60vh !important;
+                text-align: center !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                padding: 40px 40px !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+            }
+
+            /* Scale down album art when lyrics shown */
+            #play-screen-scroll.lyrics-visible #play-screen-cover {
+                width: 240px !important;
+                height: 240px !important;
+                margin-bottom: 24px !important;
+            }
+
+            /* Hide navigate button in lyrics on desktop */
+            #play-screen-lyrics > button:first-child {
+                display: none !important;
+            }
+
+            /* Hide song title in lyrics on desktop */
+            #play-screen-lyrics > h2 {
+                display: none !important;
+            }
+        }
+
+        /* Desktop toggle lyrics button */
+        .desktop-toggle-lyrics {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.3s;
+            display: none;
+            z-index: 10;
+        }
+
+        .desktop-toggle-lyrics:hover {
+            color: rgba(255,255,255,1);
         }
 
         @keyframes swipeBounce {
@@ -5440,6 +5630,22 @@ input:checked + .toggle-slider:before {
     pointer-events: none; /* Tidak mengganggu saat tidak aktif */
 }
 
+/* Hide lyrics overlay saat desktop play screen aktif */
+.lyrics-overlay-container.hide-for-playscreen {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -10000 !important;
+    opacity: 0 !important;
+}
+
+@media (min-width: 769px) {
+    /* Ensure lyrics active overlay tidak overlay di atas play screen */
+    .lyrics-overlay-container.active {
+        z-index: 99998 !important;
+    }
+}
+
 .lyrics-overlay-container::before {
     content: '';
     position: fixed;
@@ -8451,6 +8657,11 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
         <!-- Close button -->
         <button onclick="closePlayScreenUnified()" style="position: fixed; top: 16px; left: 16px; z-index: 2; background: rgba(0,0,0,0.4); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
             <i class="ph ph-x"></i>
+        </button>
+
+        <!-- Desktop Toggle Lyrics Button -->
+        <button onclick="toggleDesktopLyrics()" style="position: absolute; right: 24px; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,255,255,0.7); font-size: 24px; cursor: pointer; padding: 8px; transition: color 0.3s; display: none;" class="desktop-toggle-lyrics" onmouseover="this.style.color='rgba(255,255,255,1)'" onmouseout="this.style.color='rgba(255,255,255,0.7)'" title="Show/Hide lyrics" id="lyrics-toggle-btn">
+            <i class="ph-fill ph-caret-right" id="lyrics-toggle-icon"></i>
         </button>
 
         <!-- Scroll container -->
@@ -15759,13 +15970,18 @@ function renderProfilePublicPlaylists() {
         function toggleLyricsView() {
             const overlayPlayer = document.getElementById('overlay-player');
             const lyricsContainer = document.getElementById('lyrics-overlay-container');
+            const playScreenLyricsContainer = document.getElementById('play-screen-lyrics-container');
 
             // Toggle visibility
             overlayPlayer.classList.toggle('active');
             lyricsContainer.classList.toggle('active');
 
-            // Sync lyrics when opening lyrics page
-            if (lyricsContainer.classList.contains('active')) {
+            // Reset scroll position dan manual scroll state saat membuka lirik di mobile
+            if (lyricsContainer.classList.contains('active') && playScreenLyricsContainer) {
+                playScreenLyricsContainer.scrollTop = 0;
+                // Reset manual scroll flag agar auto-scroll bisa langsung berjalan
+                isPlayScreenLyricsManualScroll = false;
+                clearTimeout(playScreenLyricsScrollTimeout);
                 syncLyricsWithMusic();
             }
         }
@@ -16352,6 +16568,15 @@ function renderProfilePublicPlaylists() {
                 lyricsContainer.innerHTML = '<div class="play-screen-lyric-line">Lirik tidak tersedia</div>';
             }
 
+            // Hide lyrics overlay saat desktop play screen dibuka
+            const lyricsOverlay = document.getElementById('lyrics-overlay-container');
+            if (lyricsOverlay && window.innerWidth >= 769) {
+                lyricsOverlay.classList.add('hide-for-playscreen');
+                lyricsOverlay.style.display = 'none';
+                lyricsOverlay.style.visibility = 'hidden';
+                lyricsOverlay.style.zIndex = '-10000';
+            }
+
             screen.classList.add('active');
             playScreenState.isOpen = true;
             setupPlayScreenLyricsScrollTracking();
@@ -16363,6 +16588,31 @@ function renderProfilePublicPlaylists() {
             if (screen) screen.classList.remove('active');
             playScreenState.isOpen = false;
             stopPlayScreenSync();
+
+            // Restore lyrics overlay
+            const lyricsOverlay = document.getElementById('lyrics-overlay-container');
+            if (lyricsOverlay && window.innerWidth >= 769) {
+                lyricsOverlay.classList.remove('hide-for-playscreen');
+                lyricsOverlay.style.display = '';
+                lyricsOverlay.style.visibility = '';
+                lyricsOverlay.style.zIndex = '';
+            }
+        }
+
+        function toggleDesktopLyrics() {
+            const scrollContainer = document.getElementById('play-screen-scroll');
+            const lyricsScreen = document.getElementById('play-screen-lyrics');
+            const icon = document.getElementById('lyrics-toggle-icon');
+            
+            if (scrollContainer.classList.contains('lyrics-visible')) {
+                scrollContainer.classList.remove('lyrics-visible');
+                lyricsScreen.classList.remove('show');
+                icon.className = 'ph-fill ph-caret-right';
+            } else {
+                scrollContainer.classList.add('lyrics-visible');
+                lyricsScreen.classList.add('show');
+                icon.className = 'ph-fill ph-caret-left';
+            }
         }
 
         function playScreenTogglePlay() {
@@ -16528,8 +16778,10 @@ function renderProfilePublicPlaylists() {
                 line.classList.remove('active');
                 if (idx === currentLineIdx) {
                     line.classList.add('active');
-                    // Only smooth scroll if user is NOT manually scrolling
-                    if (!isPlayScreenLyricsManualScroll) {
+                    // Only smooth scroll on DESKTOP if user is NOT manually scrolling
+                    // Mobile uses flex-start natural scrolling, no auto-scroll needed
+                    const isDesktop = window.innerWidth >= 769;
+                    if (!isPlayScreenLyricsManualScroll && isDesktop) {
                         smoothScrollLyricIntoView(line, container);
                     }
                 }
@@ -17893,6 +18145,7 @@ window.toggleRepeat = toggleRepeat;
 window.toggleShuffle = toggleShuffle;
 window.openPlayScreenUnified = openPlayScreenUnified;
 window.closePlayScreenUnified = closePlayScreenUnified;
+window.toggleDesktopLyrics = toggleDesktopLyrics;
 window.playScreenTogglePlay = playScreenTogglePlay;
 window.playScreenSeek = playScreenSeek;
 window.playScreenSeekToLyric = playScreenSeekToLyric;
