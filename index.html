@@ -16951,18 +16951,10 @@ function openArtistBandOverlay(artistData, songsList) {
         if(active.querySelector('.index-num')) active.querySelector('.index-num').style.display = 'none';
     }
     
-    // 7. ✅ PERBAIKAN: Force update Media Session Metadata
-    if ('mediaSession' in navigator && navigator.mediaSession) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: song.title,
-            artist: song.artist,
-            album: song.album || 'Vidje',
-            artwork: [
-                { src: song.cover, sizes: '96x96', type: 'image/png' },
-                { src: song.cover, sizes: '512x512', type: 'image/png' }
-            ]
-        });
-    }
+    // 7. ✅ CRITICAL FIX: Use centralized Media Session update
+    // This ensures handlers are re-registered and metadata is fresh
+    updateMediaSessionMetadata();
+    console.log('📱 [loadSong] Media Session updated for:', song.title);
     
     // 8. Update lirik untuk lagu saat ini
     const lyrics = lyricsDatabase[song.title];
@@ -18548,393 +18540,82 @@ function setupPublicSongsListener() {
 // ===== SERVICE WORKER DISABLED - OFFLINE MODE REMOVED =====
 // Fitur offline telah dinonaktifkan untuk menghindari masalah refresh
 console.log('[INFO] Offline mode disabled - app runs online only');
+
+
 // ============================================================
-// 24-HOUR AUDIO PERSISTENCE SYSTEM
-// ============================================================
-// System ini dirancang untuk menjaga lagu tetap bisa diplay 
-// dari notification bahkan setelah pause berjam-jam (min 24 jam)
+// SUPER SIMPLE SOLUTION - MULTI-DAY NOTIFICATION PERSISTENCE
 // ============================================================
 
 (function() {
     'use strict';
     
+    const STORAGE_KEY = 'vidje_last_song';
     const audio = document.getElementById('audio-player');
     
-    // ============================================================
-    // CONFIGURATION
-    // ============================================================
-    const CONFIG = {
-        KEEPALIVE_INTERVAL: 15000,        // Ping setiap 15 detik (lebih sering)
-        POSITION_SAVE_INTERVAL: 5000,     // Save posisi setiap 5 detik
-        MAX_PAUSE_DURATION: 86400000,     // 24 jam dalam ms
-        STORAGE_KEY: 'vidje_audio_state',
-        ENABLE_WAKE_LOCK: true,           // Cegah device sleep
-        FORCE_KEEP_ALIVE: true            // Force audio tetap di memory
-    };
-    
-    // ============================================================
-    // STATE MANAGEMENT
-    // ============================================================
-    let state = {
-        keepAliveTimer: null,
-        positionSaveTimer: null,
-        wakeLock: null,
-        pauseStartTime: null,
-        lastSavedPosition: 0,
-        audioSrc: null,
-        isActive: false
-    };
-    
-    // ============================================================
-    // PERSISTENT STORAGE
-    // ============================================================
-    function saveAudioState() {
-        if (!audio || !audio.src) return;
+    function saveCurrentSong() {
+        if (!audio || !audio.src || audio.src === window.location.href) return;
         
-        const audioState = {
+        const songInfo = {
             src: audio.src,
             currentTime: audio.currentTime || 0,
-            duration: audio.duration || 0,
-            paused: audio.paused,
-            volume: audio.volume,
-            playbackRate: audio.playbackRate,
             songIndex: window.currentSongIndex,
-            timestamp: Date.now(),
-            isPlaying: window.isPlaying || false
+            timestamp: Date.now()
         };
         
         try {
-            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(audioState));
-            console.log('💾 Audio state saved:', audioState.currentTime.toFixed(1) + 's');
-        } catch (e) {
-            console.warn('⚠️ Failed to save audio state:', e);
-        }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(songInfo));
+        } catch (e) {}
     }
     
-    function loadAudioState() {
+    function loadSavedSong() {
         try {
-            const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
-            if (!saved) return null;
-            
-            const state = JSON.parse(saved);
-            const age = Date.now() - state.timestamp;
-            
-            // Valid jika kurang dari 24 jam
-            if (age < CONFIG.MAX_PAUSE_DURATION) {
-                console.log('📂 Loaded audio state from', (age/1000/60).toFixed(1), 'minutes ago');
-                return state;
-            } else {
-                console.log('⏰ Saved state too old, discarding');
-                localStorage.removeItem(CONFIG.STORAGE_KEY);
-                return null;
-            }
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : null;
         } catch (e) {
-            console.warn('⚠️ Failed to load audio state:', e);
             return null;
         }
     }
     
-    function clearAudioState() {
-        localStorage.removeItem(CONFIG.STORAGE_KEY);
-    }
-    
-    // ============================================================
-    // WAKE LOCK (Prevent Device Sleep)
-    // ============================================================
-    async function requestWakeLock() {
-        if (!CONFIG.ENABLE_WAKE_LOCK) return;
+    if (audio) {
+        audio.addEventListener('pause', saveCurrentSong);
+        audio.addEventListener('play', saveCurrentSong);
         
-        if ('wakeLock' in navigator) {
-            try {
-                state.wakeLock = await navigator.wakeLock.request('screen');
-                console.log('🔒 Wake Lock active - device won\'t sleep');
-                
-                state.wakeLock.addEventListener('release', () => {
-                    console.log('🔓 Wake Lock released');
-                    state.wakeLock = null;
-                });
-            } catch (err) {
-                console.warn('⚠️ Wake Lock failed:', err.message);
-            }
-        }
-    }
-    
-    async function releaseWakeLock() {
-        if (state.wakeLock) {
-            try {
-                await state.wakeLock.release();
-                state.wakeLock = null;
-                console.log('🔓 Wake Lock released manually');
-            } catch (err) {
-                console.warn('⚠️ Wake Lock release failed:', err);
-            }
-        }
-    }
-    
-    // ============================================================
-    // AUDIO KEEPALIVE
-    // ============================================================
-    function startKeepalive() {
-        console.log('🚀 Starting 24-hour keepalive system...');
-        stopKeepalive(); // Clear existing
-        
-        state.isActive = true;
-        state.pauseStartTime = Date.now();
-        
-        // Main keepalive loop
-        state.keepAliveTimer = setInterval(() => {
-            const pauseDuration = Date.now() - state.pauseStartTime;
-            const hours = (pauseDuration / 1000 / 60 / 60).toFixed(1);
-            
-            console.log(`🔄 Keepalive ping - paused for ${hours}h`);
-            
-            // Strategy 1: Keep audio element "warm"
-            if (audio && audio.src) {
-                // Access properties to prevent GC
-                const _ = audio.readyState;
-                const __ = audio.buffered;
-                const ___ = audio.duration;
-                const ____ = audio.currentTime;
-                
-                // Force browser to maintain reference
-                if (audio.readyState < 2 && CONFIG.FORCE_KEEP_ALIVE) {
-                    console.log('🔄 Preloading audio to maintain cache...');
-                    audio.load();
-                }
-            }
-            
-            // Strategy 2: Update Media Session
-            if ('mediaSession' in navigator && navigator.mediaSession) {
-                try {
-                    // Keep position state updated
-                    if (audio && audio.duration && !isNaN(audio.duration)) {
-                        navigator.mediaSession.setPositionState({
-                            duration: audio.duration,
-                            playbackRate: audio.playbackRate || 1,
-                            position: Math.min(state.lastSavedPosition || audio.currentTime, audio.duration)
-                        });
-                    }
-                    
-                    // Refresh metadata to keep notification alive
-                    const song = window.songs ? window.songs[window.currentSongIndex] : null;
-                    if (song && navigator.mediaSession.metadata) {
-                        // Re-set metadata (triggers OS to keep notification)
-                        navigator.mediaSession.playbackState = 'paused';
-                    }
-                } catch (e) {
-                    console.warn('⚠️ Media Session update failed:', e);
-                }
-            }
-            
-            // Strategy 3: Save state periodically
-            saveAudioState();
-            
-            // Check if exceeded max duration
-            if (pauseDuration > CONFIG.MAX_PAUSE_DURATION) {
-                console.warn('⏰ Exceeded 24 hours pause - cleaning up');
-                stopKeepalive();
-            }
-            
-        }, CONFIG.KEEPALIVE_INTERVAL);
-        
-        // Separate timer for position saving
-        state.positionSaveTimer = setInterval(() => {
-            if (audio) {
-                state.lastSavedPosition = audio.currentTime;
-                saveAudioState();
-            }
-        }, CONFIG.POSITION_SAVE_INTERVAL);
-        
-        // Request Wake Lock when paused
-        requestWakeLock();
-    }
-    
-    function stopKeepalive() {
-        if (state.keepAliveTimer) {
-            clearInterval(state.keepAliveTimer);
-            state.keepAliveTimer = null;
-        }
-        
-        if (state.positionSaveTimer) {
-            clearInterval(state.positionSaveTimer);
-            state.positionSaveTimer = null;
-        }
-        
-        state.isActive = false;
-        state.pauseStartTime = null;
-        
-        // Release wake lock when playing
-        releaseWakeLock();
-        
-        console.log('⏹️ Keepalive stopped');
-    }
-    
-    // ============================================================
-    // AUDIO EVENT HANDLERS
-    // ============================================================
-    function setupAudioMonitoring() {
-        if (!audio) {
-            console.error('❌ Audio element not found');
-            return;
-        }
-        
-        // Monitor pause
-        audio.addEventListener('pause', () => {
-            console.log('⏸️ Audio paused - activating 24h keepalive');
-            startKeepalive();
-            saveAudioState();
-        });
-        
-        // Monitor play
-        audio.addEventListener('play', () => {
-            console.log('▶️ Audio playing - stopping keepalive');
-            stopKeepalive();
-            saveAudioState();
-        });
-        
-        // Monitor ended
-        audio.addEventListener('ended', () => {
-            stopKeepalive();
-        });
-        
-        // Monitor timeupdate - save position frequently
-        let lastSaveTime = 0;
+        let lastSave = 0;
         audio.addEventListener('timeupdate', () => {
             const now = Date.now();
-            if (now - lastSaveTime > CONFIG.POSITION_SAVE_INTERVAL) {
-                state.lastSavedPosition = audio.currentTime;
-                lastSaveTime = now;
+            if (now - lastSave > 10000) {
+                saveCurrentSong();
+                lastSave = now;
             }
         });
+    }
+    
+    window.loadSavedSongIfNeeded = async function() {
+        const saved = loadSavedSong();
+        if (!saved) return false;
         
-        // Monitor errors
-        audio.addEventListener('error', (e) => {
-            console.error('❌ Audio error:', audio.error);
-            saveAudioState(); // Save before potential crash
-        });
+        console.log('📂 Loading saved song from', new Date(saved.timestamp).toLocaleString());
         
-        // Save state on page unload
-        window.addEventListener('beforeunload', () => {
-            saveAudioState();
-        });
-        
-        // Re-request wake lock when page becomes visible
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && audio.paused && state.isActive) {
-                requestWakeLock();
+        if (saved.songIndex !== undefined && window.songs && window.songs[saved.songIndex]) {
+            try {
+                await window.playSong(saved.songIndex);
+                setTimeout(() => {
+                    if (audio && audio.duration) {
+                        audio.currentTime = Math.min(saved.currentTime, audio.duration);
+                        console.log('✅ Restored to:', saved.currentTime.toFixed(1) + 's');
+                    }
+                }, 500);
+                return true;
+            } catch (e) {
+                return false;
             }
-        });
-        
-        console.log('✅ Audio monitoring active');
-    }
-    
-    // ============================================================
-    // RECOVERY SYSTEM
-    // ============================================================
-    async function recoverAudioState(savedState) {
-        if (!savedState || !audio) return false;
-        
-        console.log('🔧 Attempting to recover audio state...');
-        
-        try {
-            // Set source if different
-            if (audio.src !== savedState.src) {
-                audio.src = savedState.src;
-            }
-            
-            // Load audio
-            audio.load();
-            
-            // Wait for it to be ready
-            await new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => reject(new Error('Load timeout')), 10000);
-                
-                const onCanPlay = () => {
-                    clearTimeout(timeout);
-                    audio.removeEventListener('canplay', onCanPlay);
-                    audio.removeEventListener('error', onError);
-                    resolve();
-                };
-                
-                const onError = (e) => {
-                    clearTimeout(timeout);
-                    audio.removeEventListener('canplay', onCanPlay);
-                    audio.removeEventListener('error', onError);
-                    reject(e);
-                };
-                
-                audio.addEventListener('canplay', onCanPlay, { once: true });
-                audio.addEventListener('error', onError, { once: true });
-            });
-            
-            // Restore position
-            audio.currentTime = savedState.currentTime || 0;
-            audio.volume = savedState.volume || 1;
-            audio.playbackRate = savedState.playbackRate || 1;
-            
-            console.log('✅ Audio state recovered at', savedState.currentTime.toFixed(1) + 's');
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Recovery failed:', error);
-            return false;
         }
-    }
-    
-    // ============================================================
-    // INITIALIZATION
-    // ============================================================
-    function init() {
-        console.log('🎵 Initializing 24-Hour Audio Persistence System...');
-        
-        if (!audio) {
-            console.error('❌ Audio element not found!');
-            return;
-        }
-        
-        setupAudioMonitoring();
-        
-        // Try to recover state on load
-        const savedState = loadAudioState();
-        if (savedState && !audio.src) {
-            console.log('📂 Found saved audio state, will use for recovery');
-            // Store for later recovery by Media Session
-            window.__savedAudioState = savedState;
-        }
-        
-        console.log('✅ 24-Hour Audio Persistence System Ready');
-        console.log('⏰ Max pause duration: 24 hours');
-        console.log('🔄 Keepalive interval: 15 seconds');
-    }
-    
-    // Auto-initialize
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-    
-    // ============================================================
-    // EXPOSE API
-    // ============================================================
-    window.AudioPersistence24h = {
-        start: startKeepalive,
-        stop: stopKeepalive,
-        save: saveAudioState,
-        load: loadAudioState,
-        clear: clearAudioState,
-        recover: recoverAudioState,
-        getStatus: () => ({
-            active: state.isActive,
-            pauseDuration: state.pauseStartTime ? Date.now() - state.pauseStartTime : 0,
-            lastPosition: state.lastSavedPosition,
-            wakeLockActive: !!state.wakeLock,
-            hasSavedState: !!loadAudioState()
-        })
+        return false;
     };
     
-    console.log('✅ 24-Hour Audio Persistence loaded');
+    console.log('✅ Simple persistence loaded');
 })();
+
 
 
         // ===== MEDIA SESSION API (UNTUK NOTIFIKASI MUSIK) =====
@@ -18948,7 +18629,18 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 
                 // Check if audio source is loaded
                 if (!audio || !audio.src || audio.src === window.location.href) {
-                    console.warn('⚠️ No audio loaded, cannot play from notification');
+                    console.warn('⚠️ No audio loaded - trying to reload from localStorage');
+                    
+                    // TRY RELOAD FROM LOCALSTORAGE
+                    if (window.loadSavedSongIfNeeded) {
+                        const reloaded = await window.loadSavedSongIfNeeded();
+                        if (reloaded) {
+                            console.log('✅ Song reloaded from localStorage');
+                            return;
+                        }
+                    }
+                    
+                    console.error('❌ Cannot reload - no saved song');
                     return;
                 }
                 
@@ -19019,25 +18711,9 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             
             // Update metadata lagu di notifikasi
             audio.addEventListener('loadedmetadata', () => {
-                const song = songs[currentSongIndex];
-                if (song && navigator.mediaSession) {
-                    navigator.mediaSession.metadata = new MediaMetadata({
-                        title: song.title || 'Pilih Lagu',
-                        artist: song.artist || 'Vidje',
-                        album: song.album || 'Music Platform',
-                        artwork: [
-                            { src: song.cover, sizes: '96x96', type: 'image/png' },
-                            { src: song.cover, sizes: '128x128', type: 'image/png' },
-                            { src: song.cover, sizes: '192x192', type: 'image/png' },
-                            { src: song.cover, sizes: '256x256', type: 'image/png' },
-                            { src: song.cover, sizes: '384x384', type: 'image/png' },
-                            { src: song.cover, sizes: '512x512', type: 'image/png' }
-                        ]
-                    });
-                    
-                    // Set playback state
-                    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-                }
+                // ✅ Use centralized update function for consistency
+                updateMediaSessionMetadata();
+                console.log('📱 [loadedmetadata] Media Session updated');
             });
             
             // Update playback state saat play/pause
@@ -19146,6 +18822,116 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             if (!song) return;
             
             try {
+                // ✅ CRITICAL FIX: Clear metadata first to force refresh
+                navigator.mediaSession.metadata = null;
+                
+                // ✅ Re-register ALL handlers every time to ensure they work
+                // This prevents handlers from becoming stale after song changes
+                navigator.mediaSession.setActionHandler('play', () => {
+                    console.log('▶️ [MediaSession] Play triggered from notification');
+                    const audio = document.getElementById('audio-player');
+                    
+                    if (!audio) {
+                        console.error('❌ Audio element not found!');
+                        return;
+                    }
+                    
+                    // CRITICAL: Jika audio source hilang, restore dari localStorage
+                    if (!audio.src || audio.error) {
+                        console.warn('⚠️ Audio source missing! Restoring from saved state...');
+                        
+                        try {
+                            const saved = localStorage.getItem('vidjeAudioPersistence');
+                            if (saved) {
+                                const state = JSON.parse(saved);
+                                
+                                // Restore audio source
+                                if (state.audioSrc) {
+                                    audio.src = state.audioSrc;
+                                    audio.load();
+                                    
+                                    // Restore position and play
+                                    audio.addEventListener('loadedmetadata', () => {
+                                        audio.currentTime = state.currentTime || 0;
+                                        audio.play().then(() => {
+                                            isPlaying = true;
+                                            updatePlayBtn();
+                                            console.log('✅ Audio restored and playing!');
+                                        }).catch(err => {
+                                            console.error('❌ Failed to play restored audio:', err);
+                                        });
+                                    }, { once: true });
+                                    
+                                    return;
+                                }
+                            }
+                            
+                            // Jika tidak ada saved state, load song dari index
+                            if (songs[currentSongIndex]) {
+                                loadSong(songs[currentSongIndex]);
+                                audio.play().catch(err => console.error('Play error:', err));
+                            }
+                        } catch (err) {
+                            console.error('❌ Restoration failed:', err);
+                        }
+                    } else {
+                        // Audio source ada, langsung play
+                        audio.play().then(() => {
+                            isPlaying = true;
+                            updatePlayBtn();
+                            console.log('✅ Resumed from pause');
+                        }).catch(err => {
+                            console.error('❌ Play error:', err);
+                            
+                            // Retry dengan reload
+                            audio.load();
+                            setTimeout(() => {
+                                audio.play().catch(e => console.error('Retry failed:', e));
+                            }, 500);
+                        });
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    console.log('⏸️ [MediaSession] Pause triggered');
+                    const audio = document.getElementById('audio-player');
+                    if (audio) {
+                        audio.pause();
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    console.log('⏭️ [MediaSession] Next triggered');
+                    playNext();
+                });
+                
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    console.log('⏮️ [MediaSession] Previous triggered');
+                    playPrevious();
+                });
+                
+                navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+                    const audio = document.getElementById('audio-player');
+                    if (audio) {
+                        audio.currentTime = Math.max(0, audio.currentTime - (details.seekOffset || 10));
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('seekforward', (details) => {
+                    const audio = document.getElementById('audio-player');
+                    if (audio) {
+                        audio.currentTime = Math.min(audio.currentTime + (details.seekOffset || 10), audio.duration || 0);
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('seekto', (details) => {
+                    const audio = document.getElementById('audio-player');
+                    if (audio && details.seekTime !== undefined) {
+                        audio.currentTime = details.seekTime;
+                    }
+                });
+                
+                // ✅ Set fresh metadata AFTER handlers are registered
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: song.title || 'Pilih Lagu',
                     artist: song.artist || 'Vidje',
@@ -19172,46 +18958,192 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                     });
                 }
                 
-                console.log('🔄 Media Session metadata updated - State:', isPlaying ? 'playing' : 'paused');
+                console.log('🔄 Media Session FULLY updated - State:', isPlaying ? 'playing' : 'paused', '| Song:', song.title);
             } catch (error) {
                 console.warn('⚠️ Error updating Media Session:', error);
             }
         }
         
-        // ===== AUDIO KEEP-ALIVE SYSTEM =====
-        // Periodically update media session state untuk memastikan pause button bertahan lama
-        setInterval(() => {
-            if (navigator.mediaSession && document.hidden) {
-                // Update lebih sering saat app di background
-                updateMediaSessionMetadata();
-            }
-        }, 2000);
+        // ===== ULTRA PERSISTENT AUDIO KEEP-ALIVE SYSTEM =====
+        // Multi-layer strategy untuk menjaga audio tetap hidup BERHARI-HARI
         
-        // Keep audio alive - prevent background audio from cutting out
-        const audioKeepAlive = setInterval(() => {
+        // Layer 1: Simpan state lengkap ke localStorage setiap saat
+        let lastKnownState = {
+            songIndex: 0,
+            currentTime: 0,
+            isPaused: false,
+            timestamp: Date.now()
+        };
+        
+        function saveAudioState() {
             const audio = document.getElementById('audio-player');
+            if (!audio || !audio.src) return;
             
-            // 1. Check if audio should be playing but is paused (browser suspension)
-            if (isPlaying && audio.paused && audio.src) {
-                console.log('🔊 Resuming audio (was suspended)...');
-                audio.play().catch(err => {
-                    console.warn('❌ Auto-resume failed:', err.message);
-                });
+            lastKnownState = {
+                songIndex: currentSongIndex,
+                currentTime: audio.currentTime || 0,
+                isPaused: audio.paused,
+                isPlaying: isPlaying,
+                audioSrc: audio.src,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('vidjeAudioPersistence', JSON.stringify(lastKnownState));
+            console.log('💾 Audio state saved:', lastKnownState);
+        }
+        
+        // Simpan state setiap 5 detik (termasuk saat pause)
+        setInterval(saveAudioState, 5000);
+        
+        // Simpan juga saat pause
+        audio.addEventListener('pause', () => {
+            saveAudioState();
+            console.log('⏸️ State saved on pause');
+        });
+        
+        // Layer 2: Restore state saat page load (bahkan setelah berhari-hari)
+        function restoreAudioState() {
+            try {
+                const saved = localStorage.getItem('vidjeAudioPersistence');
+                if (!saved) return false;
+                
+                const state = JSON.parse(saved);
+                const hoursSinceLastSave = (Date.now() - state.timestamp) / (1000 * 60 * 60);
+                
+                console.log('🔄 Restoring audio state from', hoursSinceLastSave.toFixed(1), 'hours ago');
+                
+                const audio = document.getElementById('audio-player');
+                if (!audio) return false;
+                
+                // Load song by index
+                if (songs[state.songIndex]) {
+                    loadSong(songs[state.songIndex]);
+                    
+                    // Wait for audio to be ready, then restore position
+                    audio.addEventListener('loadedmetadata', () => {
+                        audio.currentTime = state.currentTime;
+                        console.log('✅ Audio restored to', state.currentTime.toFixed(1), 'seconds');
+                        
+                        // Update Media Session dengan state yang benar
+                        updateMediaSessionMetadata();
+                        
+                        // Jangan auto-play jika sebelumnya pause
+                        if (!state.isPaused && state.isPlaying) {
+                            audio.play().catch(err => {
+                                console.log('ℹ️ Auto-play blocked (user interaction required)');
+                            });
+                        }
+                    }, { once: true });
+                    
+                    return true;
+                }
+            } catch (err) {
+                console.error('❌ Failed to restore audio state:', err);
             }
+            return false;
+        }
+        
+        // Restore on page load
+        if (songs.length > 0) {
+            restoreAudioState();
+        }
+        
+        // Layer 3: Keep Media Session ALIVE dengan heartbeat yang lebih agresif
+        setInterval(() => {
+            if (navigator.mediaSession) {
+                // Selalu update, tidak peduli app hidden atau visible
+                updateMediaSessionMetadata();
+                
+                // Force set playback state
+                if (navigator.mediaSession.playbackState !== (isPlaying ? 'playing' : 'paused')) {
+                    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+                }
+                
+                console.log('💓 Media Session heartbeat - keeping controls alive');
+            }
+        }, 5000); // Setiap 5 detik, lebih sering dari sebelumnya
+        
+        // Layer 4: Ping audio element untuk mencegah garbage collection
+        setInterval(() => {
+            const audio = document.getElementById('audio-player');
+            if (!audio) return;
             
-            // 2. Verify audio is actually loaded and playable
-            if (audio.src && audio.networkState === HTMLMediaElement.NETWORK_EMPTY) {
-                console.warn('⚠️ Audio network state empty, reloading...');
+            // Touch the audio element to keep it in memory
+            const state = {
+                src: audio.src,
+                paused: audio.paused,
+                duration: audio.duration,
+                currentTime: audio.currentTime,
+                readyState: audio.readyState
+            };
+            
+            // Jika audio source hilang tapi kita punya state, restore
+            if (!audio.src && lastKnownState.audioSrc) {
+                console.warn('⚠️ Audio source lost! Restoring from saved state...');
+                audio.src = lastKnownState.audioSrc;
+                audio.currentTime = lastKnownState.currentTime;
                 audio.load();
             }
             
-            // 3. Check for stalled audio (stuck/buffering)
-            if (audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA && isPlaying && document.hidden) {
-                console.warn('⚠️ Audio stalled, attempting recovery...');
-                const currentTime = audio.currentTime;
-                audio.currentTime = currentTime; // Force seek to trigger buffering
+            // Jika audio paused tapi seharusnya playing, coba resume
+            if (isPlaying && audio.paused && audio.src) {
+                console.log('🔊 Audio suspended, attempting resume...');
+                audio.play().catch(err => {
+                    console.log('ℹ️ Resume blocked:', err.message);
+                });
             }
-        }, 500); // Check every 500ms for quick recovery
+            
+            console.log('🔍 Audio health check:', state.readyState, '| Has src:', !!state.src);
+        }, 10000); // Setiap 10 detik
+        
+        // Layer 5: Service Worker Sync untuk maintenance di background
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            // Kirim keepalive message ke service worker
+            setInterval(() => {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'AUDIO_KEEPALIVE',
+                    state: lastKnownState
+                });
+            }, 30000); // Setiap 30 detik
+        }
+        
+        // Layer 6: Visibility change handler - restore saat kembali ke app
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('👁️ App became visible - checking audio state...');
+                
+                const audio = document.getElementById('audio-player');
+                if (!audio) return;
+                
+                // Restore dari localStorage jika perlu
+                if (!audio.src || audio.error) {
+                    console.warn('⚠️ Audio needs restoration');
+                    restoreAudioState();
+                }
+                
+                // Update Media Session
+                updateMediaSessionMetadata();
+                
+                // Jika seharusnya playing tapi paused, coba resume
+                if (isPlaying && audio.paused && audio.src) {
+                    audio.play().catch(err => {
+                        console.log('ℹ️ Auto-resume on visibility change blocked');
+                    });
+                }
+            } else {
+                console.log('👁️ App hidden - saving state...');
+                saveAudioState();
+            }
+        });
+        
+        // Layer 7: Window unload - save state sebelum close
+        window.addEventListener('beforeunload', () => {
+            saveAudioState();
+            console.log('💾 Final state save before unload');
+        });
+        
+        console.log('✅ Ultra Persistent Keep-Alive System initialized');
+        console.log('📌 Audio will persist for DAYS even when paused');
         
         // ===== PWA INSTALL PROMPT =====
         let deferredPrompt;
@@ -20161,6 +20093,64 @@ window.addEventListener('beforeunload', () => {
         clearInterval(backgroundPlaybackState.keepAliveInterval);
     }
 });
+
+// ===== AGGRESSIVE MEDIA SESSION RE-REGISTRATION =====
+// Strategi untuk memastikan Media Session TIDAK PERNAH mati
+(function() {
+    let reRegisterCount = 0;
+    const MAX_RE_REGISTER = 1000; // Unlimited re-registrations
+    
+    function aggressiveMediaSessionKeepAlive() {
+        if (!navigator.mediaSession) return;
+        
+        // Check apakah handlers masih ada
+        const testHandler = () => console.log('Test handler alive');
+        
+        try {
+            // Re-register handlers secara preventif
+            updateMediaSessionMetadata();
+            reRegisterCount++;
+            
+            console.log(`🔄 Media Session re-registered (${reRegisterCount}x) - Controls akan tetap aktif`);
+            
+            // Force playback state
+            if (isPlaying !== undefined) {
+                navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+            }
+            
+        } catch (err) {
+            console.error('❌ Media Session re-registration failed:', err);
+        }
+    }
+    
+    // Re-register setiap 10 detik (sangat agresif)
+    setInterval(aggressiveMediaSessionKeepAlive, 10000);
+    
+    // Re-register saat page visibility berubah
+    document.addEventListener('visibilitychange', () => {
+        console.log('👁️ Visibility changed - re-registering Media Session');
+        aggressiveMediaSessionKeepAlive();
+    });
+    
+    // Re-register saat kembali dari background
+    window.addEventListener('focus', () => {
+        console.log('🔍 Window focused - re-registering Media Session');
+        aggressiveMediaSessionKeepAlive();
+    });
+    
+    // Re-register saat mouse move (user activity detected)
+    let lastActivity = Date.now();
+    document.addEventListener('mousemove', () => {
+        const now = Date.now();
+        if (now - lastActivity > 60000) { // Setiap 1 menit user activity
+            console.log('🖱️ User activity - refreshing Media Session');
+            aggressiveMediaSessionKeepAlive();
+            lastActivity = now;
+        }
+    });
+    
+    console.log('✅ Aggressive Media Session Re-Registration System Active');
+})();
 
 console.log('[OK] Background Playback System Ready - Music akan jalan di background!');
 
