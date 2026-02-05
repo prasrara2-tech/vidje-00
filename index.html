@@ -6944,9 +6944,7 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
                 <button class="share-btn-album" onclick="window.shareCurrentPlaylist()" title="Bagikan Playlist">
                     <i class="ph ph-share-network" style="font-size: 24px;"></i>
                 </button>
-                <button class="share-btn-album" onclick="window.downloadPlaylistForOffline()" title="Download untuk Offline" id="download-offline-btn">
-                    <i class="ph ph-download-simple" style="font-size: 24px;"></i>
-                </button>
+                <!-- Download offline button removed -->
             </div>
         </div>
     </div>
@@ -15288,114 +15286,12 @@ function renderProfilePublicPlaylists() {
         };
 
         // Download Song from Menu
+        // OFFLINE DOWNLOAD FEATURE REMOVED
         window.downloadSongFromMenu = async function(songId) {
-            // Find song data from current songs list
-            // Handle both string and number IDs
-            const song = window.allSongs?.find(s => s.id == songId || s.id === String(songId) || s.id === Number(songId));
-            
-            if (!song) {
-                console.error('Song not found:', songId);
-                console.log('Available songs:', window.allSongs?.map(s => ({id: s.id, title: s.title})));
-                showToast('⚠️ Lagu tidak ditemukan', 'warning');
-                return;
-            }
-            
-            // Prepare song data for download
-            const songData = {
-                id: song.id,
-                name: song.title || song.name,
-                artist: song.artist,
-                audio_url: song.src || song.url || song.audio_url,
-                cover_url: song.cover || song.cover_url
-            };
-
-            
-            // Check if already cached
-            const isCached = await isInCache(songData.audio_url);
-            
-            // Get menu button to update
-            const menuButton = document.querySelector(`.menu-download-${songId}`);
-            
-            if (isCached) {
-                // Already cached, ask to delete
-                const confirmed = confirm(
-                    `🗑️ Lagu "${songData.name}" sudah tersimpan offline.\n\n` +
-                    `Hapus dari cache offline?`
-                );
-                
-                if (confirmed) {
-                    await removeFromCache(songData.audio_url);
-                    showToast(`🗑️ "${songData.name}" dihapus dari offline`, 'success');
-                    
-                    // Update menu button
-                    if (menuButton) {
-                        const icon = menuButton.querySelector('i');
-                        if (icon) {
-                            icon.className = 'ph ph-download-simple';
-                        }
-                    }
-                }
-            } else {
-                // Not cached, download it
-                // Update menu button to loading
-                if (menuButton) {
-                    const icon = menuButton.querySelector('i');
-                    if (icon) {
-                        icon.className = 'ph ph-circle-notch';
-                        icon.style.animation = 'spin 1s linear infinite';
-                    }
-                    menuButton.disabled = true;
-                }
-                
-                try {
-                    // Send message to service worker to cache
-                    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                        navigator.serviceWorker.controller.postMessage({
-                            type: 'CACHE_MUSIC',
-                            data: {
-                                url: songData.audio_url,
-                                metadata: {
-                                    id: songData.id,
-                                    name: songData.name,
-                                    artist: songData.artist,
-                                    cover_url: songData.cover_url
-                                }
-                            }
-                        });
-                    }
-                    
-                    // Also pre-fetch to trigger caching
-                    await fetch(songData.audio_url, { mode: 'no-cors' });
-                    
-                    // Success
-                    showToast(`✅ "${songData.name}" tersimpan untuk offline`, 'success');
-                    
-                    // Update menu button
-                    if (menuButton) {
-                        const icon = menuButton.querySelector('i');
-                        if (icon) {
-                            icon.className = 'ph-fill ph-check-circle';
-                            icon.style.animation = '';
-                        }
-                        menuButton.disabled = false;
-                    }
-                    
-                } catch (error) {
-                    console.error('Download failed:', error);
-                    showToast(`❌ Gagal download "${songData.name}"`, 'error');
-                    
-                    // Reset menu button
-                    if (menuButton) {
-                        const icon = menuButton.querySelector('i');
-                        if (icon) {
-                            icon.className = 'ph ph-download-simple';
-                            icon.style.animation = '';
-                        }
-                        menuButton.disabled = false;
-                    }
-                }
-            }
+            showToast('⚠️ Fitur offline telah dinonaktifkan', 'warning');
+            return;
         };
+
 
 
         // Close dropdown saat menu item diklik
@@ -18605,31 +18501,9 @@ function setupPublicSongsListener() {
 
 
 
-// ===== REGISTER SERVICE WORKER - SIMPLIFIED (NO AUTO-REFRESH) =====
-if ('serviceWorker' in navigator) {
-    // Register service worker TANPA unregister dulu (menghindari reload loop)
-    navigator.serviceWorker.register('sw.js?v=3002', {
-        updateViaCache: 'none'
-    })
-    .then(reg => {
-        console.log('[OK] Service Worker v3002 Registered');
-        
-        // Check for updates silently (tidak otomatis reload)
-        reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('✨ Update tersedia - akan aktif di refresh berikutnya');
-                    // TIDAK menampilkan popup atau auto-reload
-                }
-            });
-        });
-    })
-    .catch(err => {
-        console.warn('[INFO] SW tidak tersedia:', err.message);
-        // Jangan tampilkan error ke user, aplikasi tetap jalan normal
-    });
-}
+// ===== SERVICE WORKER DISABLED - OFFLINE MODE REMOVED =====
+// Fitur offline telah dinonaktifkan untuk menghindari masalah refresh
+console.log('[INFO] Offline mode disabled - app runs online only');
 
 
         // ===== MEDIA SESSION API (UNTUK NOTIFIKASI MUSIK) =====
@@ -20266,214 +20140,16 @@ window.showOfflineStatus = showOfflineStatus;
 console.log('[OK] Offline mode functions loaded');
 
 
-// ============================================================
-// OFFLINE DOWNLOAD - Download Playlist for Offline
-// ============================================================
+// OFFLINE DOWNLOAD FEATURES REMOVED
+// Fungsi offline telah dinonaktifkan
 
-window.downloadPlaylistForOffline = async function() {
-    const playlistId = window.currentPlaylistId;
-    if (!playlistId) {
-        alert('⚠️ Tidak ada playlist yang sedang dibuka');
-        return;
-    }
 
-    const playlist = window.playlists && window.playlists[playlistId];
-    if (!playlist || !playlist.songs || playlist.songs.length === 0) {
-        alert('⚠️ Playlist kosong, tidak ada lagu untuk di-download');
-        return;
-    }
 
-    const songs = playlist.songs;
-    const totalSongs = songs.length;
 
-    // Confirm download
-    const confirmed = confirm(
-        `📥 Download ${totalSongs} lagu untuk offline?\n\n` +
-        `Ini akan menggunakan sekitar ${Math.ceil(totalSongs * 5)} MB data.\n` +
-        `Lagu-lagu akan tersimpan di cache browser untuk akses offline.`
-    );
 
-    if (!confirmed) return;
-
-    // Show progress toast
-    const progressToast = document.createElement('div');
-    progressToast.id = 'offline-download-progress';
-    progressToast.innerHTML = `
-        <div style="position: fixed; bottom: 120px; right: 20px; 
-                    background: linear-gradient(135deg, #1a1a1a, #2a2a2a); 
-                    color: white; padding: 20px 24px; border-radius: 12px; 
-                    font-weight: 600; z-index: 99999; 
-                    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-                    min-width: 280px;
-                    border: 1px solid rgba(229, 9, 20, 0.3);">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                <i class="ph-fill ph-download-simple" style="font-size: 24px; color: var(--primary-red);"></i>
-                <div>
-                    <div style="font-size: 14px; font-weight: 700;">Downloading for Offline</div>
-                    <div style="font-size: 12px; color: rgba(255,255,255,0.6);" id="download-status">0 / ${totalSongs} lagu</div>
-                </div>
-            </div>
-            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-                <div id="download-progress-bar" style="width: 0%; height: 100%; background: var(--primary-red); transition: width 0.3s;"></div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(progressToast);
-
-    let downloaded = 0;
-    let failed = 0;
-
-    // Download each song
-    for (let i = 0; i < songs.length; i++) {
-        const song = songs[i];
-        
-        try {
-            // Send message to service worker to cache this song
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'CACHE_MUSIC',
-                    data: {
-                        url: song.audio_url,
-                        metadata: {
-                            id: song.id,
-                            name: song.name,
-                            artist: song.artist,
-                            cover_url: song.cover_url
-                        }
-                    }
-                });
-            }
-
-            // Also pre-fetch to trigger caching
-            await fetch(song.audio_url, { mode: 'no-cors' });
-
-            downloaded++;
-        } catch (error) {
-            console.error('Failed to download:', song.name, error);
-            failed++;
-        }
-
-        // Update progress
-        const progress = Math.round(((i + 1) / totalSongs) * 100);
-        document.getElementById('download-progress-bar').style.width = progress + '%';
-        document.getElementById('download-status').textContent = `${downloaded + failed} / ${totalSongs} lagu`;
-    }
-
-    // Remove progress toast
-    setTimeout(() => {
-        progressToast.remove();
-    }, 500);
-
-    // Show result
-    setTimeout(() => {
-        const resultToast = document.createElement('div');
-        
-        if (failed === 0) {
-            resultToast.innerHTML = `
-                <div style="position: fixed; bottom: 120px; right: 20px; 
-                            background: linear-gradient(135deg, #34C759 0%, #30B350 100%); 
-                            color: white; padding: 16px 24px; border-radius: 12px; 
-                            font-weight: 600; z-index: 99999; 
-                            box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
-                    ✅ ${downloaded} lagu berhasil di-download untuk offline!
-                </div>
-            `;
-        } else {
-            resultToast.innerHTML = `
-                <div style="position: fixed; bottom: 120px; right: 20px; 
-                            background: linear-gradient(135deg, #ff9500 0%, #ff8800 100%); 
-                            color: white; padding: 16px 24px; border-radius: 12px; 
-                            font-weight: 600; z-index: 99999; 
-                            box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
-                    ⚠️ ${downloaded} berhasil, ${failed} gagal di-download
-                </div>
-            `;
-        }
-        
-        document.body.appendChild(resultToast);
-        setTimeout(() => resultToast.remove(), 4000);
-    }, 600);
-
-    // Update button state
-    const downloadBtn = document.getElementById('download-offline-btn');
-    if (downloadBtn) {
-        downloadBtn.innerHTML = '<i class="ph-fill ph-check-circle" style="font-size: 24px; color: #34C759;"></i>';
-        downloadBtn.title = 'Sudah di-download untuk offline';
-        
-        // Reset after 3 seconds
-        setTimeout(() => {
-            downloadBtn.innerHTML = '<i class="ph ph-download-simple" style="font-size: 24px;"></i>';
-            downloadBtn.title = 'Download untuk Offline';
-        }, 3000);
-    }
-};
-
-// ============================================================
-// AUTO-DOWNLOAD INDICATOR - Show which songs are cached
-// ============================================================
-
-window.updateOfflineCacheIndicators = async function() {
-    if (!('caches' in window)) return;
-
-    try {
-        const musicCache = await caches.open('vidje-music-v3000');
-        const cachedUrls = (await musicCache.keys()).map(req => req.url);
-
-        // Update song items with cache indicator
-        document.querySelectorAll('.song-item').forEach(item => {
-            const audioUrl = item.dataset.audioUrl;
-            if (audioUrl && cachedUrls.includes(audioUrl)) {
-                // Add cached indicator if not exists
-                if (!item.querySelector('.offline-cached-badge')) {
-                    const badge = document.createElement('div');
-                    badge.className = 'offline-cached-badge';
-                    badge.innerHTML = '<i class="ph-fill ph-download-simple" style="font-size: 12px; color: #34C759;"></i>';
-                    badge.style.cssText = `
-                        position: absolute;
-                        top: 8px;
-                        right: 8px;
-                        background: rgba(52, 199, 89, 0.2);
-                        border: 1px solid rgba(52, 199, 89, 0.4);
-                        border-radius: 50%;
-                        width: 24px;
-                        height: 24px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        z-index: 10;
-                    `;
-                    badge.title = 'Tersedia offline';
-                    
-                    const songCover = item.querySelector('.song-cover');
-                    if (songCover) {
-                        songCover.style.position = 'relative';
-                        songCover.appendChild(badge);
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Failed to update cache indicators:', error);
-    }
-};
-
-// Run on page load and after playing songs
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => window.updateOfflineCacheIndicators(), 1000);
-    });
-} else {
-    setTimeout(() => window.updateOfflineCacheIndicators(), 1000);
-}
-
-console.log('[OK] Offline download functions loaded');
+console.log('[INFO] Offline features disabled');
 
 </script>
-
-<!-- ============================================================ -->
-<!-- OFFLINE MANAGER - Enhanced Offline Support v2               -->
-<!-- ============================================================ -->
-<script src="offline-manager.js"></script>
 
 </body>
 </html>
