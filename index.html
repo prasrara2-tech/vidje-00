@@ -77,13 +77,97 @@
             }
         }
 
+        #play-screen-unified {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: #000 !important;
+            z-index: 99999 !important;
+            display: none !important;
+        }
+
+        #play-screen-unified.active {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        #play-screen-scroll {
+            scroll-behavior: smooth;
+        }
+
+        #play-screen-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Desktop: Hide play screen */
+        @media (min-width: 769px) {
+            #play-screen-unified {
+                display: none !important;
+            }
+        }
+
+        @keyframes swipeBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(6px); }
+        }
+
+        .play-screen-lyric-line {
+            font-size: 18px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.3);
+            text-align: center;
+            margin: 20px 0;
+            line-height: 1.6;
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .play-screen-lyric-line.active {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 0 16px rgba(255, 255, 255, 0.6);
+            transform: scale(1.08);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @media (max-width: 768px) {
+            #play-screen-cover {
+                width: 300px !important;
+                height: 300px !important;
+                margin-bottom: 32px !important;
+            }
+
+            #play-screen-song-title {
+                font-size: 24px !important;
+            }
+
+            #play-screen-song-artist {
+                font-size: 14px !important;
+            }
+
+            #play-screen-lyrics-title {
+                font-size: 20px !important;
+            }
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-black);
             color: var(--text-white);
             height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             padding-bottom: calc(var(--player-height) + var(--mobile-nav-height));
+        }
+
+        /* Desktop: Revert to hidden overflow */
+        @media (min-width: 769px) {
+            body {
+                overflow: hidden;
+            }
         }
 
         /* --- SCROLLBAR --- */
@@ -8184,7 +8268,7 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
             </div>
 
             <div class="player-right">
-    <button class="control-btn" title="Lyrics Overlay (NEW)" onclick="openNewLyricsOverlay()" style="background: rgba(229,9,20,0.2); border-radius: 4px;"><i class="ph-fill ph-microphone-stage"></i></button>
+    <button class="control-btn" title="Full Screen Player" onclick="openPlayScreenUnified()" style="background: rgba(229,9,20,0.2); border-radius: 4px;"><i class="ph-fill ph-microphone-stage"></i></button>
     <button class="control-btn" title="Queue" onclick="window.toggleQueueOverlay()"><i class="ph ph-queue"></i></button>
     
 
@@ -8354,6 +8438,108 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
                     <div class="new-lyrics-content" id="new-lyrics-content">
                         <!-- Lyrics will be rendered here by JavaScript -->
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNIFIED PLAY SCREEN - MOBILE ONLY -->
+    <div id="play-screen-unified" style="display: none;">
+        <!-- Background blur from album -->
+        <div id="play-screen-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; filter: blur(80px) brightness(0.3); z-index: 0;"></div>
+
+        <!-- Close button -->
+        <button onclick="closePlayScreenUnified()" style="position: fixed; top: 16px; left: 16px; z-index: 2; background: rgba(0,0,0,0.4); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+            <i class="ph ph-x"></i>
+        </button>
+
+        <!-- Scroll container -->
+        <div id="play-screen-scroll" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow-y: scroll; z-index: 1; scroll-snap-type: y mandatory;">
+            
+            <!-- SCREEN 1: ALBUM VIEW -->
+            <div id="play-screen-album" style="width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; scroll-snap-align: start; scroll-snap-stop: always;">
+                <!-- Album Art -->
+                <img id="play-screen-cover" src="" style="width: 360px; height: 360px; border-radius: 20px; object-fit: cover; box-shadow: 0 30px 80px rgba(0,0,0,0.95); margin-bottom: 40px;">
+                
+                <!-- Title & Artist -->
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 id="play-screen-song-title" style="font-size: 26px; font-weight: 700; color: white; margin: 0 0 8px 0;">Judul Lagu</h1>
+                    <p id="play-screen-song-artist" style="font-size: 15px; color: rgba(255,255,255,0.7); margin: 0; font-weight: 500;">Artis</p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div style="width: 100%; max-width: 320px; margin-bottom: 28px;">
+                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px;">
+                        <div id="play-screen-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500;">
+                        <span id="play-screen-time-current">0:00</span>
+                        <span id="play-screen-time-total">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Controls (5 buttons) -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: 32px;">
+                    <button onclick="window.toggleShuffle()" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 8px; transition: all 0.2s;" id="ps-shuffle">
+                        <i class="ph ph-shuffle"></i>
+                    </button>
+                    <button onclick="window.playPrevious()" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 8px; transition: all 0.2s;">
+                        <i class="ph-fill ph-skip-back"></i>
+                    </button>
+                    <button onclick="playScreenTogglePlay()" style="width: 60px; height: 60px; background: rgba(255,255,255,0.9); color: #000; border: none; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 8px 24px rgba(0,0,0,0.5);" id="ps-play">
+                        <i class="ph-fill ph-play"></i>
+                    </button>
+                    <button onclick="window.playNext()" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 8px; transition: all 0.2s;">
+                        <i class="ph-fill ph-skip-forward"></i>
+                    </button>
+                    <button onclick="window.toggleRepeat()" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 8px; transition: all 0.2s;" id="ps-repeat">
+                        <i class="ph ph-repeat"></i>
+                    </button>
+                </div>
+
+                <!-- Navigate to Lyrics Button -->
+                <button onclick="document.getElementById('play-screen-scroll').scrollTo({top: document.getElementById('play-screen-scroll').scrollHeight, behavior: 'smooth'})" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); background: none; border: none; color: rgba(255,255,255,0.6); font-size: 24px; cursor: pointer; padding: 8px; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; gap: 6px; animation: swipeBounce 2s infinite;" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">
+                    <i class="ph-fill ph-caret-down"></i>
+                </button>
+            </div>
+
+            <!-- SCREEN 2: LYRICS VIEW -->
+            <div id="play-screen-lyrics" style="width: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 20px 60px 20px; scroll-snap-align: start; scroll-snap-stop: always;">
+                <!-- Navigate to Album Button - Diatas persis judul lagu -->
+                <button onclick="document.getElementById('play-screen-scroll').scrollTo({top: 0, behavior: 'smooth'})" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 24px; cursor: pointer; padding: 8px; transition: color 0.3s; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;" onmouseover="this.style.color='rgba(255,255,255,1)'" onmouseout="this.style.color='rgba(255,255,255,0.7)'" title="Back to album">
+                    <i class="ph-fill ph-caret-up"></i>
+                </button>
+
+                <!-- Song Title -->
+                <h2 id="play-screen-lyrics-title" style="font-size: 22px; font-weight: 700; color: white; margin: 0 0 40px 0; text-align: center;">Judul Lagu</h2>
+
+                <!-- Lyrics Container -->
+                <div id="play-screen-lyrics-container" style="width: 100%; flex: 1; overflow-y: auto; max-height: 50vh;">
+                    <!-- Lyrics rendered here -->
+                </div>
+
+                <!-- Progress Bar (below lyrics) -->
+                <div style="width: 100%; max-width: 320px; margin-top: 40px; margin-bottom: 28px;">
+                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px;">
+                        <div id="play-screen-lyrics-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500;">
+                        <span id="play-screen-lyrics-time-current">0:00</span>
+                        <span id="play-screen-lyrics-time-total">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Controls (3 buttons only) -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: 32px;">
+                    <button onclick="window.playPrevious()" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 8px; transition: all 0.2s;">
+                        <i class="ph-fill ph-skip-back"></i>
+                    </button>
+                    <button onclick="playScreenTogglePlay()" style="width: 60px; height: 60px; background: rgba(255,255,255,0.9); color: #000; border: none; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 8px 24px rgba(0,0,0,0.5);" id="ps-play-lyrics">
+                        <i class="ph-fill ph-play"></i>
+                    </button>
+                    <button onclick="window.playNext()" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 8px; transition: all 0.2s;">
+                        <i class="ph-fill ph-skip-forward"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -16133,6 +16319,256 @@ function renderProfilePublicPlaylists() {
         window.setupAlbumArtSwipe = setupAlbumArtSwipe;
         window.renderOverlayLyricsContent = renderOverlayLyricsContent;
 
+        // --- PLAY SCREEN FUNCTIONS (Mobile) ---
+        function openPlayScreenUnified() {
+            const screen = document.getElementById('play-screen-unified');
+            if (!screen) return;
+
+            const song = songs[currentSongIndex];
+            if (!song) return;
+
+            // Set background
+            const bg = document.getElementById('play-screen-bg');
+            if (bg && song.cover) {
+                bg.style.backgroundImage = `url('${song.cover}')`;
+            }
+
+            // Set album art
+            document.getElementById('play-screen-cover').src = song.cover;
+
+            // Set song info
+            document.getElementById('play-screen-song-title').textContent = song.title;
+            document.getElementById('play-screen-song-artist').textContent = song.artist;
+            document.getElementById('play-screen-lyrics-title').textContent = song.title;
+
+            // Render lyrics
+            const lyricsContainer = document.getElementById('play-screen-lyrics-container');
+            const lyrics = lyricsDatabase[song.title];
+            if (lyrics && lyrics.lines) {
+                lyricsContainer.innerHTML = lyrics.lines.map((line, idx) => 
+                    `<div class="play-screen-lyric-line" data-idx="${idx}" data-time="${line.time || 0}" onclick="playScreenSeekToLyric(event)" onmousedown="startPlayScreenLyricDrag(event)" ontouchstart="startPlayScreenLyricDrag(event)">${line.text}</div>`
+                ).join('');
+            } else {
+                lyricsContainer.innerHTML = '<div class="play-screen-lyric-line">Lirik tidak tersedia</div>';
+            }
+
+            screen.classList.add('active');
+            playScreenState.isOpen = true;
+            setupPlayScreenLyricsScrollTracking();
+            startPlayScreenSync();
+        }
+
+        function closePlayScreenUnified() {
+            const screen = document.getElementById('play-screen-unified');
+            if (screen) screen.classList.remove('active');
+            playScreenState.isOpen = false;
+            stopPlayScreenSync();
+        }
+
+        function playScreenTogglePlay() {
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        function playScreenSeek(event) {
+            const bar = event.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const x = event.clientX || event.touches?.[0].clientX || 0;
+            const percent = (x - rect.left) / rect.width;
+            const newTime = percent * audio.duration;
+            audio.currentTime = Math.max(0, Math.min(newTime, audio.duration));
+            if (!isPlaying) playAudio();
+        }
+
+        // Track if play screen progress bar is being dragged
+        let isPlayScreenProgressDragging = false;
+
+        function startPlayScreenProgressDrag(event) {
+            isPlayScreenProgressDragging = true;
+            playScreenSeek(event);
+        }
+
+        function updatePlayScreenProgressDrag(event) {
+            if (!isPlayScreenProgressDragging) return;
+            playScreenSeek(event);
+        }
+
+        function stopPlayScreenProgressDrag() {
+            isPlayScreenProgressDragging = false;
+        }
+
+        // Add drag listeners to progress bars on open
+        function setupProgressDragListeners() {
+            const bars = document.querySelectorAll('[data-progress-bar]');
+            bars.forEach(bar => {
+                bar.addEventListener('mousedown', startProgressDrag);
+                bar.addEventListener('touchstart', startProgressDrag);
+            });
+        }
+
+        function playScreenSeekToLyric(event) {
+            const lyricLine = event.currentTarget;
+            const time = parseFloat(lyricLine.dataset.time) || 0;
+            audio.currentTime = time;
+            if (!isPlaying) playAudio();
+        }
+
+        // Track if lyric line is being dragged for seeking
+        let isPlayScreenLyricDragging = false;
+
+        function startPlayScreenLyricDrag(event) {
+            // Prevent triggering click event if it's a drag
+            isPlayScreenLyricDragging = true;
+            const lyricLine = event.currentTarget;
+            const time = parseFloat(lyricLine.dataset.time) || 0;
+            audio.currentTime = time;
+            if (!isPlaying) playAudio();
+        }
+
+        function stopPlayScreenLyricDrag() {
+            isPlayScreenLyricDragging = false;
+        }
+
+        let playScreenState = {
+            isOpen: false,
+            lyricsDb: {},
+            syncInterval: null
+        };
+
+        function startPlayScreenSync() {
+            if (playScreenState.syncInterval) clearInterval(playScreenState.syncInterval);
+            playScreenState.syncInterval = setInterval(() => {
+                updatePlayScreenProgress();
+                updatePlayScreenLyricsSync();
+                updatePlayScreenControlStates();
+            }, 100);
+        }
+
+        function stopPlayScreenSync() {
+            if (playScreenState.syncInterval) clearInterval(playScreenState.syncInterval);
+        }
+
+        function updatePlayScreenProgress() {
+            const currentTime = audio.currentTime || 0;
+            const duration = audio.duration || 0;
+            const percent = duration ? (currentTime / duration) * 100 : 0;
+
+            document.getElementById('play-screen-progress').style.width = percent + '%';
+            document.getElementById('play-screen-lyrics-progress').style.width = percent + '%';
+            document.getElementById('play-screen-time-current').textContent = formatTime(currentTime);
+            document.getElementById('play-screen-time-total').textContent = formatTime(duration);
+            document.getElementById('play-screen-lyrics-time-current').textContent = formatTime(currentTime);
+            document.getElementById('play-screen-lyrics-time-total').textContent = formatTime(duration);
+        }
+
+        // Track if user is manually scrolling lyrics
+        let isPlayScreenLyricsManualScroll = false;
+        let playScreenLyricsScrollTimeout = null;
+
+        function smoothScrollLyricIntoView(element, container) {
+            if (!element || !container) return;
+            
+            const elementRect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            // Only scroll if element is out of view
+            if (elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom) {
+                return; // Element already in view
+            }
+            
+            // Calculate scroll position smoothly without aggressive lock
+            const scrollTop = container.scrollTop;
+            const elementOffsetTop = element.offsetTop;
+            const targetScroll = elementOffsetTop - (container.clientHeight / 2) + (element.clientHeight / 2);
+            
+            // Smooth scroll dengan duration 300ms
+            const startTime = performance.now();
+            const duration = 300;
+            
+            function animateScroll(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function untuk smooth scroll
+                const easeProgress = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+                const newScrollTop = scrollTop + (targetScroll - scrollTop) * easeProgress;
+                
+                container.scrollTop = newScrollTop;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                }
+            }
+            
+            requestAnimationFrame(animateScroll);
+        }
+
+        function updatePlayScreenLyricsSync() {
+            const song = songs[currentSongIndex];
+            if (!song) return;
+
+            const lyrics = lyricsDatabase[song.title];
+            if (!lyrics || !lyrics.lines) return;
+
+            const currentTime = audio.currentTime || 0;
+            const container = document.getElementById('play-screen-lyrics-container');
+            const lines = container.querySelectorAll('.play-screen-lyric-line');
+
+            let currentLineIdx = -1;
+            for (let i = 0; i < lyrics.lines.length; i++) {
+                if (lyrics.lines[i].time <= currentTime) {
+                    currentLineIdx = i;
+                }
+            }
+
+            lines.forEach((line, idx) => {
+                line.classList.remove('active');
+                if (idx === currentLineIdx) {
+                    line.classList.add('active');
+                    // Only smooth scroll if user is NOT manually scrolling
+                    if (!isPlayScreenLyricsManualScroll) {
+                        smoothScrollLyricIntoView(line, container);
+                    }
+                }
+            });
+        }
+
+        // Setup lyrics container scroll tracking
+        function setupPlayScreenLyricsScrollTracking() {
+            const container = document.getElementById('play-screen-lyrics-container');
+            if (!container) return;
+
+            container.addEventListener('scroll', () => {
+                isPlayScreenLyricsManualScroll = true;
+                clearTimeout(playScreenLyricsScrollTimeout);
+                // Reset manual scroll flag after 2 seconds of no scroll
+                playScreenLyricsScrollTimeout = setTimeout(() => {
+                    isPlayScreenLyricsManualScroll = false;
+                }, 2000);
+            });
+        }
+
+        function updatePlayScreenControlStates() {
+            const shuffleBtn = document.getElementById('ps-shuffle');
+            const repeatBtn = document.getElementById('ps-repeat');
+            const playBtn = document.getElementById('ps-play');
+            const playBtnLyrics = document.getElementById('ps-play-lyrics');
+
+            if (shuffleBtn) shuffleBtn.style.color = isShuffle ? '#e50914' : 'rgba(255,255,255,0.7)';
+            if (repeatBtn) repeatBtn.style.color = repeatMode > 0 ? '#e50914' : 'rgba(255,255,255,0.7)';
+            
+            if (isPlaying) {
+                if (playBtn) playBtn.innerHTML = '<i class="ph-fill ph-pause"></i>';
+                if (playBtnLyrics) playBtnLyrics.innerHTML = '<i class="ph-fill ph-pause"></i>';
+            } else {
+                if (playBtn) playBtn.innerHTML = '<i class="ph-fill ph-play"></i>';
+                if (playBtnLyrics) playBtnLyrics.innerHTML = '<i class="ph-fill ph-play"></i>';
+            }
+        }
+
         // --- ART OVERLAY FUNCTIONS ---
         function openArtOverlay() {
             if (!songs[currentSongIndex]) return;
@@ -17455,6 +17891,26 @@ window.playNext = playNext;
 window.playPrevious = playPrevious;
 window.toggleRepeat = toggleRepeat;
 window.toggleShuffle = toggleShuffle;
+window.openPlayScreenUnified = openPlayScreenUnified;
+window.closePlayScreenUnified = closePlayScreenUnified;
+window.playScreenTogglePlay = playScreenTogglePlay;
+window.playScreenSeek = playScreenSeek;
+window.playScreenSeekToLyric = playScreenSeekToLyric;
+window.playAudio = playAudio;
+window.pauseAudio = pauseAudio;
+window.startPlayScreenProgressDrag = startPlayScreenProgressDrag;
+window.updatePlayScreenProgressDrag = updatePlayScreenProgressDrag;
+window.stopPlayScreenProgressDrag = stopPlayScreenProgressDrag;
+window.startPlayScreenLyricDrag = startPlayScreenLyricDrag;
+window.stopPlayScreenLyricDrag = stopPlayScreenLyricDrag;
+
+        // Add global drag event listeners for play screen progress bar dragging
+        document.addEventListener('mousemove', updatePlayScreenProgressDrag);
+        document.addEventListener('touchmove', updatePlayScreenProgressDrag);
+        document.addEventListener('mouseup', stopPlayScreenProgressDrag);
+        document.addEventListener('touchend', stopPlayScreenProgressDrag);
+        document.addEventListener('mouseup', stopPlayScreenLyricDrag);
+        document.addEventListener('touchend', stopPlayScreenLyricDrag);
 
         audio.addEventListener('timeupdate', (e) => {
             const { duration, currentTime } = e.srcElement;
