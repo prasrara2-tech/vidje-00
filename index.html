@@ -11605,7 +11605,7 @@ console.log('   getCurrentSong() - Check what song is detected');
                             loadingScreen.style.display = 'none';
                             appWrapper.style.display = 'flex';
                             switchView('home');
-                        }, 50);
+                        }, 10);
 
                         // Setelah data lagu selesai dimuat, lakukan full re-render
                         Promise.all([songsPromise, importedPromise]).then(() => {
@@ -18605,28 +18605,32 @@ function setupPublicSongsListener() {
 
 
 
-// ===== REGISTER SERVICE WORKER WITH FORCE UPDATE =====
+// ===== REGISTER SERVICE WORKER - SIMPLIFIED (NO AUTO-REFRESH) =====
 if ('serviceWorker' in navigator) {
-    // Unregister all old service workers first
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(reg => reg.unregister());
-        console.log('🗑️ Old service workers cleared');
+    // Register service worker TANPA unregister dulu (menghindari reload loop)
+    navigator.serviceWorker.register('sw.js?v=3002', {
+        updateViaCache: 'none'
+    })
+    .then(reg => {
+        console.log('[OK] Service Worker v3002 Registered');
         
-        // Register new SW after clearing old ones
-        setTimeout(() => {
-            navigator.serviceWorker.register('sw.js?v=3000', {
-                updateViaCache: 'none'
-            })
-            .then(reg => {
-                console.log('[OK] Service Worker v3000 Registered');
-                reg.update();
-            })
-            .catch(err => {
-                console.error('[ERROR] SW Registration Failed:', err);
+        // Check for updates silently (tidak otomatis reload)
+        reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('✨ Update tersedia - akan aktif di refresh berikutnya');
+                    // TIDAK menampilkan popup atau auto-reload
+                }
             });
-        }, 500);
+        });
+    })
+    .catch(err => {
+        console.warn('[INFO] SW tidak tersedia:', err.message);
+        // Jangan tampilkan error ke user, aplikasi tetap jalan normal
     });
 }
+
 
         // ===== MEDIA SESSION API (UNTUK NOTIFIKASI MUSIK) =====
         if ('mediaSession' in navigator) {
