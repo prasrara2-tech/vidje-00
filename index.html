@@ -18718,6 +18718,9 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             
             // Update playback state saat play/pause
             audio.addEventListener('play', () => {
+                // ✅ CRITICAL: Set isPlaying to true immediately
+                isPlaying = true;
+                
                 if (navigator.mediaSession) {
                     navigator.mediaSession.playbackState = 'playing';
                     // Force update metadata to ensure lock screen updates
@@ -18727,7 +18730,7 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 // Save playback state
                 savePlaybackState();
                 
-                console.log('[MUSIC] Audio playing - current source:', audio.src ? 'Valid' : 'MISSING');
+                console.log('[MUSIC] Audio playing - isPlaying set to true - source:', audio.src ? 'Valid' : 'MISSING');
                 
                 // Update new overlay progress
                 if (typeof updateNewProgress === 'function') {
@@ -18749,6 +18752,9 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             });
             
             audio.addEventListener('pause', () => {
+                // ✅ CRITICAL: Set isPlaying to false immediately
+                isPlaying = false;
+                
                 if (navigator.mediaSession) {
                     navigator.mediaSession.playbackState = 'paused';
                     // CRITICAL: Force immediate update to ensure pause button persists on lock screen
@@ -18757,6 +18763,8 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 
                 // Save playback state
                 savePlaybackState();
+                
+                console.log('⏸️ Audio paused - isPlaying set to false');
             });
             
             // 🔊 CRITICAL: Handle audio errors and stalling
@@ -18893,10 +18901,14 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 });
                 
                 navigator.mediaSession.setActionHandler('pause', () => {
-                    console.log('⏸️ [MediaSession] Pause triggered');
+                    console.log('⏸️ [MediaSession] Pause triggered from notification');
                     const audio = document.getElementById('audio-player');
                     if (audio) {
                         audio.pause();
+                        // ✅ CRITICAL: Update global state immediately
+                        isPlaying = false;
+                        updatePlayBtn();
+                        console.log('⏸️ isPlaying set to FALSE - audio will NOT auto-resume');
                     }
                 });
                 
@@ -18989,7 +19001,7 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             };
             
             localStorage.setItem('vidjeAudioPersistence', JSON.stringify(lastKnownState));
-            console.log('💾 Audio state saved:', lastKnownState);
+            console.log('💾 Audio state saved - isPaused:', lastKnownState.isPaused, '| isPlaying:', lastKnownState.isPlaying);
         }
         
         // Simpan state setiap 5 detik (termasuk saat pause)
@@ -19077,23 +19089,25 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 readyState: audio.readyState
             };
             
-            // Jika audio source hilang tapi kita punya state, restore
+            // Jika audio source hilang tapi kita punya state, restore TANPA auto-play
             if (!audio.src && lastKnownState.audioSrc) {
                 console.warn('⚠️ Audio source lost! Restoring from saved state...');
                 audio.src = lastKnownState.audioSrc;
                 audio.currentTime = lastKnownState.currentTime;
                 audio.load();
+                // ❌ REMOVED: Jangan auto-play, biarkan user yang trigger
             }
             
-            // Jika audio paused tapi seharusnya playing, coba resume
-            if (isPlaying && audio.paused && audio.src) {
-                console.log('🔊 Audio suspended, attempting resume...');
+            // ✅ FIXED: Hanya resume jika isPlaying === true DAN user memang sedang play
+            // Jangan auto-resume jika user sudah pause
+            if (isPlaying && audio.paused && audio.src && !lastKnownState.isPaused) {
+                console.log('🔊 Audio suspended while playing, attempting resume...');
                 audio.play().catch(err => {
                     console.log('ℹ️ Resume blocked:', err.message);
                 });
             }
             
-            console.log('🔍 Audio health check:', state.readyState, '| Has src:', !!state.src);
+            console.log('🔍 Audio health check:', state.readyState, '| Paused:', state.paused, '| isPlaying:', isPlaying);
         }, 10000); // Setiap 10 detik
         
         // Layer 5: Service Worker Sync untuk maintenance di background
@@ -19115,7 +19129,7 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 const audio = document.getElementById('audio-player');
                 if (!audio) return;
                 
-                // Restore dari localStorage jika perlu
+                // Restore dari localStorage jika perlu (TANPA auto-play)
                 if (!audio.src || audio.error) {
                     console.warn('⚠️ Audio needs restoration');
                     restoreAudioState();
@@ -19124,11 +19138,15 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 // Update Media Session
                 updateMediaSessionMetadata();
                 
-                // Jika seharusnya playing tapi paused, coba resume
-                if (isPlaying && audio.paused && audio.src) {
+                // ✅ FIXED: Hanya resume jika benar-benar sedang playing (bukan pause)
+                // Check lastKnownState untuk memastikan user tidak sengaja pause
+                if (isPlaying && audio.paused && audio.src && !lastKnownState.isPaused) {
+                    console.log('🔊 Resuming playback (was playing before background)');
                     audio.play().catch(err => {
                         console.log('ℹ️ Auto-resume on visibility change blocked');
                     });
+                } else if (lastKnownState.isPaused) {
+                    console.log('⏸️ Audio was paused - NOT auto-resuming');
                 }
             } else {
                 console.log('👁️ App hidden - saving state...');
