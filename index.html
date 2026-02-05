@@ -8782,7 +8782,9 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
         <div class="ctx-item" onclick="window.ctxAction('delete')" style="color: var(--primary-red);" data-i18n="context-delete">Delete</div>
     </div>
 
-    <audio id="audio-player"></audio>
+    <!-- Audio Player with Background Playback Support -->
+    <audio id="audio-player" preload="auto"></audio>
+
 
     <!-- Listen Together Overlay (Moved to Body End) -->
     <div id="listen-together-overlay">
@@ -16778,17 +16780,29 @@ function openArtistBandOverlay(artistData, songsList) {
         function loadSong(song) {
     // ✅ PERBAIKAN: Update semua elemen UI dengan data lagu yang benar
     
+    const newSrc = song.audioUrl || song.audio_url || song.src;
+    const currentSrc = audio.src;
+    
     // 2. Update Audio Source with proper initialization
-    audio.src = song.audioUrl || song.audio_url || song.src; // ✅ Support database audio_url
-    
-    // 🔊 CRITICAL: Force load and prefetch audio to prevent cutting out
-    audio.load(); // Preload the audio file
-    audio.preload = 'auto'; // Enable automatic prefetching
-    
-    // 🔊 NEW: Resume audio context if suspended (for background playback)
-    if (audio.paused && isPlaying) {
-        audio.play().catch(err => console.warn('Auto-play failed:', err));
+    // Only reload if source changed
+    if (currentSrc !== newSrc) {
+        console.log('🔄 Loading new audio source');
+        audio.src = newSrc;
+        audio.load(); // Preload the audio file
+        audio.preload = 'auto'; // Enable automatic prefetching
+        
+        // Resume audio context if suspended (for background playback)
+        if (isPlaying) {
+            audio.play().catch(err => console.warn('Auto-play failed:', err));
+        }
+    } else {
+        console.log('ℹ️ Same audio source, skipping reload');
+        // Don't reload, just ensure playback state is correct
+        if (isPlaying && audio.paused) {
+            audio.play().catch(err => console.warn('Resume failed:', err));
+        }
     }
+
     
     // ✅ VIDJE TRACKING: Track song play
     if (window.vidjeTracking && typeof window.vidjeTracking.trackSongPlay === 'function') {
@@ -18551,28 +18565,38 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                     return;
                 }
                 
+                // Save current time before any operations
+                const savedTime = audio.currentTime || 0;
+                console.log('⏱️ Saved time:', savedTime);
+                
                 try {
-                    // Try to resume playback
+                    // Direct play attempt
                     await audio.play();
                     window.isPlaying = true;
                     if (window.updatePlayBtn) window.updatePlayBtn();
                     console.log('✅ Resumed from notification');
                 } catch (error) {
-                    console.error('❌ Failed to resume from notification:', error);
+                    console.error('❌ Failed to resume:', error.name, error.message);
                     
-                    // Fallback: reload audio and try again
-                    if (error.name === 'NotAllowedError') {
-                        console.log('🔄 Reloading audio...');
-                        audio.load();
+                    // Strategy: Reload without calling audio.load() 
+                    // Instead, just try playing again after small delay
+                    if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+                        console.log('🔄 Retrying without reload...');
                         setTimeout(async () => {
                             try {
+                                audio.currentTime = savedTime;
                                 await audio.play();
                                 window.isPlaying = true;
                                 if (window.updatePlayBtn) window.updatePlayBtn();
+                                console.log('✅ Retry successful');
                             } catch (err) {
-                                console.error('❌ Reload failed:', err);
+                                console.error('❌ Retry failed:', err);
+                                // Last resort: reload but restore time
+                                audio.load();
+                                audio.currentTime = savedTime;
+                                audio.play().catch(e => console.error('Final attempt failed:', e));
                             }
-                        }, 100);
+                        }, 200);
                     }
                 }
             });
@@ -19774,6 +19798,42 @@ document.addEventListener('DOMContentLoaded', () => {
     
     
     console.log('[MUSIC] Player visibility initialized - progress bar will show with player');
+    
+    // === BACKGROUND PLAYBACK FIX ===
+    const audio = document.getElementById('audio-player');
+    if (audio) {
+        console.log('🎵 Setting up background playback handlers...');
+        
+        // Prevent audio from being paused by system
+        audio.addEventListener('canplay', () => {
+            console.log('✅ Audio can play');
+            // If we're supposed to be playing but paused, resume
+            if (window.isPlaying && audio.paused) {
+                console.log('🔄 Auto-resuming playback');
+                audio.play().catch(err => console.warn('Auto-resume failed:', err));
+            }
+        });
+        
+        // Handle unexpected pause events
+        audio.addEventListener('pause', (e) => {
+            // Only log if we're supposed to be playing
+            if (window.isPlaying && !audio.ended) {
+                console.warn('⚠️ Audio paused unexpectedly, state:', {
+                    readyState: audio.readyState,
+                    networkState: audio.networkState,
+                    paused: audio.paused
+                });
+            }
+        });
+        
+        // Keep audio alive with periodic check
+        setInterval(() => {
+            if (window.isPlaying && audio.paused && audio.src && audio.readyState > 0) {
+                console.log('🔧 Detected playback stopped, attempting recovery...');
+                audio.play().catch(err => console.warn('Recovery play failed:', err));
+            }
+        }, 2000); // Check every 2 seconds
+    }
 });
 
 
