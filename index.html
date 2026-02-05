@@ -18686,10 +18686,12 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             });
             
             navigator.mediaSession.setActionHandler('nexttrack', () => {
+                console.log('⏭️ Next track triggered from notification');
                 window.playNext();
             });
             
             navigator.mediaSession.setActionHandler('previoustrack', () => {
+                console.log('⏮️ Previous track triggered from notification');
                 window.playPrevious();
             });
             
