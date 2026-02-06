@@ -14079,7 +14079,7 @@ function renderFriendPlaylists(playlists) {
             <div class="song-info">
                 <img src="${s.cover && s.cover.trim() ? s.cover : 'assets/logo.png'}" alt="art">
                 <div>
-                    <div class="song-title-text" onclick="event.stopPropagation(); window.playSpecificSong(${s.id}); window.openOverlayPlayer();">
+                    <div class="song-title-text" onclick="event.stopPropagation(); window.playSpecificSong(${s.id}); window.openPlayScreenUnified();">
                         ${s.title}
                     </div>
                     <div class="song-artist">${s.artist}</div>
