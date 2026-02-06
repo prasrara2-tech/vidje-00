@@ -5673,7 +5673,7 @@ input:checked + .toggle-slider:before {
     .lyrics-overlay-container {
         flex-direction: row;
         align-items: stretch;
-        justify-content: space-between;
+        position: relative;
     }
 
     .lyrics-header {
@@ -5702,6 +5702,7 @@ input:checked + .toggle-slider:before {
         margin: 0 !important;
         font-size: 18px !important;
         line-height: 2.2 !important;
+        overflow-y: auto !important;
     }
 
     #lyrics-page-art {
@@ -5709,6 +5710,80 @@ input:checked + .toggle-slider:before {
         height: 320px !important;
         border-radius: 20px !important;
         box-shadow: 0 30px 80px rgba(0,0,0,0.6) !important;
+    }
+
+    /* Move controls section to bottom for desktop */
+    .lyrics-controls-section {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        flex-shrink: 0 !important;
+        padding: 12px 20px !important;
+        background: rgba(0,0,0,0.5) !important;
+        backdrop-filter: blur(20px) !important;
+        border-top: 1px solid rgba(255,255,255,0.1) !important;
+        z-index: 10;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Desktop controls - compact size */
+    .lyrics-overlay-container .overlay-controls {
+        gap: 12px !important;
+        justify-content: center !important;
+        display: flex !important;
+    }
+
+    .lyrics-overlay-container .overlay-controls button {
+        font-size: 16px !important;
+        padding: 4px !important;
+    }
+
+    /* Show all buttons on desktop */
+    .lyrics-overlay-container .overlay-controls button {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: auto !important;
+        margin: 0 !important;
+        padding: 4px !important;
+        font-size: 16px !important;
+    }
+
+    .lyrics-overlay-container .overlay-play-btn {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 22px !important;
+    }
+
+    #lyrics-progress-container {
+        margin-bottom: 8px !important;
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 50px !important;
+    }
+
+    /* Progress bar styling for desktop - overlap with play button */
+    .lyrics-overlay-container #lyrics-progress-container .overlay-progress-bar {
+        width: 100% !important;
+        height: 4px !important;
+        position: absolute !important;
+        left: 0;
+        right: 0;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        z-index: 1;
+    }
+
+    /* Play button centered on progress bar */
+    .lyrics-overlay-container #lyrics-play-pause-btn {
+        position: relative !important;
+        z-index: 5 !important;
+        margin: 0 !important;
     }
 }
 
@@ -7843,6 +7918,31 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
                         <div class="playlist-header-view" id="maroon5-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg" class="playlist-cover-big" id="maroon5-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="maroon5-title-view">Maroon 5</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="maroon5-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="maroon5-songs-container"></div></div><br><br><br>
                     </div>
 
+                    <!-- NEW: MURIA -->
+                    <div id="view-muria-album" class="view-section">
+                        <div class="playlist-header-view" id="muria-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg" class="playlist-cover-big" id="muria-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="muria-title-view">Muria</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="muria-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="muria-songs-container"></div></div><br><br><br>
+                    </div>
+
+                    <!-- NEW: CHRISYE -->
+                    <div id="view-chrisye-album" class="view-section">
+                        <div class="playlist-header-view" id="chrisye-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg" class="playlist-cover-big" id="chrisye-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="chrisye-title-view">Chrisye</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="chrisye-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="chrisye-songs-container"></div></div><br><br><br>
+                    </div>
+
+                    <!-- NEW: KALEB J -->
+                    <div id="view-kalebj-album" class="view-section">
+                        <div class="playlist-header-view" id="kalebj-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg" class="playlist-cover-big" id="kalebj-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="kalebj-title-view">Kaleb J</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="kalebj-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="kalebj-songs-container"></div></div><br><br><br>
+                    </div>
+
+                    <!-- NEW: SZA -->
+                    <div id="view-sza-album" class="view-section">
+                        <div class="playlist-header-view" id="sza-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg" class="playlist-cover-big" id="sza-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="sza-title-view">SZA</h1><div class="playlist-meta"><span style="color: white;">Populer Asing</span> • <span id="sza-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="sza-songs-container"></div></div><br><br><br>
+                    </div>
+
+                    <!-- NEW: THE CRANBERRIES -->
+                    <div id="view-cranberries-album" class="view-section">
+                        <div class="playlist-header-view" id="cranberries-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg" class="playlist-cover-big" id="cranberries-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="cranberries-title-view">The Cranberries</h1><div class="playlist-meta"><span style="color: white;">Populer Asing</span> • <span id="cranberries-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="cranberries-songs-container"></div></div><br><br><br>
+                    </div>
+
                     <!-- 1. PERUNGGU -->
                     <div id="view-perunggu-album" class="view-section">
                         <div class="playlist-header-view" id="perunggu-header-bg">
@@ -8800,7 +8900,7 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
         </div>
 
         <!-- PROGRESS BAR & CONTROLS (Bottom) -->
-        <div style="flex-shrink: 0; padding: 16px 20px 20px 20px; background: rgba(0,0,0,0.3); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="lyrics-controls-section" style="flex-shrink: 0; padding: 16px 20px 20px 20px; background: rgba(0,0,0,0.3); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1);">
             <!-- PROGRESS BAR -->
             <div id="lyrics-progress-container" style="margin-bottom: 16px;">
                 <div class="overlay-progress-bar">
@@ -11445,6 +11545,46 @@ console.log('   getCurrentSong() - Check what song is detected');
             { id: 763, title: "She Will Be Loved", artist: "Maroon 5", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/maroon5/shewillbeloved.mp3" },
             { id: 764, title: "Payphone", artist: "Maroon 5", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/maroon5/payphone.mp3" }
         ];
+        // 34. Muria (765-769)
+        const muriaNewSongs = [
+            { id: 765, title: "Kepada Semu", artist: "Muria", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/muria/kepadasemu.mp3" },
+            { id: 766, title: "Langit Biru", artist: "Muria", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/muria/langitbiru.mp3" },
+            { id: 767, title: "Bangin'", artist: "Muria", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/muria/bangin.mp3" },
+            { id: 768, title: "No Doubt", artist: "Muria", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/muria/nodoubt.mp3" },
+            { id: 769, title: "Jauh", artist: "Muria", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/muria/jauh.mp3" }
+        ];
+        // 35. Chrisye (770-774)
+        const chrisyeNewSongs = [
+            { id: 770, title: "Kisah Cintaku", artist: "Chrisye", album: "Album", duration: "3:45", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/chrisye/kisahcintaku.mp3" },
+            { id: 771, title: "Untukku", artist: "Chrisye", album: "Album", duration: "3:45", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/chrisye/untukku.mp3" },
+            { id: 772, title: "Diskoria", artist: "Chrisye", album: "Album", duration: "3:45", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/chrisye/diskoria.mp3" },
+            { id: 773, title: "Andai Aku Bisa", artist: "Chrisye", album: "Album", duration: "3:45", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/chrisye/andaiakubisa.mp3" },
+            { id: 774, title: "Kala Cinta Menggoda", artist: "Chrisye", album: "Album", duration: "3:45", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/chrisye/kalacintamenggoda.mp3" }
+        ];
+        // 36. Kaleb J (775-779)
+        const kalebjNewSongs = [
+            { id: 775, title: "It's Only Me", artist: "Kaleb J", album: "Album", duration: "3:50", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/kalebj/itsonlyme.mp3" },
+            { id: 776, title: "Now I Know", artist: "Kaleb J", album: "Album", duration: "3:50", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/kalebj/nowiknow.mp3" },
+            { id: 777, title: "Di Balik Pertanda", artist: "Kaleb J", album: "Album", duration: "3:50", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/kalebj/dibalikpertanda.mp3" },
+            { id: 778, title: "Kebutuhan Hati", artist: "Kaleb J", album: "Album", duration: "3:50", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/kalebj/kebutuhanhati.mp3" },
+            { id: 779, title: "Jalan Terbaik", artist: "Kaleb J", album: "Album", duration: "3:50", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/kalebj/jalanterbaik.mp3" }
+        ];
+        // 37. SZA (780-784)
+        const szaNewSongs = [
+            { id: 780, title: "Kill Bill", artist: "SZA", album: "Album", duration: "3:40", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/sza/killbill.mp3" },
+            { id: 781, title: "Snooze", artist: "SZA", album: "Album", duration: "3:40", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/sza/snooze.mp3" },
+            { id: 782, title: "Saturn", artist: "SZA", album: "Album", duration: "3:40", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/sza/saturn.mp3" },
+            { id: 783, title: "Good Days", artist: "SZA", album: "Album", duration: "3:40", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/sza/gooddays.mp3" },
+            { id: 784, title: "Broken Clocks", artist: "SZA", album: "Album", duration: "3:40", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/sza/brokenclocks.mp3" }
+        ];
+        // 38. The Cranberries (785-789)
+        const cranberriesNewSongs = [
+            { id: 785, title: "Sunday", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/sunday.mp3" },
+            { id: 786, title: "Linger", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/linger.mp3" },
+            { id: 787, title: "When You're Gone", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/whenyouregone.mp3" },
+            { id: 788, title: "Zombie", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/zombie.mp3" },
+            { id: 789, title: "Dreams", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/dreams.mp3" }
+        ];
 
         const songs = [
             ...baseSongs, ...mainBandSongs, ...hanungSongs, ...raraSongs, ...casSongs, 
@@ -11460,7 +11600,8 @@ console.log('   getCurrentSong() - Check what song is detected');
             ...utopiaNewSongs, ...juicyNewSongs, ...hiviNewSongs, ...thelantisNewSongs, 
             ...thechangcutersNewSongs, ...theadamsNewSongs, ...aviciiNewSongs, ...adeleNewSongs, 
             ...shawnmendesNewSongs, ...jamesarthurNewSongs, ...billieeilishNewSongs, 
-            ...beatlesNewSongs, ...maroon5NewSongs
+            ...beatlesNewSongs, ...maroon5NewSongs, ...muriaNewSongs, ...chrisyeNewSongs, 
+            ...kalebjNewSongs, ...szaNewSongs, ...cranberriesNewSongs
         ];
 
         // Initialize global songs array for offline download and other features
@@ -14337,7 +14478,11 @@ function renderFriendPlaylists(playlists) {
                 { name: "Nadin Amizah", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/nadin.jpg", onclick: "window.openNadinAlbum()" },
                 { name: "Sal Priadi", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/salpriadi.jpg", onclick: "window.openSalPriadiAlbum()" },
                 { name: "Juan Reza", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/juan.jpg", onclick: "window.openJuanRezaAlbum()" },
-                { name: "NIKI", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/niki.jpg", onclick: "window.openNIKIAlbum()" }
+                { name: "NIKI", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/niki.jpg", onclick: "window.openNIKIAlbum()" },
+                // NEW INDONESIAN ARTISTS
+                { name: "Muria", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", onclick: "window.openMuriaAlbum()" },
+                { name: "Chrisye", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", onclick: "window.openChrisyeAlbum()" },
+                { name: "Kaleb J", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", onclick: "window.openKalebjAlbum()" }
             ];
             const container = document.getElementById('popular-artists-container');
             const maxShow = 6;
@@ -14408,6 +14553,7 @@ function renderFriendPlaylists(playlists) {
                 { name: "Kendrick Lamar", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kendrick.jpg", onclick: "window.openKendrickAlbum()" },
                 { name: "The Weeknd", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/theweekend.jpg", onclick: "window.openTheWeekndAlbum()" },
                 { name: "Olivia Rodrigo", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/olivia.jpg", onclick: "window.openOliviaAlbum()" },
+                { name: "SZA", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", onclick: "window.openSZAAlbum()" },
                 { name: "Avicii", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/avicii.jpg", onclick: "window.openAviciiAlbum()" },
                 { name: "Adele", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/adele.jpg", onclick: "window.openAdeleAlbum()" },
                 { name: "Shawn Mendes", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/shawn.jpg", onclick: "window.openShawnMendesAlbum()" },
@@ -14486,6 +14632,7 @@ function renderFriendPlaylists(playlists) {
                 { name: "Green Day", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/greenday.jpg", onclick: "window.openGreendayAlbum()" },
                 { name: "Oasis", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/oasis.jpg", onclick: "window.openOasisAlbum()" },
                 // NEW FOREIGN BANDS
+                { name: "The Cranberries", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", onclick: "window.openCranberriesAlbum()" },
                 { name: "Radiohead", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg", onclick: "window.openRadioheadAlbum()" },
                 { name: "The Beatles", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thebeatles.jpg", onclick: "window.openBeatlesAlbum()" },
                 { name: "Maroon 5", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", onclick: "window.openMaroon5Album()" }
@@ -15129,6 +15276,32 @@ function renderFriendPlaylists(playlists) {
             setupGenericAlbumView("Maroon 5", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", 760, 764, "maroon5-album", "maroon5-title-view", "maroon5-cover-view", "maroon5-header-bg", "maroon5-count", "maroon5-songs-container");
         };
         window.playFirstSongOfMaroon5 = () => window.playSpecificSong(760);
+
+        // --- NEW 5 ALBUMS ---
+        window.openMuriaAlbum = () => {
+            setupGenericAlbumView("Muria", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", 765, 769, "muria-album", "muria-title-view", "muria-cover-view", "muria-header-bg", "muria-count", "muria-songs-container");
+        };
+        window.playFirstSongOfMuria = () => window.playSpecificSong(765);
+
+        window.openChrisyeAlbum = () => {
+            setupGenericAlbumView("Chrisye", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", 770, 774, "chrisye-album", "chrisye-title-view", "chrisye-cover-view", "chrisye-header-bg", "chrisye-count", "chrisye-songs-container");
+        };
+        window.playFirstSongOfChrisye = () => window.playSpecificSong(770);
+
+        window.openKalebjAlbum = () => {
+            setupGenericAlbumView("Kaleb J", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", 775, 779, "kalebj-album", "kalebj-title-view", "kalebj-cover-view", "kalebj-header-bg", "kalebj-count", "kalebj-songs-container");
+        };
+        window.playFirstSongOfKalebJ = () => window.playSpecificSong(775);
+
+        window.openSZAAlbum = () => {
+            setupGenericAlbumView("SZA", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", 780, 784, "sza-album", "sza-title-view", "sza-cover-view", "sza-header-bg", "sza-count", "sza-songs-container");
+        };
+        window.playFirstSongOfSZA = () => window.playSpecificSong(780);
+
+        window.openCranberriesAlbum = () => {
+            setupGenericAlbumView("The Cranberries", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", 785, 789, "cranberries-album", "cranberries-title-view", "cranberries-cover-view", "cranberries-header-bg", "cranberries-count", "cranberries-songs-container");
+        };
+        window.playFirstSongOfCranberries = () => window.playSpecificSong(785);
 
         // --- TOGGLE SHOW ALL FUNCTION ---
         window.toggleShowAll = (type, button) => {
