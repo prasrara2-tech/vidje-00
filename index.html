@@ -2411,9 +2411,51 @@
         .overlay-play-btn:hover { transform: scale(1.05) !important; background-color: #ddd !important; }
 
         .overlay-progress-container { width: 100%; margin-bottom: 20px; cursor: pointer; }
-        .overlay-progress-bar { width: 100%; height: 4px; background: #555; border-radius: 2px; position: relative; }
-        .overlay-progress-fill { height: 100%; background: white; border-radius: 2px; width: 0%; position: absolute; top: 0; left: 0; }
-        .overlay-time { display: flex; justify-content: space-between; width: 100%; margin-top: 10px; font-size: 12px; color: #b3b3b3; }
+        .overlay-progress-bar { 
+            width: 100%; 
+            height: 4px; 
+            background: #555; 
+            border-radius: 2px; 
+            position: relative;
+            cursor: pointer;
+            transition: height 0.2s ease, background 0.2s ease;
+        }
+        
+        .overlay-progress-bar:hover {
+            height: 5px;
+            background: #666;
+        }
+        
+        .overlay-progress-bar.dragging {
+            height: 6px;
+            background:rgba(255, 255, 255, 0.3);
+        }
+        
+        .overlay-progress-fill { 
+            height: 100%; 
+            background: white; 
+            border-radius: 2px; 
+            width: 0%; 
+            position: absolute; 
+            top: 0; 
+            left: 0;
+            transition: width 0.1s linear;
+        }
+        
+        .overlay-progress-bar.dragging .overlay-progress-fill {
+            background: white;
+            transition: none;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+        }
+        
+        .overlay-time { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%; 
+            margin-top: 10px; 
+            font-size: 12px; 
+            color: #b3b3b3; 
+        }
 
         /* Mobile bottom navigation (hidden by default) */
         .mobile-bottom-nav {
@@ -6328,6 +6370,7 @@ input:checked + .toggle-slider:before {
     cursor: pointer;
     overflow: hidden;
     transition: height 0.2s ease;
+    position: relative;
 }
 
 .new-progress-bar:hover {
@@ -6340,6 +6383,7 @@ input:checked + .toggle-slider:before {
 
 .new-progress-bar.dragging {
     height: 8px;
+    background: rgba(255,255,255,0.35);
 }
 
 .new-progress-fill {
@@ -6354,6 +6398,8 @@ input:checked + .toggle-slider:before {
 
 .new-progress-bar.dragging .new-progress-fill {
     transition: none;
+    background: #ffeb3b;
+    box-shadow: 0 0 8px rgba(255, 235, 59, 0.6);
 }
 
 .new-progress-fill::after {
@@ -6374,6 +6420,41 @@ input:checked + .toggle-slider:before {
 .new-progress-bar:hover .new-progress-fill::after,
 .new-progress-bar.dragging .new-progress-fill::after {
     opacity: 1;
+}
+
+.new-progress-bar.dragging .new-progress-fill::after {
+    background: #ffeb3b;
+    width: 14px;
+    height: 14px;
+    box-shadow: 0 0 8px rgba(255, 235, 59, 0.8);
+}
+
+/* Play Screen Progress Bar Dragging */
+[data-progress-bar] {
+    transition: height 0.2s ease, background 0.2s ease;
+}
+
+[data-progress-bar]:hover {
+    height: 3px !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-progress-bar]:hover > div {
+    background: rgba(255, 255, 255, 1) !important;
+}
+
+[data-progress-bar].dragging {
+    height: 4px !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-progress-bar].dragging > div {
+    background: rgba(255, 255, 255, 1) !important;
+    transition: none !important;
+}
+
+[data-progress-bar] > div {
+    transition: width 0.1s linear;
 }
 
 .new-time-display {
@@ -6696,9 +6777,23 @@ input:checked + .toggle-slider:before {
             filter: grayscale(1) !important;
         }
 
-</style>
+
+        /* CRITICAL FIX: Hide progress bar di ATAS playbar pada desktop */
+        @media (min-width: 769px) {
+            .player-progress-bar-wrapper {
+                display: none !important;
+            }
+        }
+    </style>
 
     <script>
+
+// ===== EARLY FUNCTION DECLARATIONS (to prevent "not a function" errors) =====
+// These will be properly defined later, but we declare them early so onclick handlers work
+window.openPlaylist = window.openPlaylist || function() {};
+window.openSheilaAlbum = window.openSheilaAlbum || function() {};
+window.openHindiaAlbum = window.openHindiaAlbum || function() {};
+window.scrollPositions = window.scrollPositions || {};
 
 // ===== LYRICS DATA AND FUNCTIONS (Moved to top for proper loading order) =====
 // ===== LYRICS DATA FOR PERUNGGU =====
@@ -8780,8 +8875,8 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
 
                 <!-- Progress Bar -->
                 <div style="width: 100%; max-width: 320px; margin-bottom: 28px;">
-                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px;">
-                        <div id="play-screen-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px;"></div>
+                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px; transition: all 0.2s ease; user-select: none; -webkit-user-select: none;">
+                        <div id="play-screen-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px; transition: width 0.1s linear;"></div>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500;">
                         <span id="play-screen-time-current">0:00</span>
@@ -8831,8 +8926,8 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
 
                 <!-- Progress Bar (below lyrics) -->
                 <div style="width: 100%; max-width: 320px; margin-top: 40px; margin-bottom: 28px;">
-                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px;">
-                        <div id="play-screen-lyrics-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px;"></div>
+                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px; transition: all 0.2s ease; user-select: none; -webkit-user-select: none;">
+                        <div id="play-screen-lyrics-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px; transition: width 0.1s linear;"></div>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500;">
                         <span id="play-screen-lyrics-time-current">0:00</span>
@@ -13026,6 +13121,9 @@ function renderFriendPlaylists(playlists) {
         window.closeModal = closeModal;
 
         function switchView(viewName) {
+            // Initialize scrollPositions if it doesn't exist
+            window.scrollPositions = window.scrollPositions || {};
+            
             if(window.innerWidth <= 768) {
                 document.getElementById('sidebar').classList.remove('active');
                 document.getElementById('sidebar-overlay').classList.remove('active');
@@ -13729,7 +13827,7 @@ function renderFriendPlaylists(playlists) {
             if (!audio || !audio.duration) return;
             
             // Don't update if user is dragging
-            if (isDraggingNewProgress) return;
+            if (isDraggingNewProgress || isDraggingGlobal) return;
             
             const percent = (audio.currentTime / audio.duration) * 100;
             const fill = document.getElementById('new-progress-fill');
@@ -13783,6 +13881,44 @@ function renderFriendPlaylists(playlists) {
                 console.warn('Could not update control states:', error);
             }
         }
+
+        // 1. Fungsi untuk memperbarui metadata dan kontrol notifikasi
+function updateMediaSession() {
+    if ('mediaSession' in navigator) {
+        const song = songs[currentSongIndex];
+        
+        // Update informasi lagu di notifikasi
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: song.title,
+            artist: song.artist,
+            album: 'Vidje Music',
+            artwork: [
+                { src: song.cover, sizes: '512x512', type: 'image/png' }
+            ]
+        });
+
+        // HANDLER UTAMA: Ini yang memastikan tombol notifikasi tetap berfungsi
+        navigator.mediaSession.setActionHandler('play', () => {
+            console.log("MediaSession: Play");
+            playAudio(); // Memanggil fungsi play di kodemu
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+            console.log("MediaSession: Pause");
+            pauseAudio(); // Memanggil fungsi pause di kodemu
+        });
+
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+            prevSong();
+        });
+
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            nextSong();
+        });
+    }
+}
+
+
         
         // Toggle play/pause from new overlay
         function newTogglePlayPause() {
@@ -13832,6 +13968,42 @@ function renderFriendPlaylists(playlists) {
         let previewPosition = 0;
         
         // Seek to position with drag support in new overlay
+        // ⭐ ENHANCED PROGRESS BAR WITH SMOOTH DRAG
+        let isProgressDragging = false;
+        let isDraggingGlobal = false; // Global flag untuk mencegah update saat drag
+        let pendingSeekTime = null; // Simpan waktu yang akan di-seek
+        let progressTooltip = null;
+        
+        function formatTimeTooltip(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function createProgressTooltip() {
+            if (!progressTooltip) {
+                progressTooltip = document.createElement('div');
+                progressTooltip.style.cssText = `
+                    position: fixed;
+                    background: rgba(0, 0, 0, 0.95);
+                    color: #fff;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    pointer-events: none;
+                    z-index: 20000;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    display: none;
+                `;
+                document.body.appendChild(progressTooltip);
+            }
+            return progressTooltip;
+        }
+        
         function newSeekToPosition(event) {
             if (!audio || !audio.duration) return;
             
@@ -13844,6 +14016,273 @@ function renderFriendPlaylists(playlists) {
             
             audio.currentTime = clampedPercent * audio.duration;
         }
+        
+        // Setup drag for new-progress-bar
+        function setupNewProgressBarDrag() {
+            const progressBar = document.querySelector('.new-progress-bar');
+            if (!progressBar) return;
+            
+            // Desktop hover tooltip
+            progressBar.addEventListener('mousemove', (e) => {
+                if (isProgressDragging) return; // Skip if dragging, already handled
+                if (!audio || !audio.duration) return;
+                
+                const rect = progressBar.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = Math.max(0, Math.min(1, x / rect.width));
+                const time = percent * audio.duration;
+                
+                const tooltip = createProgressTooltip();
+                tooltip.textContent = formatTimeTooltip(time);
+                tooltip.style.display = 'block';
+                tooltip.style.left = (rect.left + x) + 'px';
+                tooltip.style.top = (rect.top - 40) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+            });
+            
+            progressBar.addEventListener('mouseleave', () => {
+                if (isProgressDragging) return; // Don't hide if dragging
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+            });
+            
+            progressBar.addEventListener('mousedown', (e) => {
+                isProgressDragging = true;
+                isDraggingGlobal = true; // Set global flag
+                progressBar.classList.add('dragging');
+                updateProgressDrag(e, progressBar);
+            });
+            
+            progressBar.addEventListener('touchstart', (e) => {
+                isProgressDragging = true;
+                isDraggingGlobal = true; // Set global flag
+                progressBar.classList.add('dragging');
+                updateProgressDrag(e, progressBar, true);
+            });
+        }
+        
+        function updateProgressDrag(e, progressBar, isTouch = false) {
+            if (!isProgressDragging || !audio || !audio.duration) {
+                isProgressDragging = false;
+                isDraggingGlobal = false; // Reset global flag
+                progressBar.classList.remove('dragging');
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+                return;
+            }
+            
+            const rect = progressBar.getBoundingClientRect();
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const x = clientX - rect.left;
+            const percent = Math.max(0, Math.min(1, x / rect.width));
+            
+            const time = percent * audio.duration;
+            pendingSeekTime = time; // Simpan dulu, JANGAN langsung update audio.currentTime
+            
+            // Update visual progress fill
+            const fill = progressBar.querySelector('.new-progress-fill');
+            if (fill) {
+                fill.style.transition = 'none';
+                fill.style.width = (percent * 100) + '%';
+            }
+            
+            // Update time display untuk mobile (di dalam progress bar)
+            const currentTimeEl = document.getElementById('new-current-time');
+            if (currentTimeEl && isTouch) {
+                currentTimeEl.textContent = formatTimeTooltip(time);
+            }
+            
+            // Show tooltip hanya untuk desktop
+            if (!isTouch) {
+                const tooltip = createProgressTooltip();
+                tooltip.textContent = formatTimeTooltip(time);
+                tooltip.style.display = 'block';
+                tooltip.style.left = (rect.left + x) + 'px';
+                tooltip.style.top = (rect.top - 40) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+            }
+        }
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isProgressDragging) return;
+            const progressBar = document.querySelector('.new-progress-bar');
+            if (progressBar) updateProgressDrag(e, progressBar);
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!isProgressDragging) return;
+            const progressBar = document.querySelector('.new-progress-bar');
+            if (progressBar) updateProgressDrag(e, progressBar, true);
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (isProgressDragging) {
+                const progressBar = document.querySelector('.new-progress-bar');
+                if (progressBar && pendingSeekTime !== null) {
+                    // Update audio HANYA saat user lepas hold
+                    audio.currentTime = pendingSeekTime;
+                    pendingSeekTime = null;
+                }
+                if (progressBar) {
+                    progressBar.classList.remove('dragging');
+                    const fill = progressBar.querySelector('.new-progress-fill');
+                    if (fill) fill.style.transition = 'width 0.1s linear';
+                }
+                isProgressDragging = false;
+                isDraggingGlobal = false; // Reset global flag
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+            }
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            if (isProgressDragging) {
+                const progressBar = document.querySelector('.new-progress-bar');
+                if (progressBar && pendingSeekTime !== null) {
+                    // Update audio HANYA saat user lepas hold
+                    audio.currentTime = pendingSeekTime;
+                    pendingSeekTime = null;
+                }
+                if (progressBar) {
+                    progressBar.classList.remove('dragging');
+                    const fill = progressBar.querySelector('.new-progress-fill');
+                    if (fill) fill.style.transition = 'width 0.1s linear';
+                }
+                isProgressDragging = false;
+                isDraggingGlobal = false; // Reset global flag
+                
+                // Force update time display after drag
+                setTimeout(() => {
+                    updateNewProgress();
+                }, 50);
+                
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+            }
+        });
+        
+        function getProgressTooltip() {
+            return progressTooltip || createProgressTooltip();
+        }
+        
+        // Setup drag for play-screen progress bars
+        function setupPlayScreenProgressDrag() {
+            const bars = document.querySelectorAll('[data-progress-bar]');
+            bars.forEach(bar => {
+                bar.addEventListener('mousedown', (e) => startPlayScreenDrag(e, bar));
+                bar.addEventListener('touchstart', (e) => startPlayScreenDrag(e, bar, true));
+            });
+        }
+        
+        let playScreenDraggingBar = null;
+        
+        function startPlayScreenDrag(e, bar, isTouch = false) {
+            playScreenDraggingBar = bar;
+            isDraggingGlobal = true; // Set global flag
+            bar.classList.add('dragging');
+            updatePlayScreenDrag(e, bar, isTouch);
+        }
+        
+        function updatePlayScreenDrag(e, bar, isTouch = false) {
+            if (!playScreenDraggingBar || !audio || !audio.duration) {
+                if (playScreenDraggingBar) {
+                    playScreenDraggingBar.classList.remove('dragging');
+                    playScreenDraggingBar = null;
+                }
+                isDraggingGlobal = false;
+                return;
+            }
+            
+            const rect = bar.getBoundingClientRect();
+            const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+            const x = clientX - rect.left;
+            const percent = Math.max(0, Math.min(1, x / rect.width));
+            
+            const time = percent * audio.duration;
+            pendingSeekTime = time; // Simpan dulu, JANGAN langsung update audio.currentTime
+            
+            // Update visual progress
+            const fill = bar.querySelector(':first-child');
+            if (fill) {
+                fill.style.transition = 'none';
+                fill.style.width = (percent * 100) + '%';
+            }
+            
+            // Update time display untuk mobile (di dalam UI play screen)
+            if (isTouch) {
+                const currentTimeEls = [
+                    document.getElementById('play-screen-time-current'),
+                    document.getElementById('play-screen-lyrics-time-current')
+                ];
+                currentTimeEls.forEach(el => {
+                    if (el) el.textContent = formatTimeTooltip(time);
+                });
+            } else {
+                // Show tooltip hanya untuk desktop
+                const tooltip = createProgressTooltip();
+                tooltip.textContent = formatTimeTooltip(time);
+                tooltip.style.display = 'block';
+                tooltip.style.left = (rect.left + x) + 'px';
+                tooltip.style.top = (rect.top - 40) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+            }
+        }
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!playScreenDraggingBar) return;
+            updatePlayScreenDrag(e, playScreenDraggingBar);
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!playScreenDraggingBar) return;
+            updatePlayScreenDrag(e, playScreenDraggingBar, true);
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (playScreenDraggingBar) {
+                if (pendingSeekTime !== null) {
+                    // Update audio HANYA saat user lepas hold
+                    audio.currentTime = pendingSeekTime;
+                    pendingSeekTime = null;
+                }
+                playScreenDraggingBar.classList.remove('dragging');
+                const fill = playScreenDraggingBar.querySelector(':first-child');
+                if (fill) fill.style.transition = 'width 0.1s linear';
+                playScreenDraggingBar = null;
+                isDraggingGlobal = false; // Reset global flag
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+            }
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            if (playScreenDraggingBar) {
+                if (pendingSeekTime !== null) {
+                    // Update audio HANYA saat user lepas hold
+                    audio.currentTime = pendingSeekTime;
+                    pendingSeekTime = null;
+                }
+                playScreenDraggingBar.classList.remove('dragging');
+                const fill = playScreenDraggingBar.querySelector(':first-child');
+                if (fill) fill.style.transition = 'width 0.1s linear';
+                playScreenDraggingBar = null;
+                isDraggingGlobal = false; // Reset global flag
+                
+                // Force update time display after drag
+                setTimeout(() => {
+                    updatePlayScreenProgress();
+                }, 50);
+                
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+            }
+        });
+        
+        // Initialize when page loads
+        setTimeout(() => {
+            setupNewProgressBarDrag();
+            setupPlayScreenProgressDrag();
+        }, 100);
         
         // Make functions globally accessible
         window.openNewLyricsOverlay = openNewLyricsOverlay;
@@ -16796,41 +17235,99 @@ function renderProfilePublicPlaylists() {
             }
         }
 
+        // Track if play screen progress bar is being dragged
+        window.isPlayScreenProgressDragging = false;
+        window.currentPlayScreenBar = null;
+        window.playScreenDragPosition = null; // Store position until release
+        
         function playScreenSeek(event) {
-            const bar = event.currentTarget;
+            const bar = event.currentTarget || event.target?.closest('[data-progress-bar]');
+            if (!bar || !audio.duration) return;
+            
             const rect = bar.getBoundingClientRect();
-            const x = event.clientX || event.touches?.[0].clientX || 0;
-            const percent = (x - rect.left) / rect.width;
-            const newTime = percent * audio.duration;
-            audio.currentTime = Math.max(0, Math.min(newTime, audio.duration));
+            const x = event.clientX || event.touches?.[0]?.clientX || 0;
+            const percent = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+            
+            // Immediately seek to position on click (not drag)
+            audio.currentTime = percent * audio.duration;
             if (!isPlaying) playAudio();
         }
-
-        // Track if play screen progress bar is being dragged
-        let isPlayScreenProgressDragging = false;
-
-        function startPlayScreenProgressDrag(event) {
-            isPlayScreenProgressDragging = true;
-            playScreenSeek(event);
-        }
-
-        function updatePlayScreenProgressDrag(event) {
-            if (!isPlayScreenProgressDragging) return;
-            playScreenSeek(event);
-        }
-
-        function stopPlayScreenProgressDrag() {
-            isPlayScreenProgressDragging = false;
-        }
-
-        // Add drag listeners to progress bars on open
-        function setupProgressDragListeners() {
-            const bars = document.querySelectorAll('[data-progress-bar]');
-            bars.forEach(bar => {
-                bar.addEventListener('mousedown', startProgressDrag);
-                bar.addEventListener('touchstart', startProgressDrag);
+        
+        // Add drag handlers for play screen progress bars
+        // Setup once after brief delay to ensure DOM is ready
+        setTimeout(() => {
+            const playScreenBars = document.querySelectorAll('[data-progress-bar]');
+            playScreenBars.forEach(bar => {
+                bar.addEventListener('mousedown', (e) => {
+                    if (!audio.duration) return;
+                    pauseTimeUpdate = true;
+                    bar.classList.add('dragging');
+                    window.isPlayScreenProgressDragging = true;
+                    window.currentPlayScreenBar = bar;
+                    window.playScreenDragPosition = null; // Reset drag position
+                    
+                    // Show initial drag position
+                    const rect = bar.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const percent = Math.max(0, Math.min(1, x / rect.width));
+                    const fillDiv = bar.querySelector('div');
+                    if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+                });
+                
+                bar.addEventListener('touchstart', (e) => {
+                    if (!audio.duration) return;
+                    pauseTimeUpdate = true;
+                    bar.classList.add('dragging');
+                    window.isPlayScreenProgressDragging = true;
+                    window.currentPlayScreenBar = bar;
+                    window.playScreenDragPosition = null; // Reset drag position
+                    
+                    // Show initial drag position
+                    const rect = bar.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const x = touch.clientX - rect.left;
+                    const percent = Math.max(0, Math.min(1, x / rect.width));
+                    const fillDiv = bar.querySelector('div');
+                    if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+                });
             });
-        }
+            
+            // Single document listener for all mousemove events
+            document.addEventListener('mousemove', (e) => {
+                if (!window.isPlayScreenProgressDragging || !window.currentPlayScreenBar || !audio.duration) return;
+                const bar = window.currentPlayScreenBar;
+                const rect = bar.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = Math.max(0, Math.min(1, x / rect.width));
+                
+                // Store drag position but DON'T update audio.currentTime yet
+                window.playScreenDragPosition = percent * audio.duration;
+                
+                // Only update visual fill
+                const fillDiv = bar.querySelector('div');
+                if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+            });
+            
+            // Single document listener for all touchmove events
+            document.addEventListener('touchmove', (e) => {
+                if (!window.isPlayScreenProgressDragging || !window.currentPlayScreenBar || !audio.duration) return;
+                const bar = window.currentPlayScreenBar;
+                const rect = bar.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const percent = Math.max(0, Math.min(1, x / rect.width));
+                
+                // Store drag position but DON'T update audio.currentTime yet
+                window.playScreenDragPosition = percent * audio.duration;
+                
+                // Only update visual fill
+                const fillDiv = bar.querySelector('div');
+                if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+            });
+        }, 100);
+
+        // Empty function - drag handled by new system
+        function setupProgressDragListeners() {}
 
         function playScreenSeekToLyric(event) {
             const lyricLine = event.currentTarget;
@@ -16875,16 +17372,34 @@ function renderProfilePublicPlaylists() {
         }
 
         function updatePlayScreenProgress() {
+            // Don't update if user is dragging
+            if (isDraggingGlobal || playScreenDraggingBar) return;
+            
             const currentTime = audio.currentTime || 0;
             const duration = audio.duration || 0;
             const percent = duration ? (currentTime / duration) * 100 : 0;
 
-            document.getElementById('play-screen-progress').style.width = percent + '%';
-            document.getElementById('play-screen-lyrics-progress').style.width = percent + '%';
-            document.getElementById('play-screen-time-current').textContent = formatTime(currentTime);
-            document.getElementById('play-screen-time-total').textContent = formatTime(duration);
-            document.getElementById('play-screen-lyrics-time-current').textContent = formatTime(currentTime);
-            document.getElementById('play-screen-lyrics-time-total').textContent = formatTime(duration);
+            const playScreenProgress = document.getElementById('play-screen-progress');
+            const playScreenLyricsProgress = document.getElementById('play-screen-lyrics-progress');
+            
+            if (playScreenProgress) playScreenProgress.style.width = percent + '%';
+            if (playScreenLyricsProgress) playScreenLyricsProgress.style.width = percent + '%';
+            
+            const currentTimeEls = [
+                document.getElementById('play-screen-time-current'),
+                document.getElementById('play-screen-lyrics-time-current')
+            ];
+            const totalTimeEls = [
+                document.getElementById('play-screen-time-total'),
+                document.getElementById('play-screen-lyrics-time-total')
+            ];
+            
+            currentTimeEls.forEach(el => {
+                if (el) el.textContent = formatTime(currentTime);
+            });
+            totalTimeEls.forEach(el => {
+                if (el) el.textContent = formatTime(duration);
+            });
         }
 
         // Track if user is manually scrolling lyrics
@@ -17143,6 +17658,7 @@ function renderProfilePublicPlaylists() {
 
         // Update art overlay progress bar saat audio play
         audio.addEventListener('timeupdate', function() {
+            if (isDraggingGlobal) return; // Don't update during drag
             const artProgressFill = document.getElementById('art-progress-fill');
             const artCurrentTime = document.getElementById('art-current-time');
             const artTotalTime = document.getElementById('art-total-time');
@@ -17633,20 +18149,185 @@ function openArtistBandOverlay(artistData, songsList) {
 
         // Update Main Player Progress Bar
         audio.addEventListener('timeupdate', () => {
-            const playerProgressFill = document.getElementById('player-progress-fill');
-            if (playerProgressFill && !isNaN(audio.duration)) {
+            if (isDraggingGlobal) return; // Don't update during drag
+            if (pauseTimeUpdate) return; // Skip update saat drag
+            
+            if (!isNaN(audio.duration)) {
+                // Update progress bars
+                const playerProgressFill = document.getElementById('player-progress-fill');
+                const playScreenProgress = document.getElementById('play-screen-progress');
+                const playScreenLyricsProgress = document.getElementById('play-screen-lyrics-progress');
+                const lyricsProgressFill = document.getElementById('lyrics-progress-fill');
+                const overlayProgressFill = document.getElementById('overlay-progress-fill');
+                const artProgressFill = document.getElementById('art-progress-fill');
+                
                 const percent = (audio.currentTime / audio.duration) * 100;
-                playerProgressFill.style.width = percent + '%';
+                
+                if (playerProgressFill) playerProgressFill.style.width = percent + '%';
+                if (playScreenProgress) playScreenProgress.style.width = percent + '%';
+                if (playScreenLyricsProgress) playScreenLyricsProgress.style.width = percent + '%';
+                if (lyricsProgressFill) lyricsProgressFill.style.width = percent + '%';
+                if (overlayProgressFill) overlayProgressFill.style.width = percent + '%';
+                if (artProgressFill) artProgressFill.style.width = percent + '%';
+                
+                // Format time strings
+                const mins = Math.floor(audio.currentTime / 60);
+                const secs = Math.floor(audio.currentTime % 60);
+                const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                const durMins = Math.floor(audio.duration / 60);
+                const durSecs = Math.floor(audio.duration % 60);
+                const durStr = `${durMins}:${durSecs.toString().padStart(2, '0')}`;
+                
+                // Update all time displays at once
+                const elements = {
+                    'new-current-time': timeStr,
+                    'new-total-time': durStr,
+                    'play-screen-time-current': timeStr,
+                    'play-screen-time-total': durStr,
+                    'play-screen-lyrics-time-current': timeStr,
+                    'play-screen-lyrics-time-total': durStr,
+                    'lyrics-current-time': timeStr,
+                    'lyrics-total-duration': durStr,
+                    'overlay-current-time': timeStr,
+                    'overlay-total-duration': durStr,
+                    'art-current-time': timeStr,
+                    'art-total-time': durStr
+                };
+                
+                Object.entries(elements).forEach(([id, text]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = text;
+                });
             }
         });
 
-        // Overlay Progress Bar Click
-        document.getElementById('overlay-progress-container').addEventListener('click', (e) => {
-            const container = e.currentTarget;
-            const rect = container.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const width = rect.width;
-            audio.currentTime = (x / width) * audio.duration;
+        // Overlay Progress Bar Click & Drag
+        let overlayDragging = false;
+        const overlayProgressContainer = document.getElementById('overlay-progress-container');
+        
+        // Prevent timeupdate override during drag
+        let pauseTimeUpdate = false;
+        
+        document.addEventListener('mousedown', (e) => {
+            if (e.target?.closest('.new-progress-bar') || e.target?.closest('[data-progress-bar]') || e.target?.closest('.overlay-progress-bar')) {
+                pauseTimeUpdate = true;
+            }
+        });
+        
+        document.addEventListener('mouseup', () => { 
+            pauseTimeUpdate = false;
+            if (window.currentPlayScreenBar) {
+                window.currentPlayScreenBar.classList.remove('dragging');
+            }
+            window.isPlayScreenProgressDragging = false;
+        });
+        document.addEventListener('touchend', () => { 
+            pauseTimeUpdate = false;
+            if (window.currentPlayScreenBar) {
+                window.currentPlayScreenBar.classList.remove('dragging');
+            }
+            window.isPlayScreenProgressDragging = false;
+        });
+        
+        if (overlayProgressContainer) {
+            overlayProgressContainer.addEventListener('mousedown', () => {
+                overlayDragging = true;
+                overlayProgressContainer.classList.add('dragging');
+            });
+            
+            overlayProgressContainer.addEventListener('touchstart', () => {
+                overlayDragging = true;
+                overlayProgressContainer.classList.add('dragging');
+            });
+            
+            overlayProgressContainer.addEventListener('mousemove', (e) => {
+                if (!overlayDragging || !audio.duration) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const width = rect.width;
+                const percent = Math.max(0, Math.min(1, x / width));
+                
+                const fill = overlayProgressContainer.querySelector('.overlay-progress-fill');
+                if (fill) {
+                    fill.style.transition = 'none';
+                    fill.style.width = (percent * 100) + '%';
+                }
+                
+                const tooltip = getProgressTooltip();
+                tooltip.textContent = formatTimeTooltip(percent * audio.duration);
+                tooltip.style.display = 'block';
+                tooltip.style.left = (rect.left + x) + 'px';
+                tooltip.style.top = (rect.top - 40) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+            });
+            
+            overlayProgressContainer.addEventListener('touchmove', (e) => {
+                if (!overlayDragging || !audio.duration) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const width = rect.width;
+                const percent = Math.max(0, Math.min(1, x / width));
+                
+                const fill = overlayProgressContainer.querySelector('.overlay-progress-fill');
+                if (fill) {
+                    fill.style.transition = 'none';
+                    fill.style.width = (percent * 100) + '%';
+                }
+                
+                const tooltip = getProgressTooltip();
+                tooltip.textContent = formatTimeTooltip(percent * audio.duration);
+                tooltip.style.display = 'block';
+                tooltip.style.left = (rect.left + x) + 'px';
+                tooltip.style.top = (rect.top - 40) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+            });
+        }
+        
+        document.addEventListener('mouseup', (e) => {
+            if (overlayDragging && overlayProgressContainer) {
+                const rect = overlayProgressContainer.getBoundingClientRect();
+                if (e.clientX >= rect.left && e.clientX <= rect.right && audio.duration) {
+                    const x = e.clientX - rect.left;
+                    const width = rect.width;
+                    audio.currentTime = (x / width) * audio.duration;
+                }
+                overlayProgressContainer.classList.remove('dragging');
+                const fill = overlayProgressContainer.querySelector('.overlay-progress-fill');
+                if (fill) fill.style.transition = 'width 0.1s linear';
+                overlayDragging = false;
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+            }
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            if (overlayDragging && overlayProgressContainer) {
+                const rect = overlayProgressContainer.getBoundingClientRect();
+                const touch = e.changedTouches[0];
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right && audio.duration) {
+                    const x = touch.clientX - rect.left;
+                    const width = rect.width;
+                    audio.currentTime = (x / width) * audio.duration;
+                }
+                overlayProgressContainer.classList.remove('dragging');
+                const fill = overlayProgressContainer.querySelector('.overlay-progress-fill');
+                if (fill) fill.style.transition = 'width 0.1s linear';
+                overlayDragging = false;
+                const tooltip = getProgressTooltip();
+                if (tooltip) tooltip.style.display = 'none';
+            }
+        });
+        
+        // Add click support (when not dragging)
+        overlayProgressContainer.addEventListener('click', (e) => {
+            if (!overlayDragging && audio.duration) {
+                const container = e.currentTarget;
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const width = rect.width;
+                audio.currentTime = (x / width) * audio.duration;
+            }
         });
 
         function loadSong(song) {
@@ -18324,21 +19005,11 @@ window.playScreenSeek = playScreenSeek;
 window.playScreenSeekToLyric = playScreenSeekToLyric;
 window.playAudio = playAudio;
 window.pauseAudio = pauseAudio;
-window.startPlayScreenProgressDrag = startPlayScreenProgressDrag;
-window.updatePlayScreenProgressDrag = updatePlayScreenProgressDrag;
-window.stopPlayScreenProgressDrag = stopPlayScreenProgressDrag;
-window.startPlayScreenLyricDrag = startPlayScreenLyricDrag;
-window.stopPlayScreenLyricDrag = stopPlayScreenLyricDrag;
-
-        // Add global drag event listeners for play screen progress bar dragging
-        document.addEventListener('mousemove', updatePlayScreenProgressDrag);
-        document.addEventListener('touchmove', updatePlayScreenProgressDrag);
-        document.addEventListener('mouseup', stopPlayScreenProgressDrag);
-        document.addEventListener('touchend', stopPlayScreenProgressDrag);
-        document.addEventListener('mouseup', stopPlayScreenLyricDrag);
-        document.addEventListener('touchend', stopPlayScreenLyricDrag);
 
         audio.addEventListener('timeupdate', (e) => {
+            // JANGAN update apapun jika user sedang drag!
+            if (isDraggingGlobal) return;
+            
             const { duration, currentTime } = e.srcElement;
             if (isNaN(duration)) return;
             const pct = (currentTime / duration) * 100;
@@ -18389,8 +19060,6 @@ window.stopPlayScreenLyricDrag = stopPlayScreenLyricDrag;
 
 // ===== DRAG FUNCTIONALITY FOR PROGRESS BAR =====
 
-let isProgressDragging = false;
-
 function updateProgress(e, container) {
     if (!audio || !audio.duration) return;
     
@@ -18413,6 +19082,7 @@ function updateProgress(e, container) {
 
 function progressMouseDown(e) {
     isProgressDragging = true;
+    isDraggingGlobal = true; // Set global flag
     const container = document.getElementById('player-progress-bar-wrapper');
     if (!container) return;
     updateProgress(e, container);
@@ -18442,6 +19112,8 @@ function progressMouseUp(e) {
     if (audio.duration && isFinite(audio.duration)) { audio.currentTime = percent * audio.duration; }
     
     isProgressDragging = false;
+    isDraggingGlobal = false; // Reset global flag
+    isDraggingGlobal = false; // Reset global flag
     document.removeEventListener('mousemove', progressMouseMove);
     document.removeEventListener('mouseup', progressMouseUp);
 }
@@ -18449,6 +19121,8 @@ function progressMouseUp(e) {
 // Touch support for mobile
 function progressTouchStart(e) {
     isProgressDragging = true;
+    isDraggingGlobal = true; // Set global flag
+    isDraggingGlobal = true; // Set global flag
     const container = document.getElementById('player-progress-bar-wrapper');
     if (!container) return;
     const touch = e.touches[0];
@@ -18484,6 +19158,8 @@ function progressTouchEnd(e) {
     audio.currentTime = percent * audio.duration;
     
     isProgressDragging = false;
+    isDraggingGlobal = false; // Reset global flag
+    isDraggingGlobal = false; // Reset global flag
     document.removeEventListener('touchmove', progressTouchMove);
     document.removeEventListener('touchend', progressTouchEnd);
 }
@@ -19483,6 +20159,7 @@ console.log('[INFO] Offline mode disabled - app runs online only');
         
         let lastSave = 0;
         audio.addEventListener('timeupdate', () => {
+            if (isDraggingGlobal) return; // Don't update during drag
             const now = Date.now();
             if (now - lastSave > 10000) {
                 saveCurrentSong();
@@ -19755,6 +20432,7 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             // Update position state (untuk seek bar di notifikasi)
             let lastSaveTime = 0;
             audio.addEventListener('timeupdate', () => {
+               if (isDraggingGlobal) return; // Don't update during drag
                 if ('setPositionState' in navigator.mediaSession && !isNaN(audio.duration)) {
                     navigator.mediaSession.setPositionState({
                         duration: audio.duration,
@@ -20949,13 +21627,25 @@ function playAudio() {
 function pauseAudio() {
     const audio = document.getElementById('audio-player');
     if (!audio) return;
+
     
     audio.pause();
     isPlaying = false;
     updatePlayBtn();
     console.log('[OK] Audio paused');
+    // Trik "Wake Lock" Audio:
+    // Tetap update posisi sedikit saja agar OS mengira kita masih butuh audio engine
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+        
+        // Memaksa posisi agar tidak dianggap Idle oleh sistem
+        navigator.mediaSession.setPositionState({
+            duration: audio.duration || 0,
+            playbackRate: 0,
+            position: audio.currentTime || 0
+        });
+    }
 }
-
 // Export to window for media session handlers
 if (typeof window.playAudio === 'undefined') window.playAudio = playAudio;
 if (typeof window.pauseAudio === 'undefined') window.pauseAudio = pauseAudio;
@@ -21267,7 +21957,9 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Update progress bar
     function updateProgress() {
-        if (!audio || !audio.duration || isDragging) return;
+        // Check dragging first!
+    if (isDraggingGlobal) return;
+    if (!audio || !audio.duration || isDragging || isDraggingGlobal) return; // Tambah check isDraggingGlobal
         
         const percent = (audio.currentTime / audio.duration) * 100;
         progressFill.style.width = percent + '%';
@@ -21281,6 +21973,8 @@ window.addEventListener('DOMContentLoaded', function() {
     function onMouseDown(e) {
         if (!audio || !audio.duration) return;
         isDragging = true;
+    isDraggingGlobal = true; // Set global flag
+        isDraggingGlobal = true; // Set global flag
         e.preventDefault();
         
         progressContainer.classList.add('dragging');
@@ -21300,6 +21994,8 @@ window.addEventListener('DOMContentLoaded', function() {
     function onMouseUp(e) {
         if (!isDragging) return;
         isDragging = false;
+    isDraggingGlobal = false; // Reset global flag
+        isDraggingGlobal = false; // Reset global flag
         
         progressContainer.classList.remove('dragging');
         
@@ -21316,12 +22012,11 @@ window.addEventListener('DOMContentLoaded', function() {
         const rect = progressContainer.getBoundingClientRect();
         const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
         
+        // Update visual bar saja, JANGAN update waktu text
         progressFill.style.width = (percent * 100) + '%';
         progressThumb.style.left = (percent * 100) + '%';
         
-        if (currentTimeSpan) {
-            currentTimeSpan.textContent = formatTime(percent * audio.duration);
-        }
+        // HAPUS update currentTimeSpan - ini yang bikin muncul 2 waktu!
     }
     
     // Seek to position
@@ -21339,6 +22034,8 @@ window.addEventListener('DOMContentLoaded', function() {
     function onTouchStart(e) {
         if (!audio || !audio.duration) return;
         isDragging = true;
+    isDraggingGlobal = true; // Set global flag
+        isDraggingGlobal = true; // Set global flag
         e.preventDefault();
         
         progressContainer.classList.add('dragging');
@@ -21361,6 +22058,8 @@ window.addEventListener('DOMContentLoaded', function() {
     function onTouchEnd(e) {
         if (!isDragging) return;
         isDragging = false;
+    isDraggingGlobal = false; // Reset global flag
+        isDraggingGlobal = false; // Reset global flag
         
         progressContainer.classList.remove('dragging');
         
@@ -21397,309 +22096,22 @@ window.addEventListener('DOMContentLoaded', function() {
     console.log('[OK] Playbar progress with drag initialized');
 })();
 
+let wakeLock = null;
 
-
-
-</script>
-</body>
-</html>
-
-// ===== LOADING SCREEN OFFLINE DETECTION =====
-(function() {
-    function checkOfflineStatus() {
-        const offlineNotice = document.getElementById('loading-offline-notice');
-        
-        if (!navigator.onLine && offlineNotice) {
-            // Show offline notice
-            offlineNotice.classList.add('show');
-            console.log('⚠️ Loading in OFFLINE mode');
-        } else if (offlineNotice) {
-            // Hide offline notice
-            offlineNotice.classList.remove('show');
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock aktif: Aplikasi tidak akan ditidurkan sistem');
         }
-    }
-
-    // Check on page load
-    checkOfflineStatus();
-
-    // Listen for online/offline events during loading
-    window.addEventListener('online', checkOfflineStatus);
-    window.addEventListener('offline', checkOfflineStatus);
-})();
-
-<!-- ===== VIDJE OFFLINE MUSIC MANAGER ===== -->
-<script>
-// Vidje Offline Music Manager - Auto-cache songs for offline playback
-
-(function() {
-    'use strict';
-
-    const OfflineManager = {
-        // Check if song is cached
-        async isSongCached(songUrl) {
-            if (!('caches' in window)) return false;
-            
-            try {
-                const cache = await caches.open('vidje-music-v2000');
-                const response = await cache.match(songUrl);
-                return !!response;
-            } catch (error) {
-                console.error('Error checking cache:', error);
-                return false;
-            }
-        },
-
-        // Cache a song for offline playback
-        async cacheSong(songUrl, metadata = {}) {
-            if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
-                console.warn('Service Worker not ready');
-                return false;
-            }
-
-            try {
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'CACHE_MUSIC',
-                    url: songUrl,
-                    metadata: metadata
-                });
-                return true;
-            } catch (error) {
-                console.error('Error caching song:', error);
-                return false;
-            }
-        },
-
-        // Get cache statistics
-        async getCacheInfo() {
-            if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
-                return null;
-            }
-
-            return new Promise((resolve) => {
-                const channel = new MessageChannel();
-                
-                channel.port1.onmessage = (event) => {
-                    resolve(event.data);
-                };
-
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'GET_CACHE_SIZE'
-                }, [channel.port2]);
-            });
-        },
-
-        // Clear all music cache
-        async clearMusicCache() {
-            if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
-                return false;
-            }
-
-            navigator.serviceWorker.controller.postMessage({
-                type: 'CLEAR_MUSIC_CACHE'
-            });
-            return true;
-        },
-
-        // Check network status
-        isOnline() {
-            return navigator.onLine;
-        },
-
-        // Auto-cache currently playing song
-        autoCacheCurrentSong() {
-            const audio = document.getElementById('audio-player');
-            if (audio && audio.src && !audio.src.startsWith('blob:')) {
-                // Get song metadata from player
-                const metadata = {
-                    title: document.querySelector('.song-title')?.textContent || 'Unknown',
-                    artist: document.querySelector('.song-artist')?.textContent || 'Unknown',
-                    cover: document.querySelector('.playing-cover')?.src || '',
-                    cachedAt: Date.now()
-                };
-
-                this.cacheSong(audio.src, metadata);
-                console.log('[MUSIC] Auto-caching current song for offline');
-            }
-        },
-
-        // Show offline indicator
-        showOfflineIndicator() {
-            const indicator = document.createElement('div');
-            indicator.id = 'offline-indicator';
-            indicator.innerHTML = `
-                <style>
-                    #offline-indicator {
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        background: rgba(255, 59, 48, 0.95);
-                        color: white;
-                        padding: 12px 20px;
-                        border-radius: 8px;
-                        font-size: 14px;
-                        font-weight: 600;
-                        z-index: 99999;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        animation: slideIn 0.3s ease;
-                    }
-                    @keyframes slideIn {
-                        from { transform: translateX(400px); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                    #offline-indicator.online {
-                        background: rgba(52, 199, 89, 0.95);
-                    }
-                </style>
-                <span>📡</span>
-                <span>Mode Offline - Hanya lagu yang sudah di-cache</span>
-            `;
-            document.body.appendChild(indicator);
-            return indicator;
-        },
-
-        // Initialize offline support
-        init() {
-            console.log('[MUSIC] Initializing Offline Music Manager...');
-
-            // Listen for online/offline events
-            window.addEventListener('online', () => {
-                console.log('[OK] Back online!');
-                const indicator = document.getElementById('offline-indicator');
-                if (indicator) {
-                    indicator.classList.add('online');
-                    indicator.innerHTML = '<span style="color: #4CAF50;">●</span><span>Kembali Online!</span>';
-                    setTimeout(() => indicator.remove(), 3000);
-                }
-            });
-
-            window.addEventListener('offline', () => {
-                console.log('[OFFLINE] Gone offline!');
-                this.showOfflineIndicator();
-            });
-
-            // Auto-cache song when it starts playing
-            const audio = document.getElementById('audio-player');
-            if (audio) {
-                audio.addEventListener('play', () => {
-                    if (this.isOnline()) {
-                        setTimeout(() => this.autoCacheCurrentSong(), 2000);
-                    }
-                });
-            }
-
-            // Add UI button for cache management (optional)
-            this.addCacheManagementUI();
-
-            console.log('[OK] Offline Music Manager Ready');
-        },
-
-        // Add cache management UI (optional)
-        addCacheManagementUI() {
-            // Functions accessible via window object
-            window.showCacheInfo = async () => {
-                const info = await this.getCacheInfo();
-                if (info) {
-                    alert(`📊 Cache Info:
-                    
-Lagu di-cache: ${info.musicCount}/${info.musicLimit}
-Gambar di-cache: ${info.imageCount}/${info.imageLimit}
-
-Lagu yang sudah di-cache bisa diputar saat offline!`);
-                }
-            };
-
-            window.clearOfflineCache = async () => {
-                if (confirm('Hapus semua lagu offline? Kamu perlu online lagi untuk cache ulang.')) {
-                    await this.clearMusicCache();
-                    alert('✅ Cache musik dihapus!');
-                }
-            };
-        }
-    };
-
-    // Auto-initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => OfflineManager.init());
-    } else {
-        OfflineManager.init();
-    }
-
-    // Expose to window for manual usage
-    window.VidjeOffline = OfflineManager;
-
-    console.log('[OK] Vidje Offline Manager Loaded');
-})();
-
-// ============================================================
-// OFFLINE MODE FUNCTIONS - SETUP PIN & STATUS
-// ============================================================
-
-async function showSetupPINDialog() {
-    const pin = prompt('Masukkan PIN 4 digit untuk akses offline:');
-    
-    if (!pin) return;
-    
-    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-        alert('❌ PIN harus 4 digit angka!');
-        return;
-    }
-    
-    const confirm = prompt('Konfirmasi PIN (masukkan lagi):');
-    
-    if (pin !== confirm) {
-        alert('❌ PIN tidak cocok!');
-        return;
-    }
-    
-    const result = await window.VidjeHybridAuth.setupPIN(pin);
-    
-    if (result.success) {
-        alert('✅ PIN berhasil disetup!\n\nKamu sekarang bisa login offline dengan PIN saat tidak ada koneksi internet.');
-    } else {
-        alert('❌ ' + result.error);
+    } catch (err) {
+        console.error(`${err.name}, ${err.message}`);
     }
 }
 
-function showOfflineStatus() {
-    const hasSession = window.VidjeHybridAuth.hasOfflineSession();
-    const hasPIN = window.VidjeHybridAuth.hasPIN();
-    const queue = window.VidjeHybridAuth.getTrackingQueue();
-    
-    let message = '📊 STATUS OFFLINE MODE\n\n';
-    message += `Offline Session: ${hasSession ? '✅ Tersedia' : '❌ Belum setup'}\n`;
-    message += `PIN Security: ${hasPIN ? '✅ Aktif' : '⚠️ Tidak aktif'}\n`;
-    message += `Tracking Queue: ${queue.length} lagu menunggu sync\n\n`;
-    
-    if (hasSession) {
-        const session = window.VidjeHybridAuth.getOfflineSession();
-        message += `Email: ${session.email}\n`;
-        message += `Tersimpan sejak: ${new Date(session.savedAt).toLocaleString('id-ID')}\n`;
-    } else {
-        message += 'Login online sekali untuk aktifkan offline mode.';
-    }
-    
-    alert(message);
-}
+// Panggil requestWakeLock() setiap kali lagu di-Play
 
-window.showSetupPINDialog = showSetupPINDialog;
-window.showOfflineStatus = showOfflineStatus;
-
-console.log('[OK] Offline mode functions loaded');
-
-
-// OFFLINE DOWNLOAD FEATURES REMOVED
-// Fungsi offline telah dinonaktifkan
-
-
-
-
-
-console.log('[INFO] Offline features disabled');
 
 </script>
-
 </body>
 </html>
