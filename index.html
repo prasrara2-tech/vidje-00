@@ -11675,7 +11675,7 @@ console.log('   getCurrentSong() - Check what song is detected');
             { id: 750, title: "Bad Guy", artist: "Billie Eilish", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/billieeilish/badguy.mp3" },
             { id: 751, title: "Happier Than Ever", artist: "Billie Eilish", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/billieeilish/happierthanever.mp3" },
             { id: 752, title: "Lovely", artist: "Billie Eilish", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/billieeilish/lovely.mp3" },
-            { id: 753, title: "Ocean Eyes", artist: "Billie Eilish", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/billieeilish/oceaneyes.mp3" },
+            { id: 753, title: "WILDFLOWER", artist: "Billie Eilish", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/billieeilish/wildflower.mp3" },
             { id: 754, title: "Birds of a Feather", artist: "Billie Eilish", album: "Album", duration: "3:00", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/billieeilish/birdsofeather.mp3" }
         ];
         // 32. The Beatles (755-759)
@@ -22051,13 +22051,64 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Keep audio alive with periodic check
-        setInterval(() => {
-            if (window.isPlaying && audio.paused && audio.src && audio.readyState > 0) {
-                console.log('🔧 Detected playback stopped, attempting recovery...');
-                audio.play().catch(err => console.warn('Recovery play failed:', err));
+        // ===== SUPER AGGRESSIVE AUDIO SOURCE PROTECTION =====
+        let lockedAudioSource = null;
+        let lockedCurrentTime = 0;
+        
+        // Lock audio source saat load
+        audio.addEventListener('loadedmetadata', () => {
+            if (audio.src) {
+                lockedAudioSource = audio.src;
+                console.log('🔒 Audio source locked:  ', lockedAudioSource.substring(0, 60) + '...  ');
             }
-        }, 2000); // Check every 2 seconds
+        });
+        
+        // Update locked time terus
+        audio.addEventListener('timeupdate', () => {
+            if (audio.currentTime > 0) {
+                lockedCurrentTime = audio.currentTime;
+            }
+        });
+        
+        // Keep audio alive with SUPER FAST periodic check
+        setInterval(() => {
+            // Check #1: Audio source hilang? (ini masalah utama!)
+            if (lockedAudioSource && (!audio.src || audio.src === '')) {
+                console.error('❌ AUDIO SOURCE HILANG! Restoring...  ');
+                audio.src = lockedAudioSource;
+                if (lockedCurrentTime > 0) {
+                    audio.currentTime = lockedCurrentTime;
+                }
+                audio.load();
+                
+                // Play lagi kalau harusnya playing
+                if (window.isPlaying) {
+                    setTimeout(() => {
+                        audio.play().catch(err => console.warn('Restore play failed:  ', err));
+                    }, 100);
+                }
+            }
+            
+            // Check #2: Network state = NO_SOURCE?
+            if (audio.networkState === 0 && lockedAudioSource) {
+                console.warn('⚠️ Network state NO_SOURCE, restoring...  ');
+                audio.src = lockedAudioSource;
+                audio.load();
+            }
+            
+            // Check #3: Playback stopped unexpectedly?
+            if (window.isPlaying && audio.paused && audio.src && audio.readyState > 0) {
+                console.log('🔧 Detected playback stopped, attempting recovery...  ');
+                audio.play().catch(err => console.warn('Recovery play failed:  ', err));
+            }
+            
+            // Check #4: Ready state terlalu rendah tapi harusnya bisa play?
+            if (window.isPlaying && audio.readyState < 2 && audio.src) {
+                console.log('⚠️ Low ready state, reloading...  ');
+                audio.load();
+            }
+            
+        }, 300); // Check every 300ms - SUPER CEPAT!
     }
 });
 
