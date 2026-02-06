@@ -6795,6 +6795,60 @@ window.openSheilaAlbum = window.openSheilaAlbum || function() {};
 window.openHindiaAlbum = window.openHindiaAlbum || function() {};
 window.scrollPositions = window.scrollPositions || {};
 
+// ===== SILENT AUDIO TO KEEP APP ALIVE =====
+// Ini adalah trik untuk mencegah browser membunuh audio setelah 5 menit
+const silentAudio = new Audio();
+silentAudio.loop = true;
+silentAudio.volume = 0; // Volume 0 agar tidak terdengar
+
+// Buat silent audio data URL (1 detik audio kosong dalam format WAV)
+const silentAudioData = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+silentAudio.src = silentAudioData;
+
+// Variabel global untuk Wake Lock
+let wakeLock = null;
+
+// ===== WAKE LOCK API (Mencegah CPU Tidur) =====
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('🔓 Wake Lock acquired - CPU akan tetap aktif');
+            
+            wakeLock.addEventListener('release', () => {
+                console.log('🔒 Wake Lock released');
+            });
+        } else {
+            console.warn('⚠️ Wake Lock API not supported');
+        }
+    } catch (err) {
+        console.error('❌ Wake Lock error:', err);
+    }
+}
+
+// Re-acquire wake lock saat visibility berubah
+document.addEventListener('visibilitychange', async () => {
+    if (wakeLock !== null && document.visibilityState === 'visible') {
+        await requestWakeLock();
+    }
+});
+
+// Helper function untuk start silent audio
+function startSilentAudio() {
+    silentAudio.play().then(() => {
+        console.log('🔇 Silent audio started - keeping audio context alive');
+    }).catch(err => {
+        console.warn('⚠️ Silent audio failed to start:', err);
+    });
+}
+
+// Helper function untuk stop silent audio
+function stopSilentAudio() {
+    silentAudio.pause();
+    silentAudio.currentTime = 0;
+    console.log('🔇 Silent audio stopped');
+}
+
 // ===== LYRICS DATA AND FUNCTIONS (Moved to top for proper loading order) =====
 // ===== LYRICS DATA FOR PERUNGGU =====
 const songLyrics = {
@@ -18634,11 +18688,23 @@ function openArtistBandOverlay(artistData, songsList) {
                 showToast('❌ Lagu tidak tersedia atau belum bisa diputar', 'error');
                 return; 
             }
+            
+            // STOP silent audio saat lagu sebenarnya diputar
+            stopSilentAudio();
+            
+            // Request wake lock untuk mencegah CPU tidur
+            requestWakeLock();
+            
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
                     isPlaying = true;
                     updatePlayBtn();
+                    
+                    // Update Media Session playback state
+                    if ('mediaSession' in navigator && navigator.mediaSession) {
+                        navigator.mediaSession.playbackState = 'playing';
+                    }
                 }).catch(error => {
                     // Handle AbortError (interrupted by pause)
                     if (error.name === 'AbortError') {
@@ -18655,6 +18721,17 @@ function openArtistBandOverlay(artistData, songsList) {
             audio.pause();
             isPlaying = false;
             updatePlayBtn();
+            
+            // TRIK UTAMA: Saat pause, putar silent audio
+            // Ini menjaga "audio context" tetap hidup di background
+            startSilentAudio();
+            
+            // Update Media Session playback state
+            if ('mediaSession' in navigator && navigator.mediaSession) {
+                navigator.mediaSession.playbackState = 'paused';
+            }
+            
+            console.log('⏸️ Audio paused, silent audio activated to keep session alive');
         };
 
         // Helper to open from Overlay
@@ -18845,7 +18922,13 @@ function openArtistBandOverlay(artistData, songsList) {
         }
 
         audio.addEventListener('ended', () => {
+            // Aktifkan silent audio sejenak sebelum lagu berikutnya
+            startSilentAudio();
+            
+            // Putar lagu berikutnya
             document.getElementById('next-btn').click();
+            
+            // Silent audio akan otomatis di-stop saat lagu baru mulai (di playAudio)
         });
         
         // FIX: Handle audio suspension (background/lockscreen)
@@ -20433,12 +20516,16 @@ console.log('[INFO] Offline mode disabled - app runs online only');
             let lastSaveTime = 0;
             audio.addEventListener('timeupdate', () => {
                if (isDraggingGlobal) return; // Don't update during drag
-                if ('setPositionState' in navigator.mediaSession && !isNaN(audio.duration)) {
-                    navigator.mediaSession.setPositionState({
-                        duration: audio.duration,
-                        playbackRate: audio.playbackRate,
-                        position: audio.currentTime
-                    });
+                try {
+                    if ('setPositionState' in navigator.mediaSession && !isNaN(audio.duration)) {
+                        navigator.mediaSession.setPositionState({
+                            duration: audio.duration,
+                            playbackRate: Math.max(0.25, audio.playbackRate || 1), // Minimal 0.25
+                            position: Math.min(audio.currentTime, audio.duration)
+                        });
+                    }
+                } catch (err) {
+                    console.warn('⚠️ setPositionState error:', err);
                 }
                 
                 // CRITICAL: Auto-save playback state every 5 seconds
@@ -20578,12 +20665,16 @@ console.log('[INFO] Offline mode disabled - app runs online only');
                 navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
                 
                 // Update position state immediately
-                if ('setPositionState' in navigator.mediaSession && audio && !isNaN(audio.duration)) {
-                    navigator.mediaSession.setPositionState({
-                        duration: audio.duration,
-                        playbackRate: audio.playbackRate,
-                        position: audio.currentTime
-                    });
+                try {
+                    if ('setPositionState' in navigator.mediaSession && audio && !isNaN(audio.duration)) {
+                        navigator.mediaSession.setPositionState({
+                            duration: audio.duration,
+                            playbackRate: Math.max(0.25, audio.playbackRate || 1), // Minimal 0.25
+                            position: Math.min(audio.currentTime, audio.duration)
+                        });
+                    }
+                } catch (err) {
+                    console.warn('⚠️ setPositionState error:', err);
                 }
                 
                 console.log('🔄 Media Session FULLY updated - State:', isPlaying ? 'playing' : 'paused', '| Song:', song.title);
@@ -21106,6 +21197,31 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('currentSongPaused');
     localStorage.removeItem('vidjePlaybackState');
     console.log('[OK] Playback state cleared - user must select a song manually');
+    
+    // ===== INIT WAKE LOCK & SILENT AUDIO ON FIRST USER INTERACTION =====
+    let isInitialized = false;
+    const initOnFirstInteraction = async () => {
+        if (isInitialized) return;
+        isInitialized = true;
+        
+        console.log('🎯 First user interaction detected - initializing background systems...');
+        
+        // Request wake lock
+        await requestWakeLock();
+        
+        // Preload silent audio (tapi jangan putar dulu)
+        silentAudio.load();
+        
+        console.log('✅ Background playback systems initialized');
+        
+        // Remove listeners setelah init
+        document.removeEventListener('click', initOnFirstInteraction);
+        document.removeEventListener('touchstart', initOnFirstInteraction);
+    };
+    
+    // Listen untuk first interaction
+    document.addEventListener('click', initOnFirstInteraction, { once: true });
+    document.addEventListener('touchstart', initOnFirstInteraction, { once: true });
 });
 
 // ===== DIAGNOSTIC TOOLS =====
@@ -21633,17 +21749,25 @@ function pauseAudio() {
     isPlaying = false;
     updatePlayBtn();
     console.log('[OK] Audio paused');
+    
     // Trik "Wake Lock" Audio:
-    // Tetap update posisi sedikit saja agar OS mengira kita masih butuh audio engine
+    // Tetap update posisi agar OS mengira kita masih butuh audio engine
     if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = "paused";
         
-        // Memaksa posisi agar tidak dianggap Idle oleh sistem
-        navigator.mediaSession.setPositionState({
-            duration: audio.duration || 0,
-            playbackRate: 0,
-            position: audio.currentTime || 0
-        });
+        // Update posisi tanpa playbackRate (atau set ke 1.0)
+        // playbackRate tidak boleh 0, minimal 0.25 atau langsung hapus parameter ini
+        try {
+            if ('setPositionState' in navigator.mediaSession && !isNaN(audio.duration)) {
+                navigator.mediaSession.setPositionState({
+                    duration: audio.duration,
+                    playbackRate: 1.0, // PERBAIKAN: harus > 0, gunakan 1.0 untuk paused
+                    position: Math.min(audio.currentTime, audio.duration)
+                });
+            }
+        } catch (err) {
+            console.warn('⚠️ setPositionState error:', err);
+        }
     }
 }
 // Export to window for media session handlers
@@ -21705,12 +21829,16 @@ function setupEnhancedMediaSession() {
             audio.currentTime = Math.max(0, Math.min(audio.duration, details.seekTime));
             
             // Update position state immediately
-            if ('setPositionState' in navigator.mediaSession) {
-                navigator.mediaSession.setPositionState({
-                    duration: audio.duration,
-                    playbackRate: audio.playbackRate || 1,
-                    position: audio.currentTime
-                });
+            try {
+                if ('setPositionState' in navigator.mediaSession) {
+                    navigator.mediaSession.setPositionState({
+                        duration: audio.duration,
+                        playbackRate: Math.max(0.25, audio.playbackRate || 1), // Minimal 0.25
+                        position: Math.min(audio.currentTime, audio.duration)
+                    });
+                }
+            } catch (err) {
+                console.warn('⚠️ setPositionState error:', err);
             }
         }
     });
@@ -21758,11 +21886,15 @@ function setupBackgroundKeepAlive() {
                     
                     // Update position state
                     if ('setPositionState' in navigator.mediaSession && audio.duration) {
-                        navigator.mediaSession.setPositionState({
-                            duration: audio.duration,
-                            playbackRate: 1,
-                            position: audio.currentTime
-                        });
+                        try {
+                            navigator.mediaSession.setPositionState({
+                                duration: audio.duration,
+                                playbackRate: Math.max(0.25, audio.playbackRate || 1),
+                                position: Math.min(audio.currentTime, audio.duration)
+                            });
+                        } catch (err) {
+                            console.warn('⚠️ setPositionState error:', err);
+                        }
                     }
                 }
             } catch (error) {
@@ -21829,6 +21961,23 @@ window.addEventListener('beforeunload', () => {
     document.addEventListener('visibilitychange', () => {
         console.log('👁️ Visibility changed - re-registering Media Session');
         aggressiveMediaSessionKeepAlive();
+        
+        // PENTING: Pastikan silent audio tetap berjalan saat di-background
+        if (document.hidden) {
+            // Saat app masuk ke background
+            if (!isPlaying) {
+                // Jika sedang pause, pastikan silent audio berjalan
+                startSilentAudio();
+                console.log('🔇 App in background - silent audio activated');
+            }
+        } else {
+            // Saat app kembali ke foreground
+            if (isPlaying) {
+                // Jika sedang playing, stop silent audio
+                stopSilentAudio();
+                console.log('🔇 App in foreground - silent audio stopped');
+            }
+        }
     });
     
     // Re-register saat kembali dari background
@@ -22096,20 +22245,23 @@ window.addEventListener('DOMContentLoaded', function() {
     console.log('[OK] Playbar progress with drag initialized');
 })();
 
-let wakeLock = null;
-
-async function requestWakeLock() {
-    try {
-        if ('wakeLock' in navigator) {
-            wakeLock = await navigator.wakeLock.request('screen');
-            console.log('Wake Lock aktif: Aplikasi tidak akan ditidurkan sistem');
-        }
-    } catch (err) {
-        console.error(`${err.name}, ${err.message}`);
-    }
-}
-
-// Panggil requestWakeLock() setiap kali lagu di-Play
+// ===== SILENT AUDIO & BACKGROUND PLAYBACK SYSTEM READY =====
+console.log('');
+console.log('═══════════════════════════════════════════════════════════');
+console.log('🎵 VIDJE MUSIC - SILENT AUDIO SYSTEM INITIALIZED');
+console.log('═══════════════════════════════════════════════════════════');
+console.log('✅ Silent Audio: Ready (akan aktif saat pause)');
+console.log('✅ Wake Lock: Ready (akan aktif saat play)');
+console.log('✅ Media Session API: Active (kontrol notifikasi tersedia)');
+console.log('✅ Background Playback: Enabled');
+console.log('');
+console.log('📱 Fitur:');
+console.log('  • Lagu tidak akan mati setelah 5 menit');
+console.log('  • Tetap jalan saat layar mati');
+console.log('  • Kontrol dari notifikasi / lock screen');
+console.log('  • CPU tetap aktif mencegah suspend');
+console.log('═══════════════════════════════════════════════════════════');
+console.log('');
 
 
 </script>
