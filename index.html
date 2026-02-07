@@ -1427,10 +1427,22 @@
             z-index: 102;
             pointer-events: auto;
             touch-action: manipulation;
+            min-width: 40px;
+            min-height: 40px;
         }
 
         .song-menu-btn:hover {
             color: white;
+        
+        /* Mobile: Larger touch area untuk menu button */
+        @media (max-width: 768px) {
+            .song-menu-btn {
+                min-width: 56px;
+                min-height: 56px;
+                padding: 16px;
+                margin: -8px -8px -8px 0;
+            }
+        }
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -1633,6 +1645,14 @@
             transition: all 0.2s ease;
             border-bottom: 1px solid rgba(229, 9, 20, 0.08);
             pointer-events: auto;
+        
+        /* Mobile: Larger touch area untuk menu items */
+        @media (max-width: 768px) {
+            .menu-item {
+                padding: 18px 20px;
+                min-height: 56px;
+            }
+        }
             touch-action: manipulation;
             -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
         }
@@ -16178,7 +16198,7 @@ function updateMediaSession() {
                     </div>
                     <div class="song-album">${s.album}</div>
                     <div class="song-duration">${s.duration}</div>
-                    <div class="song-actions">
+                    <div class="song-actions" onclick="event.stopPropagation();">
                         <button class="list-like-btn ${likedSongs.includes(s.id) ? 'liked' : ''}" onclick="event.stopPropagation(); window.toggleLike(${s.id})" id="list-like-${s.id}">
                             <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
                         </button>
@@ -16205,7 +16225,7 @@ function updateMediaSession() {
                     </div>
                     <div class="song-album">-</div>
                     <div class="song-duration">-</div>
-                    <div class="song-actions">
+                    <div class="song-actions" onclick="event.stopPropagation();">
                         <button class="share-btn" onclick="event.stopPropagation(); window.openShareModal('playlist', '${pl.id}')" style="color:#b3b3b3;">
                             <i class="ph ph-share-network"></i>
                         </button>
@@ -16272,7 +16292,7 @@ function updateMediaSession() {
         }
 
         return `
-        <div class="song-row" id="row-${s.id}" onclick="window.playFromPlaylist(${s.id}, window.allSongs)">
+        <div class="song-row" id="row-${s.id}" onclick="if(!event.target.closest('.song-actions-menu') && !event.target.closest('.song-actions')) window.playFromPlaylist(${s.id}, window.allSongs)">
             <div class="song-index">
                 <span class="index-num">${i + 1}</span>
                 <div class="playing-icon-container" style="display:none;">
@@ -16290,7 +16310,7 @@ function updateMediaSession() {
             </div>
             <div class="song-album">${s.album}</div>
             <div class="song-duration">${s.duration}</div>
-            <div class="song-actions">
+            <div class="song-actions" onclick="event.stopPropagation();">
                 ${actionButtonsHTML}
             </div>
         </div>
@@ -16366,7 +16386,7 @@ function updateMediaSession() {
             </div>
             <div class="song-album">${s.album}</div>
             <div class="song-duration">${s.duration}</div>
-            <div class="song-actions">
+            <div class="song-actions" onclick="event.stopPropagation();">
                 <div class="song-actions-menu" style="position: relative;">
                     <button class="song-menu-btn" onclick="event.stopPropagation(); window.toggleSongMenu(${s.id})">
                         <i class="ph ph-dots-three-vertical"></i>
@@ -18100,6 +18120,8 @@ function renderProfilePublicPlaylists() {
                 menuItem.click();
             }
         }, { passive: false, capture: true });
+
+
 
         // --- QUEUE SYSTEM LOGIC ---
 
