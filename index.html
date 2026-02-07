@@ -1423,6 +1423,10 @@
             justify-content: center;
             transition: color 0.2s, background 0.2s;
             border-radius: 4px;
+            position: relative;
+            z-index: 102;
+            pointer-events: auto;
+            touch-action: manipulation;
         }
 
         .song-menu-btn:hover {
@@ -1476,6 +1480,8 @@
                 padding: 0 !important;
                 min-width: 200px !important;
                 backdrop-filter: blur(10px);
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
             }
             .song-menu-dropdown.active-slide {
                 display: block !important;
@@ -1510,6 +1516,9 @@
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             border-bottom: 1px solid rgba(229, 9, 20, 0.08);
             position: relative;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
         }
 
         .menu-item::before {
@@ -1595,6 +1604,9 @@
                 opacity: 1 !important;
                 padding: 0 !important;
                 min-width: 180px !important;
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
+                isolation: isolate !important;
             }
             .song-menu-dropdown.active-slide {
                 display: block !important;
@@ -1620,6 +1632,9 @@
             font-weight: 500;
             transition: all 0.2s ease;
             border-bottom: 1px solid rgba(229, 9, 20, 0.08);
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
         }
 
         .menu-item:last-child {
@@ -17936,6 +17951,8 @@ function renderProfilePublicPlaylists() {
         document.addEventListener('click', function(e) {
             var menuItem = e.target.closest('.menu-item');
             if(menuItem) {
+                // Prevent event bubbling to avoid conflicts
+                e.stopPropagation();
                 var dropdown = menuItem.closest('.song-menu-dropdown');
                 if(dropdown) {
                     dropdown.style.display = 'none';
@@ -17949,7 +17966,7 @@ function renderProfilePublicPlaylists() {
                     menu.classList.remove('active-slide');
                 });
             }
-        });
+        }, { passive: false });
 
         // Close menus when clicking outside
         document.addEventListener('click', function(event) {
@@ -17959,6 +17976,35 @@ function renderProfilePublicPlaylists() {
                 });
             }
         });
+
+        // ANDROID FIX: Add touch event listeners for dropdown menu items
+        document.addEventListener('touchstart', function(e) {
+            const menuItem = e.target.closest('.menu-item');
+            if (menuItem) {
+                // Prevent any interference from other touch handlers
+                e.stopPropagation();
+                
+                // Ensure the tap is registered on Android
+                menuItem.style.background = 'rgba(229, 9, 20, 0.15)';
+                
+                // Reset background after a short delay
+                setTimeout(() => {
+                    menuItem.style.background = '';
+                }, 200);
+            }
+        }, { passive: false, capture: true });
+
+        // ANDROID FIX: Ensure dropdown menus are always clickable
+        document.addEventListener('touchend', function(e) {
+            const menuItem = e.target.closest('.menu-item');
+            if (menuItem) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                // Trigger the click event
+                menuItem.click();
+            }
+        }, { passive: false, capture: true });
 
         // --- QUEUE SYSTEM LOGIC ---
 
