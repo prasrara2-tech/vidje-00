@@ -1465,7 +1465,7 @@
                 height: auto !important;
                 border-radius: 12px !important;
                 margin: 0 0 12px 0 !important;
-                z-index: 9999 !important;
+                z-index: 99999 !important;
                 background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 50%, #1f1f1f 100%);
                 border: 1px solid rgba(229, 9, 20, 0.25);
                 box-shadow: 0 12px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -1585,7 +1585,7 @@
                 height: auto !important;
                 border-radius: 8px !important;
                 margin: 0 0 8px 0 !important;
-                z-index: 9999 !important;
+                z-index: 99999 !important;
                 background: #1f1f1f;
                 border: 1px solid rgba(229, 9, 20, 0.15);
                 box-shadow: 0 8px 24px rgba(0,0,0,0.6);
@@ -3423,12 +3423,34 @@
             align-items: center;
             gap: 10px;
             cursor: pointer;
+            max-width: 100%;
         }
         .chat-shared-card:hover { background: rgba(255,255,255,0.05); }
-        .chat-shared-img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
-        .chat-shared-info { display: flex; flex-direction: column; }
-        .chat-shared-title { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-shared-sub { font-size: 11px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-shared-img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+        .chat-shared-info { 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-shared-title { 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: white; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            width: 100%;
+        }
+        .chat-shared-sub { 
+            font-size: 11px; 
+            color: #ccc; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            width: 100%;
+        }
 
         .chat-footer {
             padding: 15px;
@@ -7590,7 +7612,7 @@ if (document.readyState === 'loading') {
                     <!-- Arctic Monkeys -->
                     <div id="view-arctic-album" class="view-section">
                         <div class="playlist-header-view" id="arctic-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/articmonkeys.jpg" class="playlist-cover-big" id="arctic-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="arctic-title-view">Arctic Monkeys</h1><div class="playlist-meta"><span style="color: white;">Band Asing</span> • <span id="arctic-count">10 lagu</span></div></div>
                         </div>
@@ -7626,7 +7648,7 @@ if (document.readyState === 'loading') {
                     <!-- Neck Deep -->
                     <div id="view-neckdeep-album" class="view-section">
                         <div class="playlist-header-view" id="neckdeep-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/neckdeep.jpg" class="playlist-cover-big" id="neckdeep-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="neckdeep-title-view">Neck Deep</h1><div class="playlist-meta"><span style="color: white;">Band Asing</span> • <span id="neckdeep-count">10 lagu</span></div></div>
                         </div>
@@ -7638,7 +7660,7 @@ if (document.readyState === 'loading') {
                     <!-- My Chemical Romance -->
                     <div id="view-mcr-album" class="view-section">
                         <div class="playlist-header-view" id="mcr-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/chemical.jpg" class="playlist-cover-big" id="mcr-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="mcr-title-view">My Chemical Romance</h1><div class="playlist-meta"><span style="color: white;">Band Asing</span> • <span id="mcr-count">10 lagu</span></div></div>
                         </div>
@@ -7650,7 +7672,7 @@ if (document.readyState === 'loading') {
                     <!-- Bob Marley -->
                     <div id="view-bobmarley-album" class="view-section">
                         <div class="playlist-header-view" id="bobmarley-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bob.jpg" class="playlist-cover-big" id="bobmarley-cover-view"></div>
                             <div class="playlist-info-big"><span>PENYANYI</span><h1 id="bobmarley-title-view">Bob Marley</h1><div class="playlist-meta"><span style="color: white;">Penyanyi Asing</span> • <span id="bobmarley-count">10 lagu</span></div></div>
                         </div>
@@ -7662,7 +7684,7 @@ if (document.readyState === 'loading') {
                     <!-- Frank Ocean -->
                     <div id="view-frank-album" class="view-section">
                         <div class="playlist-header-view" id="frank-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/frank.jpg" class="playlist-cover-big" id="frank-cover-view"></div>
                             <div class="playlist-info-big"><span>PENYANYI</span><h1 id="frank-title-view">Frank Ocean</h1><div class="playlist-meta"><span style="color: white;">Penyanyi Asing</span> • <span id="frank-count">10 lagu</span></div></div>
                         </div>
@@ -7674,7 +7696,7 @@ if (document.readyState === 'loading') {
                     <!-- Drake -->
                     <div id="view-drake-album" class="view-section">
                         <div class="playlist-header-view" id="drake-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/drake.jpg" class="playlist-cover-big" id="drake-cover-view"></div>
                             <div class="playlist-info-big"><span>PENYANYI</span><h1 id="drake-title-view">Drake</h1><div class="playlist-meta"><span style="color: white;">Penyanyi Asing</span> • <span id="drake-count">10 lagu</span></div></div>
                         </div>
@@ -7686,7 +7708,7 @@ if (document.readyState === 'loading') {
                     <!-- Kendrick Lamar -->
                     <div id="view-kendrick-album" class="view-section">
                         <div class="playlist-header-view" id="kendrick-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kendrick.jpg" class="playlist-cover-big" id="kendrick-cover-view"></div>
                             <div class="playlist-info-big"><span>PENYANYI</span><h1 id="kendrick-title-view">Kendrick Lamar</h1><div class="playlist-meta"><span style="color: white;">Penyanyi Asing</span> • <span id="kendrick-count">10 lagu</span></div></div>
                         </div>
@@ -7698,7 +7720,7 @@ if (document.readyState === 'loading') {
                     <!-- The Weeknd -->
                     <div id="view-weeknd-album" class="view-section">
                         <div class="playlist-header-view" id="weeknd-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/theweekend.jpg" class="playlist-cover-big" id="weeknd-cover-view"></div>
                             <div class="playlist-info-big"><span>PENYANYI</span><h1 id="weeknd-title-view">The Weeknd</h1><div class="playlist-meta"><span style="color: white;">Penyanyi Asing</span> • <span id="weeknd-count">10 lagu</span></div></div>
                         </div>
@@ -7710,7 +7732,7 @@ if (document.readyState === 'loading') {
                     <!-- The 1975 -->
                     <div id="view-the1975-album" class="view-section">
                         <div class="playlist-header-view" id="the1975-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/the1975.jpg" class="playlist-cover-big" id="the1975-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="the1975-title-view">The 1975</h1><div class="playlist-meta"><span style="color: white;">Band Asing</span> • <span id="the1975-count">10 lagu</span></div></div>
                         </div>
@@ -7722,7 +7744,7 @@ if (document.readyState === 'loading') {
                     <!-- Olivia Rodrigo -->
                     <div id="view-olivia-album" class="view-section">
                         <div class="playlist-header-view" id="olivia-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/olivia.jpg" class="playlist-cover-big" id="olivia-cover-view"></div>
                             <div class="playlist-info-big"><span>PENYANYI</span><h1 id="olivia-title-view">Olivia Rodrigo</h1><div class="playlist-meta"><span style="color: white;">Penyanyi Asing</span> • <span id="olivia-count">10 lagu</span></div></div>
                         </div>
@@ -7734,7 +7756,7 @@ if (document.readyState === 'loading') {
                     <!-- The Chainsmokers -->
                     <div id="view-chainsmokers-album" class="view-section">
                         <div class="playlist-header-view" id="chainsmokers-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/thechainsmokers.jpg" class="playlist-cover-big" id="chainsmokers-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="chainsmokers-title-view">The Chainsmokers</h1><div class="playlist-meta"><span style="color: white;">Band Asing</span> • <span id="chainsmokers-count">10 lagu</span></div></div>
                         </div>
@@ -7746,7 +7768,7 @@ if (document.readyState === 'loading') {
                     <!-- Avenged Sevenfold -->
                     <div id="view-avenged-album" class="view-section">
                         <div class="playlist-header-view" id="avenged-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/avenged.jpg" class="playlist-cover-big" id="avenged-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="avenged-title-view">Avenged Sevenfold</h1><div class="playlist-meta"><span style="color: white;">Band Asing</span> • <span id="avenged-count">10 lagu</span></div></div>
                         </div>
@@ -7758,7 +7780,7 @@ if (document.readyState === 'loading') {
                     <!-- Slank -->
                     <div id="view-slank-album" class="view-section">
                         <div class="playlist-header-view" id="slank-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/slank.jpg" class="playlist-cover-big" id="slank-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="slank-title-view">Slank</h1><div class="playlist-meta"><span style="color: white;">Band Indonesia</span> • <span id="slank-count">10 lagu</span></div></div>
                         </div>
@@ -7770,7 +7792,7 @@ if (document.readyState === 'loading') {
                     <!-- Reality Club -->
                     <div id="view-realityclub-album" class="view-section">
                         <div class="playlist-header-view" id="realityclub-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/realityclub.jpg" class="playlist-cover-big" id="realityclub-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="realityclub-title-view">Reality Club</h1><div class="playlist-meta"><span style="color: white;">Band Indonesia</span> • <span id="realityclub-count">10 lagu</span></div></div>
                         </div>
@@ -7782,7 +7804,7 @@ if (document.readyState === 'loading') {
                     <!-- Nidji -->
                     <div id="view-nidji-album" class="view-section">
                         <div class="playlist-header-view" id="nidji-header-bg">
-                            <button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
+                            <button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button>
                             <div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/nidji.jpg" class="playlist-cover-big" id="nidji-cover-view"></div>
                             <div class="playlist-info-big"><span>BAND</span><h1 id="nidji-title-view">Nidji</h1><div class="playlist-meta"><span style="color: white;">Band Indonesia</span> • <span id="nidji-count">10 lagu</span></div></div>
                         </div>
@@ -7793,192 +7815,192 @@ if (document.readyState === 'loading') {
 
                     <!-- NAYKILLA -->
                     <div id="view-naykilla-album" class="view-section">
-                        <div class="playlist-header-view" id="naykilla-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/nay.jpg" class="playlist-cover-big" id="naykilla-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="naykilla-title-view">Naykilla</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="naykilla-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="naykilla-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="naykilla-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/nay.jpg" class="playlist-cover-big" id="naykilla-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="naykilla-title-view">Naykilla</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="naykilla-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="naykilla-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- BERNADYA -->
                     <div id="view-bernadya-album" class="view-section">
-                        <div class="playlist-header-view" id="bernadya-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/bernadya.jpg" class="playlist-cover-big" id="bernadya-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="bernadya-title-view">Bernadya</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="bernadya-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="bernadya-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="bernadya-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/bernadya.jpg" class="playlist-cover-big" id="bernadya-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="bernadya-title-view">Bernadya</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="bernadya-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="bernadya-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- IWAN FALS -->
                     <div id="view-iwanfals-album" class="view-section">
-                        <div class="playlist-header-view" id="iwanfals-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/iwan.jpg" class="playlist-cover-big" id="iwanfals-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="iwanfals-title-view">Iwan Fals</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="iwanfals-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="iwanfals-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="iwanfals-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/iwan.jpg" class="playlist-cover-big" id="iwanfals-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="iwanfals-title-view">Iwan Fals</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="iwanfals-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="iwanfals-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- PAMUNGKAS -->
                     <div id="view-pamungkas-album" class="view-section">
-                        <div class="playlist-header-view" id="pamungkas-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/pamungkas.jpg" class="playlist-cover-big" id="pamungkas-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="pamungkas-title-view">Pamungkas</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="pamungkas-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="pamungkas-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="pamungkas-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/pamungkas.jpg" class="playlist-cover-big" id="pamungkas-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="pamungkas-title-view">Pamungkas</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="pamungkas-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="pamungkas-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- K3BI -->
                     <div id="view-k3bi-album" class="view-section">
-                        <div class="playlist-header-view" id="k3bi-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kebi.jpg" class="playlist-cover-big" id="k3bi-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="k3bi-title-view">K3bi</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="k3bi-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="k3bi-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="k3bi-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kebi.jpg" class="playlist-cover-big" id="k3bi-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="k3bi-title-view">K3bi</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="k3bi-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="k3bi-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- SAFA -->
                     <div id="view-safa-album" class="view-section">
-                        <div class="playlist-header-view" id="safa-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/safa.jpg" class="playlist-cover-big" id="safa-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="safa-title-view">$afa</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="safa-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="safa-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="safa-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/safa.jpg" class="playlist-cover-big" id="safa-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="safa-title-view">$afa</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="safa-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="safa-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- TUAN 13 -->
                     <div id="view-tuan13-album" class="view-section">
-                        <div class="playlist-header-view" id="tuan13-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/tuan13.jpg" class="playlist-cover-big" id="tuan13-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="tuan13-title-view">Tuantigabelas</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="tuan13-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="tuan13-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="tuan13-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/tuan13.jpg" class="playlist-cover-big" id="tuan13-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="tuan13-title-view">Tuantigabelas</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="tuan13-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="tuan13-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- MAUDY -->
                     <div id="view-maudy-album" class="view-section">
-                        <div class="playlist-header-view" id="maudy-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maudy.jpg" class="playlist-cover-big" id="maudy-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="maudy-title-view">Maudy Ayunda</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="maudy-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="maudy-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="maudy-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maudy.jpg" class="playlist-cover-big" id="maudy-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="maudy-title-view">Maudy Ayunda</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="maudy-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="maudy-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- GLENN -->
                     <div id="view-glenn-album" class="view-section">
-                        <div class="playlist-header-view" id="glenn-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/gleen.jpg" class="playlist-cover-big" id="glenn-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="glenn-title-view">Glenn Fredly</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="glenn-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="glenn-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="glenn-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/gleen.jpg" class="playlist-cover-big" id="glenn-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="glenn-title-view">Glenn Fredly</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="glenn-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="glenn-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- NADIN -->
                     <div id="view-nadin-album" class="view-section">
-                        <div class="playlist-header-view" id="nadin-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/nadin.jpg" class="playlist-cover-big" id="nadin-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="nadin-title-view">Nadin Amizah</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="nadin-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="nadin-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="nadin-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/nadin.jpg" class="playlist-cover-big" id="nadin-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="nadin-title-view">Nadin Amizah</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="nadin-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="nadin-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- SAL PRIADI -->
                     <div id="view-salpriadi-album" class="view-section">
-                        <div class="playlist-header-view" id="salpriadi-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/salpriadi.jpg" class="playlist-cover-big" id="salpriadi-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="salpriadi-title-view">Sal Priadi</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="salpriadi-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="salpriadi-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="salpriadi-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/salpriadi.jpg" class="playlist-cover-big" id="salpriadi-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="salpriadi-title-view">Sal Priadi</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="salpriadi-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="salpriadi-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- JUAN REZA -->
                     <div id="view-juanreza-album" class="view-section">
-                        <div class="playlist-header-view" id="juanreza-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/juan.jpg" class="playlist-cover-big" id="juanreza-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="juanreza-title-view">Juan Reza</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="juanreza-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="juanreza-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="juanreza-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/juan.jpg" class="playlist-cover-big" id="juanreza-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="juanreza-title-view">Juan Reza</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="juanreza-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="juanreza-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- NIKI -->
                     <div id="view-niki-album" class="view-section">
-                        <div class="playlist-header-view" id="niki-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/niki.jpg" class="playlist-cover-big" id="niki-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="niki-title-view">NIKI</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="niki-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="niki-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="niki-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/niki.jpg" class="playlist-cover-big" id="niki-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="niki-title-view">NIKI</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="niki-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="niki-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- FEAST -->
                     <div id="view-feast-album" class="view-section">
-                        <div class="playlist-header-view" id="feast-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/feast.jpg" class="playlist-cover-big" id="feast-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="feast-title-view">Feast</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="feast-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="feast-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="feast-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/feast.jpg" class="playlist-cover-big" id="feast-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="feast-title-view">Feast</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="feast-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="feast-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- THE PANASDALAM BANK -->
                     <div id="view-panasdalam-album" class="view-section">
-                        <div class="playlist-header-view" id="panasdalam-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thepanasdalambank.jpg" class="playlist-cover-big" id="panasdalam-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="panasdalam-title-view">The Panasdalam Bank</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="panasdalam-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="panasdalam-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="panasdalam-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thepanasdalambank.jpg" class="playlist-cover-big" id="panasdalam-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="panasdalam-title-view">The Panasdalam Bank</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="panasdalam-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="panasdalam-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- LOMBA SIHIR -->
                     <div id="view-lombasihir-album" class="view-section">
-                        <div class="playlist-header-view" id="lombasihir-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/lomba.jpg" class="playlist-cover-big" id="lombasihir-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="lombasihir-title-view">Lomba Sihir</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="lombasihir-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="lombasihir-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="lombasihir-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/lomba.jpg" class="playlist-cover-big" id="lombasihir-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="lombasihir-title-view">Lomba Sihir</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="lombasihir-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="lombasihir-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- LAST CHILD -->
                     <div id="view-lastchild-album" class="view-section">
-                        <div class="playlist-header-view" id="lastchild-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/lastchild.jpg" class="playlist-cover-big" id="lastchild-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="lastchild-title-view">Last Child</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="lastchild-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="lastchild-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="lastchild-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/lastchild.jpg" class="playlist-cover-big" id="lastchild-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="lastchild-title-view">Last Child</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="lastchild-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="lastchild-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- FOR REVENGE -->
                     <div id="view-forrevenge-album" class="view-section">
-                        <div class="playlist-header-view" id="forrevenge-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/forrevenge.jpg" class="playlist-cover-big" id="forrevenge-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="forrevenge-title-view">For Revenge</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="forrevenge-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="forrevenge-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="forrevenge-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/forrevenge.jpg" class="playlist-cover-big" id="forrevenge-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="forrevenge-title-view">For Revenge</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="forrevenge-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="forrevenge-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- YOVIE & NUNO -->
                     <div id="view-yovie-album" class="view-section">
-                        <div class="playlist-header-view" id="yovie-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/yovie.jpg" class="playlist-cover-big" id="yovie-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="yovie-title-view">Yovie & Nuno</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="yovie-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="yovie-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="yovie-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/yovie.jpg" class="playlist-cover-big" id="yovie-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="yovie-title-view">Yovie & Nuno</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="yovie-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="yovie-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- VIERRA -->
                     <div id="view-vierra-album" class="view-section">
-                        <div class="playlist-header-view" id="vierra-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/vierra.jpg" class="playlist-cover-big" id="vierra-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="vierra-title-view">Vierra</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="vierra-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="vierra-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="vierra-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/vierra.jpg" class="playlist-cover-big" id="vierra-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="vierra-title-view">Vierra</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="vierra-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="vierra-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- UTOPIA -->
                     <div id="view-utopia-album" class="view-section">
-                        <div class="playlist-header-view" id="utopia-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/utopia.jpg" class="playlist-cover-big" id="utopia-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="utopia-title-view">Utopia</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="utopia-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="utopia-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="utopia-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/utopia.jpg" class="playlist-cover-big" id="utopia-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="utopia-title-view">Utopia</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="utopia-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="utopia-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- JUICY LUCY -->
                     <div id="view-juicylucy-album" class="view-section">
-                        <div class="playlist-header-view" id="juicylucy-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/juicy.jpg" class="playlist-cover-big" id="juicylucy-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="juicylucy-title-view">Juicy Lucy</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="juicylucy-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="juicylucy-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="juicylucy-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/juicy.jpg" class="playlist-cover-big" id="juicylucy-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="juicylucy-title-view">Juicy Lucy</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="juicylucy-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="juicylucy-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- HIVI! -->
                     <div id="view-hivi-album" class="view-section">
-                        <div class="playlist-header-view" id="hivi-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/hivi.jpg" class="playlist-cover-big" id="hivi-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="hivi-title-view">HIVI!</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="hivi-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="hivi-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="hivi-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/hivi.jpg" class="playlist-cover-big" id="hivi-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="hivi-title-view">HIVI!</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="hivi-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="hivi-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- THE LANTIS -->
                     <div id="view-thelantis-album" class="view-section">
-                        <div class="playlist-header-view" id="thelantis-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thelantis.jpg" class="playlist-cover-big" id="thelantis-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="thelantis-title-view">The Lantis</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="thelantis-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="thelantis-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="thelantis-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thelantis.jpg" class="playlist-cover-big" id="thelantis-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="thelantis-title-view">The Lantis</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="thelantis-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="thelantis-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- THE CHANGCUTERS -->
                     <div id="view-thechangcuters-album" class="view-section">
-                        <div class="playlist-header-view" id="thechangcuters-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thechangcuters.jpg" class="playlist-cover-big" id="thechangcuters-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="thechangcuters-title-view">The Changcuters</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="thechangcuters-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="thechangcuters-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="thechangcuters-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thechangcuters.jpg" class="playlist-cover-big" id="thechangcuters-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="thechangcuters-title-view">The Changcuters</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="thechangcuters-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="thechangcuters-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- THE ADAMS -->
                     <div id="view-theadams-album" class="view-section">
-                        <div class="playlist-header-view" id="theadams-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/theadams.jpg" class="playlist-cover-big" id="theadams-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="theadams-title-view">The Adams</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="theadams-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="theadams-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="theadams-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/theadams.jpg" class="playlist-cover-big" id="theadams-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="theadams-title-view">The Adams</h1><div class="playlist-meta"><span style="color: white;">Indonesia</span> • <span id="theadams-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="theadams-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- AVICII -->
                     <div id="view-avicii-album" class="view-section">
-                        <div class="playlist-header-view" id="avicii-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/avicii.jpg" class="playlist-cover-big" id="avicii-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="avicii-title-view">Avicii</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="avicii-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="avicii-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="avicii-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/avicii.jpg" class="playlist-cover-big" id="avicii-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="avicii-title-view">Avicii</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="avicii-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="avicii-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- ADELE -->
                     <div id="view-adele-album" class="view-section">
-                        <div class="playlist-header-view" id="adele-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/adele.jpg" class="playlist-cover-big" id="adele-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="adele-title-view">Adele</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="adele-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="adele-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="adele-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/adele.jpg" class="playlist-cover-big" id="adele-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="adele-title-view">Adele</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="adele-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="adele-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- SHAWN MENDES -->
                     <div id="view-shawnmendes-album" class="view-section">
-                        <div class="playlist-header-view" id="shawnmendes-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/shawn.jpg" class="playlist-cover-big" id="shawnmendes-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="shawnmendes-title-view">Shawn Mendes</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="shawnmendes-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="shawnmendes-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="shawnmendes-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/shawn.jpg" class="playlist-cover-big" id="shawnmendes-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="shawnmendes-title-view">Shawn Mendes</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="shawnmendes-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="shawnmendes-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- JAMES ARTHUR -->
                     <div id="view-jamesarthur-album" class="view-section">
-                        <div class="playlist-header-view" id="jamesarthur-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/james.jpg" class="playlist-cover-big" id="jamesarthur-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="jamesarthur-title-view">James Arthur</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="jamesarthur-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="jamesarthur-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="jamesarthur-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/james.jpg" class="playlist-cover-big" id="jamesarthur-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="jamesarthur-title-view">James Arthur</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="jamesarthur-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="jamesarthur-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- BILLIE EILISH -->
                     <div id="view-billieeilish-album" class="view-section">
-                        <div class="playlist-header-view" id="billieeilish-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg" class="playlist-cover-big" id="billieeilish-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="billieeilish-title-view">Billie Eilish</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="billieeilish-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="billieeilish-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="billieeilish-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg" class="playlist-cover-big" id="billieeilish-cover-view"></div><div class="playlist-info-big"><span>PENYANYI</span><h1 id="billieeilish-title-view">Billie Eilish</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="billieeilish-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="billieeilish-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- THE BEATLES -->
                     <div id="view-beatles-album" class="view-section">
-                        <div class="playlist-header-view" id="beatles-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thebeatles.jpg" class="playlist-cover-big" id="beatles-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="beatles-title-view">The Beatles</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="beatles-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="beatles-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="beatles-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thebeatles.jpg" class="playlist-cover-big" id="beatles-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="beatles-title-view">The Beatles</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="beatles-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="beatles-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- MAROON 5 -->
                     <div id="view-maroon5-album" class="view-section">
-                        <div class="playlist-header-view" id="maroon5-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg" class="playlist-cover-big" id="maroon5-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="maroon5-title-view">Maroon 5</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="maroon5-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="maroon5-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="maroon5-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg" class="playlist-cover-big" id="maroon5-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="maroon5-title-view">Maroon 5</h1><div class="playlist-meta"><span style="color: white;">Asing</span> • <span id="maroon5-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="maroon5-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- NEW: MURIA -->
                     <div id="view-muria-album" class="view-section">
-                        <div class="playlist-header-view" id="muria-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg" class="playlist-cover-big" id="muria-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="muria-title-view">Muria</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="muria-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="muria-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="muria-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg" class="playlist-cover-big" id="muria-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="muria-title-view">Muria</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="muria-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="muria-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- NEW: CHRISYE -->
                     <div id="view-chrisye-album" class="view-section">
-                        <div class="playlist-header-view" id="chrisye-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg" class="playlist-cover-big" id="chrisye-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="chrisye-title-view">Chrisye</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="chrisye-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="chrisye-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="chrisye-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg" class="playlist-cover-big" id="chrisye-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="chrisye-title-view">Chrisye</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="chrisye-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="chrisye-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- NEW: KALEB J -->
                     <div id="view-kalebj-album" class="view-section">
-                        <div class="playlist-header-view" id="kalebj-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg" class="playlist-cover-big" id="kalebj-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="kalebj-title-view">Kaleb J</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="kalebj-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="kalebj-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="kalebj-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg" class="playlist-cover-big" id="kalebj-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="kalebj-title-view">Kaleb J</h1><div class="playlist-meta"><span style="color: white;">Populer Indonesia</span> • <span id="kalebj-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="kalebj-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- NEW: SZA -->
                     <div id="view-sza-album" class="view-section">
-                        <div class="playlist-header-view" id="sza-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg" class="playlist-cover-big" id="sza-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="sza-title-view">SZA</h1><div class="playlist-meta"><span style="color: white;">Populer Asing</span> • <span id="sza-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="sza-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="sza-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg" class="playlist-cover-big" id="sza-cover-view"></div><div class="playlist-info-big"><span>ARTIS</span><h1 id="sza-title-view">SZA</h1><div class="playlist-meta"><span style="color: white;">Populer Asing</span> • <span id="sza-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="sza-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- NEW: THE CRANBERRIES -->
                     <div id="view-cranberries-album" class="view-section">
-                        <div class="playlist-header-view" id="cranberries-header-bg"><button class="back-button" onclick="window.switchView('home')" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg" class="playlist-cover-big" id="cranberries-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="cranberries-title-view">The Cranberries</h1><div class="playlist-meta"><span style="color: white;">Populer Asing</span> • <span id="cranberries-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="cranberries-songs-container"></div></div><br><br><br>
+                        <div class="playlist-header-view" id="cranberries-header-bg"><button class="back-button" onclick="window.goBackFromAlbum()" style="position: absolute; left: 20px; top: 20px; z-index: 100;"><i class="ph ph-arrow-left"></i></button><div class="playlist-cover-wrap"><img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg" class="playlist-cover-big" id="cranberries-cover-view"></div><div class="playlist-info-big"><span>BAND</span><h1 id="cranberries-title-view">The Cranberries</h1><div class="playlist-meta"><span style="color: white;">Populer Asing</span> • <span id="cranberries-count">5 lagu</span></div></div></div><div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="cranberries-songs-container"></div></div><br><br><br>
                     </div>
 
                     <!-- 1. PERUNGGU -->
@@ -9380,7 +9402,24 @@ if (document.readyState === 'loading') {
 
     <!-- FIREBASE & LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+// ===== FRIEND DATA CACHE FOR PERFORMANCE =====
+window.friendCache = {};
+window.cacheFriendData = function(uid, data) {
+    window.friendCache[uid] = {
+        data: data,
+        timestamp: Date.now()
+    };
+};
+window.getCachedFriend = function(uid) {
+    const cached = window.friendCache[uid];
+    // Cache valid for 5 minutes
+    if(cached && (Date.now() - cached.timestamp < 300000)) {
+        return cached.data;
+    }
+    return null;
+};
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, push, update, remove, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
@@ -9399,7 +9438,8 @@ if (document.readyState === 'loading') {
             measurementId: "G-XZ2K3PZ6ZK"
         };
 
-        const app = initializeApp(firebaseConfig);
+        // Initialize Firebase only if not already initialized
+        const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
         const storage = getStorage(app);
         const auth = getAuth(app);
         const db = getDatabase(app);
@@ -11670,6 +11710,11 @@ console.log('   getCurrentSong() - Check what song is detected');
         let isShuffle = false;
         let repeatMode = 0; // 0: Off, 1: All, 2: One
         
+        // --- PLAYLIST CONTEXT TRACKING ---
+        let currentPlaylistContext = null; // { songs: [], currentIndex: 0 }
+        let shuffledOrder = []; // Store shuffled indices when shuffle is on
+        let currentShuffleIndex = 0; // Current position in shuffle order
+        
         // --- SAVE/RESTORE PLAYBACK STATE ---
         function savePlaybackState() {
             if (songs && songs[currentSongIndex]) {
@@ -13667,6 +13712,7 @@ console.log('   getCurrentSong() - Check what song is detected');
         loadPublicPlaylists();
 
         const userRef = ref(db, 'users/' + user.uid);
+        let isInitialLoad = true; // Flag untuk track first load
         onValue(userRef, async (snapshot) => {
             const data = snapshot.val(); // ✅ Ambil data dari snapshot
             if (data) {
@@ -13677,6 +13723,11 @@ console.log('   getCurrentSong() - Check what song is detected');
                         renderSidebarPlaylists(data.playlists || {});
                         renderTrending(); // Update Trending Section
                         setupFriendListeners(); // Start friend listeners
+                        
+                        // Pre-fetch friend data for instant display
+                        setTimeout(() => {
+                            window.prefetchFriendData();
+                        }, 1000); // Delay 1s to not block UI
                         
                         const savedLiked = localStorage.getItem('likedSongs');
                         if (savedLiked) likedSongs = JSON.parse(savedLiked);
@@ -13706,7 +13757,11 @@ console.log('   getCurrentSong() - Check what song is detected');
                         setTimeout(() => {
                             loadingScreen.style.display = 'none';
                             appWrapper.style.display = 'flex';
-                            switchView('home');
+                            // Only switch to home on initial load
+                            if (isInitialLoad) {
+                                switchView('home');
+                                isInitialLoad = false; // Mark as loaded
+                            }
                         }, 10);
 
                         // Setelah data lagu selesai dimuat, lakukan full re-render
@@ -13819,6 +13874,42 @@ console.log('   getCurrentSong() - Check what song is detected');
         
         let unreadMessages = {}; // { friendUid: count }
 
+
+// Pre-fetch friend data when app loads for instant display
+window.prefetchFriendData = function() {
+    if(!auth.currentUser) return;
+    
+    get(ref(db, `users/${auth.currentUser.uid}/friends`)).then(snap => {
+        const friends = snap.val() || {};
+        const friendUids = Object.keys(friends);
+        
+        if(friendUids.length === 0) return;
+        
+        console.log('[Cache] Pre-fetching', friendUids.length, 'friends...');
+        
+        // Batch load all friends
+        const promises = friendUids.map(friendUid => {
+            // Skip if already cached
+            if(window.getCachedFriend(friendUid)) return Promise.resolve();
+            
+            return get(ref(db, `users/${friendUid}`)).then(uSnap => {
+                const u = uSnap.val();
+                if(u) {
+                    window.cacheFriendData(friendUid, u);
+                }
+            }).catch(err => {
+                console.warn('[Cache] Failed to fetch friend:', friendUid, err);
+            });
+        });
+        
+        Promise.all(promises).then(() => {
+            console.log('[Cache] ✅ All friends pre-fetched and cached!');
+        });
+    }).catch(err => {
+        console.error('[Cache] Failed to pre-fetch friends:', err);
+    });
+};
+
 function setupFriendListeners() {
     if(!auth.currentUser) return;
     const myUid = auth.currentUser.uid;
@@ -13867,11 +13958,24 @@ function setupFriendListeners() {
         if(!html) html = `<div style="padding:10px; color:#666; font-size:12px;">${window.t('no-friends-message')}</div>`;
         container.innerHTML = html;
         
-        // Fetch friend details
+        // Fetch friend details with caching
         Object.keys(friends).forEach(friendUid => {
+           // Check cache first
+           const cached = window.getCachedFriend(friendUid);
+           if(cached) {
+               const nameEl = document.getElementById(`friend-name-${friendUid}`);
+               const imgEl = document.getElementById(`friend-img-${friendUid}`);
+               if(nameEl) nameEl.innerText = cached.username;
+               if(imgEl) imgEl.src = cached.profile_picture;
+               return; // Skip Firebase call
+           }
+           
            get(ref(db, `users/${friendUid}`)).then(uSnap => {
                const u = uSnap.val();
                if(u) {
+                   // Cache the data
+                   window.cacheFriendData(friendUid, u);
+                   
                    const nameEl = document.getElementById(`friend-name-${friendUid}`);
                    const imgEl = document.getElementById(`friend-img-${friendUid}`);
                    if(nameEl) nameEl.innerText = u.username;
@@ -14156,6 +14260,10 @@ function openChat(friendUid) {
 window.openChat = openChat;
 
         function closeChat() {
+            // Simpan chat info untuk dibuka kembali nanti jika diperlukan
+            window.lastClosedChatFriendUid = activeChatFriendUid;
+            window.lastClosedChatId = activeChatId;
+            
             document.getElementById('chat-overlay').classList.remove('active');
             activeChatFriendUid = null;
             activeChatId = null;
@@ -14200,11 +14308,14 @@ window.openChat = openChat;
                     // Check if shared content
                     let contentHtml = '<div>' + m.text + '</div>';
                     if(m.shareType) {
+                        console.log('[DEBUG] Message with shareType:', m.shareType);
+                        console.log('[DEBUG] Full message object:', JSON.stringify(m));
+                        
                         let cardHtml = '';
                         if(m.shareType === 'song') {
                             const s = m.shareContent;
                             cardHtml = `
-                                <div class="chat-shared-card" onclick="window.playSpecificSong(${s.id}); window.closeChat();">
+                                <div class="chat-shared-card" onclick="window.playSpecificSong(${s.id}); window.openPlayScreenUnified(); window.closeChat();">
                                     <img src="${s.cover}" class="chat-shared-img" alt="Cover">
                                     <div class="chat-shared-info">
                                         <div class="chat-shared-title">${s.title}</div>
@@ -14224,16 +14335,48 @@ window.openChat = openChat;
                                 </div>
                             `;
                         } else if (m.shareType === 'album') {
-                            const alb = m.shareContent;
-                            cardHtml = `
-                                <div class="chat-shared-card">
-                                    <img src="${alb.cover}" class="chat-shared-img" alt="Album Cover">
-                                    <div class="chat-shared-info">
-                                        <div class="chat-shared-title">${alb.name}</div>
-                                        <div class="chat-shared-sub">Album</div>
+                            const alb = m.shareContent || {};
+                            console.log('[DEBUG] Raw album shareContent:', alb);
+                            console.log('[DEBUG] shareContent is null/undefined?', !m.shareContent);
+                            
+                            if (!m.shareContent) {
+                                console.error('[ERROR] shareContent is missing for album message!');
+                                cardHtml = `
+                                    <div class="chat-shared-card" style="opacity: 0.5; cursor: not-allowed;">
+                                        <div class="chat-shared-info">
+                                            <div class="chat-shared-title">Album (Data Hilang)</div>
+                                            <div class="chat-shared-sub">Data tidak tersedia</div>
+                                        </div>
                                     </div>
-                                </div>
-                            `;
+                                `;
+                            } else {
+                                console.log('[DEBUG] Album has name?', 'name' in alb, '- Value:', alb.name);
+                                console.log('[DEBUG] Album has albumId?', 'albumId' in alb, '- Value:', alb.albumId);
+                                console.log('[DEBUG] Album has cover?', 'cover' in alb, '- Value:', alb.cover);
+                                
+                                // Fallback: Generate albumId dari name jika tidak ada
+                                if (!alb.albumId && alb.name) {
+                                    alb.albumId = alb.name.toLowerCase().replace(/\s+/g, '-').replace(/'/g, '');
+                                    console.log('[DEBUG] Generated albumId from name:', alb.albumId);
+                                }
+                                
+                                // Safety check - jika masih undefined, gunakan placeholder
+                                const safeAlbumId = alb.albumId || 'unknown';
+                                const safeName = alb.name || 'Unknown Album';
+                                const safeCover = alb.cover || 'https://via.placeholder.com/300';
+                                
+                                console.log('[DEBUG] Final values - ID:', safeAlbumId, 'Name:', safeName);
+                                
+                                cardHtml = `
+                                    <div class="chat-shared-card" onclick="console.log('[CLICK] Album ID:', '${safeAlbumId}'); window.openAlbumById('${safeAlbumId}', 'chat'); window.closeChat();">
+                                        <img src="${safeCover}" class="chat-shared-img" alt="Album Cover">
+                                        <div class="chat-shared-info">
+                                            <div class="chat-shared-title">${safeName}</div>
+                                            <div class="chat-shared-sub">Album</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
                         }
                         contentHtml = cardHtml;
                     }
@@ -15850,7 +15993,13 @@ function updateMediaSession() {
                     const shareBtn = document.createElement('button');
                     shareBtn.className = 'share-btn-album';
                     shareBtn.title = 'Bagikan';
-                    shareBtn.onclick = function() { window.alert('Fitur share untuk ' + baseId + ' album segera hadir!'); };
+                    shareBtn.onclick = function() { 
+                        const titleElement = view.querySelector('h1');
+                        const albumName = titleElement ? titleElement.textContent : baseId;
+                        const coverElement = view.querySelector('.playlist-cover-big');
+                        const albumCover = coverElement ? coverElement.src : 'https://picsum.photos/300/300';
+                        window.shareAlbum(albumName, albumCover);
+                    };
                     shareBtn.innerHTML = '<i class="ph ph-share-network" style="font-size: 24px;"></i>';
                     buttonsContainer.appendChild(shareBtn);
                 }
@@ -15994,7 +16143,7 @@ function updateMediaSession() {
         if (item.type === 'song') {
             const s = item.data;
             html += `
-                <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id})">
+                <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id}, true, recentlyPlayed.filter(i => i.type === 'song').map(i => i.data))">
                     <div class="song-index">
                         <span class="index-num">${i + 1}</span>
                         <div class="playing-icon-container" style="display:none;">
@@ -16096,6 +16245,7 @@ function updateMediaSession() {
                         <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-share-network"></i>
                             <span data-i18n="share">Share</span>
+                        </button>
                         <button class="menu-item menu-download-${s.id}" onclick="event.stopPropagation(); window.downloadSongFromMenu(${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-download-simple"></i>
                             <span data-i18n="download-offline">Download for Offline</span>
@@ -16107,7 +16257,7 @@ function updateMediaSession() {
         }
 
         return `
-        <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id})">
+        <div class="song-row" id="row-${s.id}" onclick="window.playFromPlaylist(${s.id}, window.allSongs)">
             <div class="song-index">
                 <span class="index-num">${i + 1}</span>
                 <div class="playing-icon-container" style="display:none;">
@@ -16117,7 +16267,7 @@ function updateMediaSession() {
             <div class="song-info">
                 <img src="${s.cover && s.cover.trim() ? s.cover : 'assets/logo.png'}" alt="art">
                 <div>
-                    <div class="song-title-text" onclick="event.stopPropagation(); window.playSpecificSong(${s.id}); window.openPlayScreenUnified();">
+                    <div class="song-title-text" onclick="event.stopPropagation(); window.playFromPlaylist(${s.id}, window.allSongs); window.openPlayScreenUnified();">
                         ${s.title}
                     </div>
                     <div class="song-artist">${s.artist}</div>
@@ -16151,7 +16301,7 @@ function updateMediaSession() {
 
     container.innerHTML = data.map((s, i) => {
         return `
-        <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id})">
+        <div class="song-row" id="row-${s.id}" onclick="window.playFromPlaylist(${s.id}, window.allSongs)">
             <div class="song-index">
                 <span class="index-num">${i + 1}</span>
                 <div class="playing-icon-container" style="display:none;">
@@ -16190,6 +16340,7 @@ function updateMediaSession() {
                         <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-share-network"></i>
                             <span data-i18n="share">Share</span>
+                        </button>
                         <button class="menu-item menu-download-${s.id}" onclick="event.stopPropagation(); window.downloadSongFromMenu(${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-download-simple"></i>
                             <span data-i18n="download-offline">Download for Offline</span>
@@ -16320,9 +16471,6 @@ function updateMediaSession() {
                         <img src="${band.image}" alt="${band.name}" onload="window.applyCardColor(this)">
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
-                    <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${band.name}', '${band.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                        <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                    </button>
                     <div class="card-title">${band.name}</div>
                     <div class="card-desc">${window.t('band-popular-indonesia')}</div>
                 </div>
@@ -16348,9 +16496,6 @@ function updateMediaSession() {
                                 <img src="${band.image}" alt="${band.name}" onload="window.applyCardColor(this)">
                                 <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                             </div>
-                            <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${band.name}', '${band.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                                <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                            </button>
                             <div class="card-title">${band.name}</div>
                             <div class="card-desc">${window.t('band-popular-indonesia')}</div>
                         </div>
@@ -16400,9 +16545,6 @@ function updateMediaSession() {
                         <img src="${artist.image}" alt="${artist.name}" onload="window.applyCardColor(this)">
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
-                    <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${artist.name}', '${artist.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                        <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                    </button>
                     <div class="card-title">${artist.name}</div>
                     <div class="card-desc">${window.t('artist-popular-indonesia')}</div>
                 </div>
@@ -16428,9 +16570,6 @@ function updateMediaSession() {
                                 <img src="${artist.image}" alt="${artist.name}" onload="window.applyCardColor(this)">
                                 <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                             </div>
-                            <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${artist.name}', '${artist.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                                <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                            </button>
                             <div class="card-title">${artist.name}</div>
                             <div class="card-desc">${window.t('artist-popular-indonesia')}</div>
                         </div>
@@ -16476,9 +16615,6 @@ function updateMediaSession() {
                         <img src="${artist.image}" alt="${artist.name}" onload="window.applyCardColor(this)">
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
-                    <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${artist.name}', '${artist.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                        <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                    </button>
                     <div class="card-title">${artist.name}</div>
                     <div class="card-desc">${window.t('artist-foreign-popular')}</div>
                 </div>
@@ -16504,9 +16640,6 @@ function updateMediaSession() {
                                 <img src="${artist.image}" alt="${artist.name}" onload="window.applyCardColor(this)">
                                 <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                             </div>
-                            <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${artist.name}', '${artist.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                                <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                            </button>
                             <div class="card-title">${artist.name}</div>
                             <div class="card-desc">${window.t('artist-foreign-popular')}</div>
                         </div>
@@ -16553,9 +16686,6 @@ function updateMediaSession() {
                         <img src="${band.image}" alt="${band.name}" onload="window.applyCardColor(this)">
                         <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                     </div>
-                    <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${band.name}', '${band.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                        <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                    </button>
                     <div class="card-title">${band.name}</div>
                     <div class="card-desc">${window.t('band-foreign-popular')}</div>
                 </div>
@@ -16581,9 +16711,6 @@ function updateMediaSession() {
                                 <img src="${band.image}" alt="${band.name}" onload="window.applyCardColor(this)">
                                 <div class="play-btn-overlay"><i class="ph-fill ph-play"></i></div>
                             </div>
-                            <button class="card-share-btn" onclick="event.stopPropagation(); window.shareAlbum('${band.name}', '${band.image}')" title="Bagikan" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: none; border-radius: 50%; width: 32px; height: 32px; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 2; transition: all 0.2s;">
-                                <i class="ph ph-share-network" style="font-size: 18px;"></i>
-                            </button>
                             <div class="card-title">${band.name}</div>
                             <div class="card-desc">${window.t('band-foreign-popular')}</div>
                         </div>
@@ -16601,8 +16728,21 @@ function updateMediaSession() {
              const playlist = currentUserData.playlists[currentPlaylistId];
              const playlistSongs = playlist && Object.values(playlist.songs || {});
              if(playlistSongs && playlistSongs.length > 0) {
-                 const firstSong = (typeof playlistSongs[0] === 'object') ? playlistSongs[0].id : playlistSongs[0];
-                 window.playSpecificSong(firstSong);
+                 // Get full song objects from the global songs array
+                 const playlistSongObjects = playlistSongs
+                     .map(songIdOrObj => {
+                         const idToFind = (typeof songIdOrObj === 'object') ? songIdOrObj.id : songIdOrObj;
+                         return songs.find(s => s.id == idToFind);
+                     })
+                     .filter(song => song !== undefined);
+                 
+                 if(playlistSongObjects.length > 0) {
+                     // Set songs array to playlist songs only
+                     window.currentPlaylistContext = [...songs]; // Backup all songs
+                     songs = playlistSongObjects;
+                     currentSongIndex = 0;
+                     loadSong(0, true);
+                 }
              } else {
                  window.playSpecificSong(songs[0].id);
              }
@@ -17568,9 +17708,17 @@ function renderProfilePublicPlaylists() {
             const songData = songs.find(s => s.id == songId);
             if(!songData) return;
             const userId = auth.currentUser.uid;
+            
+            // Get playlist name for notification
+            const playlist = currentUserData.playlists?.[playlistId];
+            const playlistName = playlist?.name || 'Playlist';
+            
             update(ref(db, 'users/' + userId + '/playlists/' + playlistId + '/songs/' + songId), songData);
             closeModal('add-song-modal');
             addToLiked(songId);
+            
+            // Show success notification
+            window.showToast(`✓ Ditambahkan ke ${playlistName}`, 'info');
         }
 
         window.openAddSongModal = openAddSongModal;
@@ -20228,16 +20376,31 @@ function openArtistBandOverlay(artistData, songsList) {
         document.getElementById('player-artist').style.textDecoration = 'underline';
 
 
-        function playSpecificSong(id) {
+        function playSpecificSong(id, setContext = false, contextSongs = null) {
             // Push to history (avoid duplicates)
             const currentSong = songs[currentSongIndex];
             if(currentSong && currentSong.id !== id) {
                 playHistory.push(currentSong);
             }
 
+            // Set playlist context if provided
+            if(setContext && contextSongs) {
+                currentPlaylistContext = {
+                    songs: contextSongs,
+                    currentIndex: contextSongs.findIndex(s => s.id === id)
+                };
+                console.log('🎵 Playlist context set:', currentPlaylistContext.songs.length, 'songs');
+            }
+
             const idx = songs.findIndex(s => s.id === id);
             if (idx !== -1) {
                 currentSongIndex = idx;
+                
+                // Update context index if we have context
+                if(currentPlaylistContext) {
+                    currentPlaylistContext.currentIndex = currentPlaylistContext.songs.findIndex(s => s.id === id);
+                }
+                
                 loadSong(songs[currentSongIndex]);
                 
                 // Check if song has valid source
@@ -20278,9 +20441,15 @@ function openArtistBandOverlay(artistData, songsList) {
             }
         }
         window.playSpecificSong = playSpecificSong;
+        
+        // Helper function for playing from playlist
+        function playFromPlaylist(songId, contextSongs) {
+            window.playSpecificSong(songId, true, contextSongs);
+        }
+        window.playFromPlaylist = playFromPlaylist;
 
         function playNext() {
-            // Logic: Check Queue -> Check Repeat -> Next Song
+            // Logic: Check Queue -> Check Repeat -> Check Playlist Context -> Next Song
             
             if(repeatMode === 2) {
                 // Repeat One
@@ -20299,18 +20468,51 @@ function openArtistBandOverlay(artistData, songsList) {
 
             // Check Queue First
             if(songQueue.length > 0) {
-                const nextQueued = songQueue.shift(); // Remove from front
+                const nextQueued = songQueue.shift();
                 playSpecificSong(nextQueued.id);
-                renderQueue(); // Update UI to show removal
+                renderQueue();
                 return;
             }
 
-            // Normal Playback
+            // If we have playlist context, play next in playlist
+            if(currentPlaylistContext && currentPlaylistContext.songs.length > 0) {
+                let nextIndex;
+                
+                if(isShuffle) {
+                    // Shuffle mode: use shuffled order
+                    if(shuffledOrder.length === 0 || shuffledOrder.length !== currentPlaylistContext.songs.length) {
+                        // Create new shuffle order
+                        shuffledOrder = Array.from({length: currentPlaylistContext.songs.length}, (_, i) => i);
+                        // Fisher-Yates shuffle
+                        for(let i = shuffledOrder.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]];
+                        }
+                        currentShuffleIndex = shuffledOrder.indexOf(currentPlaylistContext.currentIndex);
+                    }
+                    
+                    currentShuffleIndex = (currentShuffleIndex + 1) % shuffledOrder.length;
+                    nextIndex = shuffledOrder[currentShuffleIndex];
+                } else {
+                    // Sequential mode
+                    nextIndex = currentPlaylistContext.currentIndex + 1;
+                    
+                    // Loop back to start if at end
+                    if(nextIndex >= currentPlaylistContext.songs.length) {
+                        nextIndex = 0;
+                    }
+                }
+                
+                const nextSong = currentPlaylistContext.songs[nextIndex];
+                currentPlaylistContext.currentIndex = nextIndex;
+                playSpecificSong(nextSong.id);
+                return;
+            }
+
+            // Fallback: Normal Playback from global songs array
             if(repeatMode === 1 && currentSongIndex === songs.length - 1) {
-                // Repeat All & Last song -> Go to 0
                 currentSongIndex = 0;
             } else {
-                // Default Next
                 currentSongIndex = (currentSongIndex + 1) % songs.length;
             }
             
@@ -20331,9 +20533,8 @@ function openArtistBandOverlay(artistData, songsList) {
                 updatePlayBtn();
             }
         }
-
         function playPrevious() {
-            // Logic: Check History > 5s? -> Else Prev in list
+            // Logic: Check if >3s -> restart, Check History, Check Playlist Context, Else prev in list
             if(audio.currentTime > 3) {
                 audio.currentTime = 0;
                 return;
@@ -20345,6 +20546,31 @@ function openArtistBandOverlay(artistData, songsList) {
                 return;
             }
 
+            // If we have playlist context, play previous in playlist
+            if(currentPlaylistContext && currentPlaylistContext.songs.length > 0) {
+                let prevIndex;
+                
+                if(isShuffle) {
+                    // Shuffle mode: go back in shuffled order
+                    currentShuffleIndex = (currentShuffleIndex - 1 + shuffledOrder.length) % shuffledOrder.length;
+                    prevIndex = shuffledOrder[currentShuffleIndex];
+                } else {
+                    // Sequential mode
+                    prevIndex = currentPlaylistContext.currentIndex - 1;
+                    
+                    // Loop to end if at start
+                    if(prevIndex < 0) {
+                        prevIndex = currentPlaylistContext.songs.length - 1;
+                    }
+                }
+                
+                const prevSong = currentPlaylistContext.songs[prevIndex];
+                currentPlaylistContext.currentIndex = prevIndex;
+                playSpecificSong(prevSong.id);
+                return;
+            }
+
+            // Fallback: normal previous
             currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
             loadSong(songs[currentSongIndex]); 
             
@@ -20364,7 +20590,6 @@ function openArtistBandOverlay(artistData, songsList) {
                 updatePlayBtn();
             }
         }
-
         function toggleRepeat() {
             repeatMode = (repeatMode + 1) % 3; // 0: Off, 1: All, 2: One
             const btn = document.getElementById('repeat-btn');
@@ -20387,10 +20612,16 @@ function openArtistBandOverlay(artistData, songsList) {
         function toggleShuffle() {
             isShuffle = !isShuffle;
             const btn = document.getElementById('shuffle-btn');
-            if(isShuffle) btn.classList.add('active');
-            else btn.classList.remove('active');
-            // Implementation of shuffle logic is complex with current array structure, 
-            // toggling state is enough for UI requirements.
+            if(isShuffle) {
+                btn.classList.add('active');
+                // Reset shuffle order so it regenerates on next playNext
+                shuffledOrder = [];
+                showToast('🔀 Shuffle aktif', 'success');
+            } else {
+                btn.classList.remove('active');
+                shuffledOrder = [];
+                showToast('➡️ Urutan normal', 'success');
+            }
         }
 
         audio.addEventListener('ended', () => {
@@ -22445,7 +22676,181 @@ console.log('[INFO] Offline mode disabled - app runs online only');
 
         // Tambahkan fungsi-fungsi ini di bagian JavaScript (sebelum closing script tag)
 
+// NAVIGATION: Go back from album to previous view
+window.goBackFromAlbum = function() {
+    const previousView = window.albumPreviousView || 'home';
+    console.log('[DEBUG] Going back to:', previousView);
+    
+    if (previousView === 'chat') {
+        // Re-open chat yang terakhir dibuka
+        const lastChatFriendUid = window.lastClosedChatFriendUid;
+        
+        console.log('[DEBUG] Re-opening chat with friend:', lastChatFriendUid);
+        
+        if (lastChatFriendUid && typeof window.openChat === 'function') {
+            // Switch to home first
+            window.switchView('home');
+            // Small delay to ensure view is switched
+            setTimeout(() => {
+                window.openChat(lastChatFriendUid);
+            }, 100);
+        } else {
+            // Fallback to home
+            console.log('[DEBUG] No chat to re-open, going to home');
+            window.switchView('home');
+        }
+    } else {
+        // Default: kembali ke view yang disimpan atau home
+        window.switchView(previousView);
+    }
+    
+    // Reset previous view
+    window.albumPreviousView = null;
+};
+
 // SHARE CURRENT PLAYLIST
+// Function to open album by ID from chat
+window.openAlbumById = function(albumId, fromView = null) {
+    console.log('[DEBUG] Opening album with ID:', albumId, 'from view:', fromView);
+    
+    // Save previous view for navigation back
+    if (fromView) {
+        window.albumPreviousView = fromView;
+        console.log('[DEBUG] Saved previous view:', fromView);
+    }
+    
+    // Debug: List all available window.open*Album functions
+    const availableFunctions = [];
+    for (let key in window) {
+        if (key.startsWith('open') && key.includes('Album')) {
+            availableFunctions.push(key);
+        }
+    }
+    console.log('[DEBUG] Available window.open*Album functions:', availableFunctions);
+    
+    // Validasi albumId
+    if (!albumId || albumId === 'undefined' || albumId === 'null') {
+        console.error('[ERROR] Invalid album ID:', albumId);
+        showToast('❌ Album ID tidak valid', 'error');
+        return;
+    }
+    
+    // Mapping albumId to function names (string)
+    const functionMap = {
+        'ghani-album': 'openGhaniAlbum',
+        'revan-album': 'openRevanAlbum',
+        'dewa-19': 'openDewaAlbum',
+        'hanung-album': 'openHanungAlbum',
+        'rara-album': 'openRaraAlbum',
+        'queen': 'openQueenAlbum',
+        'the-stone-roses': 'openStoneRosesAlbum',
+        'perunggu': 'openPerungguAlbum',
+        'noah': 'openNoahAlbum',
+        'sheila-on-7': 'openSheilaAlbum',
+        'hindia': 'openHindiaAlbum',
+        'liked-songs': 'openLikedSongs',
+        // Tambahan album baru
+        'naykilla': 'openNaykillaAlbum',
+        'adele': 'openAdeleAlbum',
+        'afgan': 'openAfganAlbum',
+        'arctic-monkeys': 'openArcticAlbum',
+        'astrid': 'openAstridAlbum',
+        'avenged-sevenfold': 'openAvengedAlbum',
+        'avicii': 'openAviciiAlbum',
+        'the-beatles': 'openBeatlesAlbum',
+        'bernardya': 'openBernardyaAlbum',
+        'billie-eilish': 'openBillieEilishAlbum',
+        'bob-marley': 'openBobMarleyAlbum',
+        'bruno-mars': 'openBrunoAlbum',
+        'the-chainsmokers': 'openChainsmokersAlbum',
+        'chrisye': 'openChrisyeAlbum',
+        'cigarettes-after-sex': 'openCigarettesAlbum',
+        'coldplay': 'openColdplayAlbum',
+        'the-cranberries': 'openCranberriesAlbum',
+        'daniel-caesar': 'openDanielAlbum',
+        'drake': 'openDrakeAlbum',
+        'ed-sheeran': 'openEdAlbum',
+        'feast': 'openFeastAlbum',
+        'for-revenge': 'openForRevengeAlbum',
+        'frank-ocean': 'openFrankOceanAlbum',
+        'glenn-fredly': 'openGlennAlbum',
+        'green-day': 'openGreendayAlbum',
+        'hivi': 'openHiviAlbum',
+        'iwan-fals': 'openIwanFalsAlbum',
+        'james-arthur': 'openJamesArthurAlbum',
+        'juan-reza': 'openJuanRezaAlbum',
+        'juicy-luicy': 'openJuicyLucyAlbum',
+        'justin-bieber': 'openJustinAlbum',
+        'kahitna': 'openKahitnaAlbum',
+        'kalebj': 'openKalebjAlbum',
+        'kendrick-lamar': 'openKendrickAlbum',
+        'last-child': 'openLastChildAlbum',
+        'lomba-sihir': 'openLombaSihirAlbum',
+        'my-chemical-romance': 'openMCRAlbum',
+        'mahalini': 'openMahaliniAlbum',
+        'maudy-ayunda': 'openMaudyAlbum',
+        'muria': 'openMuriaAlbum',
+        'niki': 'openNIKIAlbum',
+        'nadin-amizah': 'openNadinAlbum',
+        'neck-deep': 'openNeckDeepAlbum',
+        'nidji': 'openNidjiAlbum',
+        'oasis': 'openOasisAlbum',
+        'olivia-rodrigo': 'openOliviaAlbum',
+        'one-direction': 'openOnedirectionAlbum',
+        'pamungkas': 'openPamungkasAlbum',
+        'panasdalam': 'openPanasdalamAlbum',
+        'radiohead': 'openRadioheadAlbum',
+        'reality-club': 'openRealityClubAlbum',
+        'rex-orange-county': 'openRexAlbum',
+        'sza': 'openSZAAlbum',
+        'safa': 'openSafaAlbum',
+        'sal-priadi': 'openSalPriadiAlbum',
+        'shawn-mendes': 'openShawnMendesAlbum',
+        'slank': 'openSlankAlbum',
+        'the-smiths': 'openSmithsAlbum',
+        'taylor-swift': 'openTaylorAlbum',
+        'tenxi': 'openTenxiAlbum',
+        'the-adams': 'openTheAdamsAlbum',
+        'the-changcuters': 'openTheChangcutersAlbum',
+        'the-lantis': 'openTheLantisAlbum',
+        'the-weeknd': 'openTheWeekndAlbum',
+        'tulus': 'openTulusAlbum',
+        'utopia': 'openUtopiaAlbum',
+        'vierra': 'openVierraAlbum',
+        'yovie-widianto': 'openYovieAlbum'
+    };
+    
+    const functionName = functionMap[albumId];
+    console.log('[DEBUG] Function name for', albumId, ':', functionName);
+    
+    if (!functionName) {
+        console.error('[ERROR] Album ID not found in map:', albumId);
+        console.log('[DEBUG] Available album IDs:', Object.keys(functionMap));
+        showToast('❌ Album tidak ditemukan: ' + albumId, 'error');
+        return;
+    }
+    
+    // Check if function exists on window object
+    console.log('[DEBUG] Checking window.' + functionName);
+    console.log('[DEBUG] typeof window[' + functionName + ']:', typeof window[functionName]);
+    console.log('[DEBUG] window[' + functionName + '] value:', window[functionName]);
+    
+    if (typeof window[functionName] !== 'function') {
+        console.error('[ERROR] Function not found on window:', functionName);
+        showToast('❌ Fungsi album tidak tersedia: ' + functionName, 'error');
+        return;
+    }
+    
+    try {
+        console.log('[DEBUG] Calling window.' + functionName + '()');
+        window[functionName]();
+        console.log('[SUCCESS] Album opened:', albumId);
+    } catch(e) {
+        console.error('[ERROR] Error calling function:', functionName, e);
+        showToast('❌ Gagal membuka album', 'error');
+    }
+};
+
 window.shareCurrentPlaylist = function() {
     if(!currentPlaylistId) {
         showToast('❌ ' + window.t('no-active-playlist'), 'error');
@@ -22455,7 +22860,7 @@ window.shareCurrentPlaylist = function() {
 };
 
 // SHARE ALBUM - Fixed with proper escaping and error handling
-window.shareAlbum = function(albumName, albumCover, songIdStart, songIdEnd) {
+window.shareAlbum = function(albumName, albumCover) {
     if(!auth.currentUser) {
         showToast('❌ Silakan login terlebih dahulu', 'error');
         return;
@@ -22469,11 +22874,12 @@ window.shareAlbum = function(albumName, albumCover, songIdStart, songIdEnd) {
     list.innerHTML = '';
     loading.style.display = 'block';
 
-    // Store data untuk sharing
+    // Store data untuk sharing dengan albumId
     window.currentShareData = {
         type: 'album',
         name: albumName,
-        cover: albumCover
+        cover: albumCover,
+        albumId: albumName.toLowerCase().replace(/\s+/g, '-').replace(/'/g, '')
     };
 
     // Get Friend List
@@ -22489,9 +22895,23 @@ window.shareAlbum = function(albumName, albumCover, songIdStart, songIdEnd) {
         let friendsData = [];
         
         Object.keys(friends).forEach(friendUid => {
+            // Check cache first
+            const cached = window.getCachedFriend(friendUid);
+            if(cached) {
+                friendsData.push({
+                    uid: friendUid,
+                    username: cached.username,
+                    profile_picture: cached.profile_picture
+                });
+                return; // Skip Firebase call
+            }
+            
             const promise = get(ref(db, `users/${friendUid}`)).then(uSnap => {
                 const u = uSnap.val();
                 if (u) {
+                    // Cache the data
+                    window.cacheFriendData(friendUid, u);
+                    
                     friendsData.push({
                         uid: friendUid,
                         username: u.username,
@@ -22521,16 +22941,33 @@ window.shareAlbum = function(albumName, albumCover, songIdStart, songIdEnd) {
     });
 };
 
-// EXECUTE SHARE ALBUM - Works with stored data
 window.executeShareAlbum = function(targetUid) {
     if (!window.currentShareData) {
+        console.error('[ERROR] currentShareData is null/undefined');
         showToast('❌ Data share tidak ditemukan', 'error');
         return;
     }
     
+    const shareData = window.currentShareData;
+    console.log('[DEBUG] currentShareData:', shareData);
+    
+    // Validasi data yang diperlukan
+    if (!shareData.name) {
+        console.error('[ERROR] Album name is missing');
+        showToast('❌ Nama album tidak ditemukan', 'error');
+        return;
+    }
+    
+    // Pastikan albumId ada, jika tidak generate dari name
+    if (!shareData.albumId) {
+        shareData.albumId = shareData.name.toLowerCase().replace(/\s+/g, '-').replace(/'/g, '');
+        console.log('[DEBUG] Generated albumId:', shareData.albumId);
+    }
+    
     const myUid = auth.currentUser.uid;
     const chatId = getChatId(myUid, targetUid);
-    const shareData = window.currentShareData;
+    
+    console.log('[DEBUG] Sharing album:', shareData);
     
     const msgPayload = {
         sender: myUid,
@@ -22539,16 +22976,19 @@ window.executeShareAlbum = function(targetUid) {
         shareType: 'album',
         shareContent: { 
             name: shareData.name, 
-            cover: shareData.cover 
+            cover: shareData.cover,
+            albumId: shareData.albumId  // Tambahkan albumId
         }
     };
+    
+    console.log('[DEBUG] Message payload:', msgPayload);
 
     push(ref(db, `chats/${chatId}/messages`), msgPayload).then(() => {
         closeModal('share-modal');
         showToast('✅ Album berhasil dibagikan!', 'success');
         window.currentShareData = null; // Clean up
     }).catch(error => {
-        console.error('Error sharing album:', error);
+        console.error('[ERROR] Sharing album failed:', error);
         showToast('❌ Gagal membagikan album', 'error');
     });
 };
