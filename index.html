@@ -104,21 +104,21 @@
         /* Mobile: Simplified CSS - let scroll work naturally */
         @media (max-width: 768px) {
             #play-screen-cover {
-                width: 300px !important;
-                height: 300px !important;
+                width: min(80vw, 85vh, 400px) !important;
+                height: min(80vw, 85vh, 400px) !important;
                 margin-bottom: 32px !important;
             }
 
             #play-screen-song-title {
-                font-size: 24px !important;
+                font-size: clamp(22px, 6vw, 32px) !important;
             }
 
             #play-screen-song-artist {
-                font-size: 14px !important;
+                font-size: clamp(14px, 4vw, 18px) !important;
             }
 
             #play-screen-lyrics-title {
-                font-size: 20px !important;
+                font-size: clamp(18px, 4.5vw, 22px) !important;
             }
         }
 
@@ -239,13 +239,14 @@
                 font-size: 32px !important;
                 margin: 16px 0 !important;
                 line-height: 1.4 !important;
+                text-align: center !important;
             }
 
             .play-screen-lyric-line.active {
                 font-size: 38px !important;
             }
 
-            /* Lyrics container centered visually with flex-start for scrolling */
+            /* Lyrics container center-aligned for desktop */
             #play-screen-lyrics-container {
                 width: 100% !important;
                 max-height: 60vh !important;
@@ -325,8 +326,8 @@
 
         @media (max-width: 768px) {
             #play-screen-cover {
-                width: 300px !important;
-                height: 300px !important;
+                width: min(85vw, 380px) !important;
+                height: min(85vw, 380px) !important;
                 margin-bottom: 32px !important;
             }
 
@@ -340,6 +341,24 @@
 
             #play-screen-lyrics-title {
                 font-size: 20px !important;
+            }
+
+            /* Mobile: Lyrics left-aligned */
+            .play-screen-lyric-line {
+                text-align: left !important;
+            }
+
+            #play-screen-lyrics-container {
+                text-align: left !important;
+                align-items: flex-start !important;
+            }
+            /* Mobile: Simple highlight - hanya nyalakan text tanpa perbesar */
+            .play-screen-lyric-line.active {
+                font-size: 18px !important;
+                font-weight: 400 !important;
+                color: white !important;
+                text-shadow: 0 0 16px rgba(255, 255, 255, 0.6) !important;
+                transform: none !important;
             }
         }
 
@@ -1319,6 +1338,42 @@
             background-color: var(--primary-red);
             animation: bounce 0.5s infinite ease-in-out;
         }
+
+        /* Swipe to Queue Feature */
+        .song-row {
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .song-row.swiping {
+            transition: none;
+        }
+        
+        .song-row-swipe-indicator {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            background: linear-gradient(90deg, transparent, var(--primary-red));
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .song-row.swiping .song-row-swipe-indicator {
+            opacity: 1;
+        }
+        
+        .song-row-swipe-indicator i {
+            color: white;
+            font-size: 24px;
+        }
         .bar:nth-child(1) { animation-delay: 0.1s; height: 5px; }
         .bar:nth-child(2) { animation-delay: 0.2s; height: 10px; }
         .bar:nth-child(3) { animation-delay: 0.3s; height: 8px; }
@@ -1752,6 +1807,7 @@
             font-weight: 400;
             color: rgba(255,255,255,0.85);
             transition: all 0.3s ease;
+            text-align: left;
         }
 
         .art-lyrics-wrapper .lyrics-line.current-line {
@@ -6002,6 +6058,7 @@ input:checked + .toggle-slider:before {
     transition: all 0.3s ease;
     border-radius: 4px;
     color: var(--text-muted);
+    text-align: left;
 }
 
 .lyrics-line:hover {
@@ -6594,6 +6651,7 @@ input:checked + .toggle-slider:before {
     transition: all 0.3s ease;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     letter-spacing: -0.5px;
+    text-align: left;
 }
 
 .new-lyrics-line:hover {
@@ -6795,6 +6853,19 @@ window.openSheilaAlbum = window.openSheilaAlbum || function() {};
 window.openHindiaAlbum = window.openHindiaAlbum || function() {};
 window.scrollPositions = window.scrollPositions || {};
 
+// ===== SEEK TO LYRIC TIME FUNCTION =====
+function seekToLyricTime(timeInSeconds) {
+    const audio = document.getElementById('audio-player');
+    if (audio && audio.duration) {
+        audio.currentTime = timeInSeconds;
+        // If audio is paused, play it
+        if (audio.paused) {
+            audio.play().catch(err => console.warn('Play failed:', err));
+        }
+        console.log(`⏩ Seeked to ${timeInSeconds}s`);
+    }
+}
+
 // ===== SILENT AUDIO TO KEEP APP ALIVE =====
 // Ini adalah trik untuk mencegah browser membunuh audio setelah 5 menit
 const silentAudio = new Audio();
@@ -6851,217 +6922,7 @@ function stopSilentAudio() {
 
 // ===== LYRICS DATA AND FUNCTIONS (Moved to top for proper loading order) =====
 // ===== LYRICS DATA FOR PERUNGGU =====
-const songLyrics = {
-    31: {  // 33x
-        title: "33x",
-        artist: "Perunggu",
-        lyrics: `[00:19.89] Risalah terikatnya
-[00:24.56] Batin dan raga yang mengunci
-[00:29.36] Diatas Sang Maha Daya
-[00:33.24] Semua kendali terambil alih
-[00:38.82] Jikalau kau keluhkan
-[00:43.58] Dengung sumbang yang mengganggu
-[00:48.31] Buka lagi visimu
-[00:52.22] Kau tahu mana urutan satu
-[00:58.95] Diantara pusaran nirfungsi
-[01:06.54] Petakan semua lagi
-[01:11.02] Titik tuju yang t'lah terpatri
-[01:17.66] Melamban bukanlah hal yang tabu
-[01:25.38] Kadang itu yang kau butuh
-[01:30.34] Bersandar hibahkan bebanmu
-[01:35.56] Rotasikan pandanganmu
-[01:40.35] Ambil sudut yang terbaru
-[01:45.19] Belum pernah kau coba
-[01:48.83] Lihat semua bukan dari matamu
-[01:54.67] Kelak kau kan mengingat
-[01:59.37] Yang membawamu kesini
-[02:04.16] Kami pernah disitu
-[02:07.77] Di posisimu
-[02:10.41] Helakan kesahmu
-[02:19.48] Diantara pusaran nirfungsi
-[02:27.04] Petakan semua lagi
-[02:31.51] Titik tuju yang t'lah terpatri
-[02:38.48] Melamban bukanlah hal yang tabu
-[02:46.15] Kadang itu yang kau butuh
-[02:50.63] Bersandar hibahkan bebanmu
-[02:57.51] Tak perlu kau berhenti kurasi
-[03:04.95] Ini hanya sementara
-[03:09.61] Bukan ujung dari rencana
-[03:16.37] Jalanmu kan sepanjang niatmu
-[03:23.72] Simpan tegar dalam hati
-[03:28.57] Dua sembilan kau terus mencari
-[04:11.48] Sebutlah namaNya
-[04:15.10] Tetap di jalanNya
-[04:20.38] Kelak kau mengingat
-[04:25.40] Kau akan teringat
-[04:30.43] Sebutlah namaNya
-[04:34.81] Tetap di jalanNya
-[04:39.31] Kelak kau mengingat
-[04:44.09] Kau akan teringat
-[04:49.00] Sebutlah namaNya
-[04:53.85] Tetap di jalanNya
-[04:58.35] Kelak kau mengingat
-[05:03.15] Kau akan teringat
-[05:08.16] Sebutkanlah namaNya
-[05:12.88] Resapilah jalanNya
-[05:17.32] Kelak kau mengingat
-[05:21.83] Kau akan teringat
-[05:48.04] Terus berenang
-[05:52.79] Lanjutlah mendaki
-[06:06.74] Terus berenang
-[06:11.81] Lanjutlah mendaki
-[06:25.83] Terus berenang
-[06:30.63] Lanjutlah mendaki
-[06:44.98] Terus berenang
-[06:49.48] Lanjutlah mendaki`
-    },
-    32: {  // Tapi
-        title: "Tapi",
-        artist: "Perunggu",
-        lyrics: `[00:06.85] Besok lusa aku ke Jakarta
-[00:14.10] Memulai lagi semuanya di sana
-[00:20.18] Kakak bilang siap-siap saja
-[00:27.17] Membatin, ku ingin semua batal juga
-[00:46.19] Bandung masih memelukku erat
-[00:53.15] Sementara ku masih ingin lewat Bubat
-[00:59.19] Mungkin untuk terakhir kalinya
-[01:06.32] Atau mungkin minggu depan ku pulang saja?
-[01:14.15] Tapi
-[01:17.86] Dunia boleh saja menahanku
-[01:24.02] Atau perlahan bongkar mimpiku
-[01:30.76] Dunia boleh saja menahanku
-[01:37.26] Kupunya doa Ibu
-[02:01.44] Rupanya susah memang yang kucari
-[02:08.39] Tak bisa andalkan siapa-siapa lagi
-[02:14.35] Selain akal dan hati nurani
-[02:21.20] Selain sarapan porsi tukang gali
-[02:29.33] Tapi
-[02:33.15] Dunia boleh saja menahanku
-[02:39.39] Atau perlahan bongkar mimpiku
-[02:45.96] Dunia boleh saja melawanku
-[02:52.34] Kupunya doa Ibu
-[02:58.94] Dunia boleh saja menahanku
-[03:05.48] Kupunya doa Ibu
-[03:12.16] Dunia boleh saja menahanku
-[03:18.45] Kupunya doa Ibu
-[03:25.17] Dunia boleh saja melawanku
-[03:31.73] Kupunya doa Ibu`
-    },
-    33: {  // Ini Abadi
-        title: "Ini Abadi",
-        artist: "Perunggu",
-        lyrics: `[00:05.27] Dihentak sunyi
-[00:08.73] Geram-gusarmu mulai
-[00:14.31] Gerayangi kupingku
-[00:19.81] Dibungkam lagi
-[00:23.64] Janji yang sumbang itu
-[00:29.06] Tak semenarik dulu
-[00:34.42] Sejuk wangimu
-[00:38.32] Tersisa di sela-sela
-[00:44.13] Baju hangatku
-[00:49.41] Terakhir kali
-[00:53.07] Kita bicarakan semua
-[00:58.52] Besok 'kan bagaimana?
-[01:04.13] Lihatlah semua sudut itu
-[01:11.54] Bandung 'kan selalu memelukmu
-[01:18.98] Dinginnya hangatkanmu selalu
-[01:26.35] Dilengkapi lapisan selimut
-[01:31.99] Yang berupa dekapan nadi yang mengalir
-[01:42.84] Menjadi seruan di hati
-[01:50.29] Bermuarakan kabar baru
-[01:57.87] Tentang mimpi berkecukupan
-[02:05.08] Tanpa harus lembur lagi, ke Gambir lagi
-[02:16.38] Senin pagi, dilanjut taksi, tenangkanlah
-[02:27.30] Ini abadi
-[02:34.84] Wo-oh-oh-uh
-[02:44.17] Ho-oh-ho-uh (abadi)
-[02:49.77] Oh-ho-oh-uh (abadi)
-[02:54.46] (Abadi, abadi)
-[03:00.72] (Abadi) ho-uh (abadi) ho-ho
-[03:09.15] (Abadi, abadi)
-[03:16.42] (Abadi) ho-uh (abadi) ho-ho
-[03:23.87] (Abadi, abadi)`
-    },
-    35: {  // Pastikan Riuh Akhiri Malammu
-        title: "Pastikan Riuh Akhiri Malammu",
-        artist: "Perunggu",
-        lyrics: `[00:01.08] Tumbuhlah mendaki
-[00:09.65] Seribu upaya 'kan kau nikmati
-[00:18.55] Besok hari Senin
-[00:27.30] Kutemani senyummu seperti kemarin
-[00:36.25] Silih berganti ruang kaupenuhi
-[00:44.71] Ku perlu hadir di semua yang kau tangisi
-[00:53.49] Panggil aku kapanpun kutemani
-[01:02.05] Pastikan riuh akhiri malammu lagi
-[01:11.32] Melantunlah semerdu mungkin (melantunlah)
-[01:20.23] Merdumu yang buatku pulih (melantunlah)
-[01:28.94] Genggam jariku seeratnya (melantunlah)
-[01:37.69] Kubuat angin berpihak gerak searah
-[02:20.94] Silih berganti ruang kaupenuhi
-[02:29.39] Ku perlu hadir di semua yang kau tangisi
-[02:38.05] Panggil aku kapanpun kutemani
-[02:47.04] Pastikan riuh akhiri malammu lagi
-[02:56.10] Melantunlah semerdu mungkin (melantunlah)
-[03:05.09] Merdumu yang buatku pulih (melantunlah)
-[03:13.46] Genggam jariku seeratnya (melantunlah)
-[03:22.45] Kubuat angin berpihak gerak searah
-[03:30.92] Melantunlah semerdu mungkin (melantunlah)
-[03:39.63] Merdumu yang buatku pulih (melantunlah)
-[03:48.66] Genggam jariku seeratnya (melantunlah)
-[03:57.46] Kubuat angin berpihak gerak searah`
-    },
-    38: {  // Menyala
-        title: "Menyala",
-        artist: "Perunggu",
-        lyrics: `[00:05.71] Peran yang tak berbatas benahi
-[00:16.58] Rasa kalut mendalam mencabik
-[00:25.84] Mulailah hela nafas tabrak titik terang
-[00:32.55] Diam lantas lelah kau jadikan teman
-[00:39.53] Menahan semua duka sendiri
-[00:50.83] Berjabat tangan dengan sang perih
-[00:59.47] Mulailah pelan gontai
-[01:03.56] Berat langkah mulai
-[01:06.17] Paksa bantai dobrak semua halangan
-[01:12.12] Merah menyala
-[01:17.82] Menyala
-[01:20.55] Menyala
-[01:23.54] Merah menjelma
-[01:29.09] Benderang
-[01:31.86] Sinarnya
-[01:47.17] Semua yang tlah kau reka kembali
-[01:58.52] Pastikan mereka juga mengerti
-[02:07.32] Mulailah pelan gontai
-[02:11.54] Berat langkah mulai
-[02:14.24] Paksa bantai dobrak semua halangan
-[02:19.80] Merah menyala
-[02:25.42] Menyala
-[02:28.33] Menyala
-[02:31.24] Merah menjelma
-[02:36.81] Benderang
-[02:39.60] Sinarnya
-[02:42.55] Merah menyala
-[02:48.72] Menyala
-[02:50.99] Menyala
-[02:53.94] Merah menjelma
-[02:59.32] Benderang
-[03:02.11] Sinar`
-    }
-};
 
-// Function to get lyrics for a song
-window.getSongLyrics = function(songId) {
-    console.log('[DEBUG] getSongLyrics called with:', songId, 'Type:', typeof songId);
-    console.log('[DATA] Available song IDs:', Object.keys(songLyrics));
-    
-    // Try both as-is and as number
-    let result = songLyrics[songId];
-    if (!result && typeof songId === 'string') {
-        result = songLyrics[parseInt(songId)];
-    }
-    
-    console.log('[RESULT] Result:', result ? '✅ Found' : '❌ Not found');
-    return result || null;
-};
 
 // Function to parse synced lyrics (LRC format)
 function parseLyrics(lrcText) {
@@ -7084,33 +6945,56 @@ function parseLyrics(lrcText) {
 }
 
 // Update lyrics display when song changes
-function updateLyricsDisplay(songId) {
-    console.log('[MUSIC] updateLyricsDisplay called with songId:', songId, 'Type:', typeof songId);
+function updateLyricsDisplay(song) {
+    console.log('[MUSIC] updateLyricsDisplay called with song:', song);
     
-    const lyricsData = window.getSongLyrics(songId);
+    // Get song title - handle both direct call with song object or legacy ID
+    let songTitle;
+    if (typeof song === 'object' && song !== null) {
+        songTitle = song.title;
+    } else {
+        // Legacy support: if called with ID, try to find song
+        console.log('[WARN] updateLyricsDisplay called with ID instead of song object');
+        return;
+    }
     
-    if (!lyricsData) {
-        console.log('❌ No lyrics data found for song ID:', songId);
+    if (!songTitle) {
+        console.log('❌ No song title found');
+        window.currentParsedLyrics = null;
+        window.currentPerungguLyrics = null;
+        return;
+    }
+    
+    console.log('[LOOKUP] Searching for lyrics for title:', songTitle);
+    
+    // Check if lyrics exist in lyricsDatabase
+    if (typeof lyricsDatabase === 'undefined') {
+        console.log('❌ lyricsDatabase not defined');
+        return;
+    }
+    
+    const lyricsData = lyricsDatabase[songTitle];
+    
+    if (!lyricsData || !lyricsData.lines) {
+        console.log('❌ No lyrics data found for song title:', songTitle);
         // Clear stored lyrics
         window.currentParsedLyrics = null;
         window.currentPerungguLyrics = null;
         return;
     }
     
-    console.log('[OK] Loading lyrics for:', lyricsData.title, 'by', lyricsData.artist);
+    console.log('[OK] Loading lyrics for:', songTitle, '(' + lyricsData.lines.length + ' lines)');
     
-    const parsedLyrics = parseLyrics(lyricsData.lyrics);
+    // Use lines directly from lyricsDatabase (already parsed)
+    const parsedLyrics = lyricsData.lines;
     
-    // Store parsed lyrics for sync (in both formats)
+    // Store parsed lyrics for sync
     window.currentParsedLyrics = parsedLyrics;
     window.currentLyricsIndex = 0;
     
     // Also store in a format compatible with renderArtLyricsContent
     window.currentPerungguLyrics = {
-        lines: parsedLyrics.map(line => ({
-            text: line.text,
-            time: line.time
-        }))
+        lines: parsedLyrics
     };
     
     console.log('[OK] Lyrics stored in memory:', parsedLyrics.length, 'lines');
@@ -7122,7 +7006,14 @@ function updateLyricsDisplay(songId) {
         console.log('[UI] art-lyrics-content found, rendering immediately');
         let html = '';
         parsedLyrics.forEach((line, index) => {
-            html += `<div class="lyrics-line" data-time="${line.time}" data-index="${index}">${line.text}</div>`;
+            // Escape HTML entities to prevent syntax errors
+            const escapedText = String(line.text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            html += `<div class="lyrics-line" data-time="${line.time}" data-index="${index}">${escapedText}</div>`;
         });
         artLyricsContent.innerHTML = html;
     } else {
@@ -7196,8 +7087,6 @@ if (document.readyState === 'loading') {
 } else {
     initLyricsSystem();
 }
-
-console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'songs');
 
 // ===== END LYRICS SECTION =====
 
@@ -8919,7 +8808,7 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
             <!-- SCREEN 1: ALBUM VIEW -->
             <div id="play-screen-album" style="width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; scroll-snap-align: start; scroll-snap-stop: always;">
                 <!-- Album Art -->
-                <img id="play-screen-cover" src="" style="width: 360px; height: 360px; border-radius: 20px; object-fit: cover; box-shadow: 0 30px 80px rgba(0,0,0,0.95); margin-bottom: 40px;">
+                <img id="play-screen-cover" src="" style="width: min(85vw, 380px); height: min(85vw, 380px); border-radius: 20px; object-fit: cover; box-shadow: 0 30px 80px rgba(0,0,0,0.95); margin-bottom: 40px;">
                 
                 <!-- Title & Artist -->
                 <div style="text-align: center; margin-bottom: 30px;">
@@ -9125,8 +9014,8 @@ console.log('[OK] Perunggu lyrics loaded:', Object.keys(songLyrics).length, 'son
                 <div style="position:absolute; top:0; left:0; right:0; height:80px; background:linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%); z-index:2; pointer-events:none;"></div>
                 
                 <!-- Lyrics scroll container -->
-                <div id="art-lyrics-scroll" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow-y:auto; width:100%; position:relative;">
-                    <div id="art-lyrics-content" class="lyrics-text" style="color: rgba(255,255,255,0.6); text-align:center; display:flex; flex-direction:column; gap:20px;"></div>
+                <div id="art-lyrics-scroll" style="flex:1; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; overflow-y:auto; width:100%; position:relative; padding-left:40px;">
+                    <div id="art-lyrics-content" class="lyrics-text" style="color: rgba(255,255,255,0.6); text-align:left; display:flex; flex-direction:column; gap:20px; width:100%;"></div>
                 </div>
 
                 <!-- Fade bottom -->
@@ -10384,7 +10273,7 @@ console.log('   getCurrentSong() - Check what song is detected');
             { title: "Arjuna", src: "arjuna.mp3" },
             { title: "Kamulah Satu-Satunya", src: "kamulahsatu-satunya.mp3" },
             { title: "Cukup Siti Nurbaya", src: "cukupsitinurbaya.mp3" },
-            { title: "Takkan Ada Cinta Yang Lain", src: "takkanadacintayanglain.mp3" },
+            { title: "Sedang Ingin Bercinta", src: "sedanginginbercinta.mp3" },
             { title: "Mistikus Cinta", src: "mistikuscinta.mp3" }
         ];
         dewaRaw.forEach((item, i) => {
@@ -12023,8 +11912,1523 @@ console.log('   getCurrentSong() - Check what song is detected');
                     { text: "Kau tahu kau yang tlah mengubahku", time: 228.11 },
                     { text: "", time: 238.34 }
                 ]
-            }
-        };
+            },
+            "33x": {
+                lines: [
+                    { text: "Risalah terikatnya", time: 19.89 },
+                    { text: "Batin dan raga yang mengunci", time: 24.56 },
+                    { text: "Diatas Sang Maha Daya", time: 29.36 },
+                    { text: "Semua kendali terambil alih", time: 33.24 },
+                    { text: "Jikalau kau keluhkan", time: 38.82 },
+                    { text: "Dengung sumbang yang mengganggu", time: 43.58 },
+                    { text: "Buka lagi visimu", time: 48.31 },
+                    { text: "Kau tahu mana urutan satu", time: 52.22 },
+                    { text: "Diantara pusaran nirfungsi", time: 58.95 },
+                    { text: "Petakan semua lagi", time: 66.54 },
+                    { text: "Titik tuju yang t'lah terpatri", time: 71.02 },
+                    { text: "Melamban bukanlah hal yang tabu", time: 77.66 },
+                    { text: "Kadang itu yang kau butuh", time: 85.38 },
+                    { text: "Bersandar hibahkan bebanmu", time: 90.34 },
+                    { text: "Rotasikan pandanganmu", time: 95.56 },
+                    { text: "Ambil sudut yang terbaru", time: 100.35 },
+                    { text: "Belum pernah kau coba", time: 105.19 },
+                    { text: "Lihat semua bukan dari matamu", time: 108.83 },
+                    { text: "Kelak kau kan mengingat", time: 114.67 },
+                    { text: "Yang membawamu kesini", time: 119.37 },
+                    { text: "Kami pernah disitu", time: 124.16 },
+                    { text: "Di posisimu", time: 127.77 },
+                    { text: "Helakan kesahmu", time: 130.41 },
+                    { text: "Diantara pusaran nirfungsi", time: 139.48 },
+                    { text: "Petakan semua lagi", time: 147.04 },
+                    { text: "Titik tuju yang t'lah terpatri", time: 151.51 },
+                    { text: "Melamban bukanlah hal yang tabu", time: 158.48 },
+                    { text: "Kadang itu yang kau butuh", time: 166.15 },
+                    { text: "Bersandar hibahkan bebanmu", time: 170.63 },
+                    { text: "Tak perlu kau berhenti kurasi", time: 177.51 },
+                    { text: "Ini hanya sementara", time: 184.95 },
+                    { text: "Bukan ujung dari rencana", time: 189.61 },
+                    { text: "Jalanmu kan sepanjang niatmu", time: 196.37 },
+                    { text: "Simpan tegar dalam hati", time: 203.72 },
+                    { text: "Dua sembilan kau terus mencari", time: 208.57 },
+                    { text: "Sebutlah namaNya", time: 251.48 },
+                    { text: "Tetap di jalanNya", time: 255.1 },
+                    { text: "Kelak kau mengingat", time: 260.38 },
+                    { text: "Kau akan teringat", time: 265.4 },
+                    { text: "Sebutlah namaNya", time: 270.43 },
+                    { text: "Tetap di jalanNya", time: 274.81 },
+                    { text: "Kelak kau mengingat", time: 279.31 },
+                    { text: "Kau akan teringat", time: 284.09 },
+                    { text: "Sebutlah namaNya", time: 289.0 },
+                    { text: "Tetap di jalanNya", time: 293.85 },
+                    { text: "Kelak kau mengingat", time: 298.35 },
+                    { text: "Kau akan teringat", time: 303.15 },
+                    { text: "Sebutkanlah namaNya", time: 308.16 },
+                    { text: "Resapilah jalanNya", time: 312.88 },
+                    { text: "Kelak kau mengingat", time: 317.32 },
+                    { text: "Kau akan teringat", time: 321.83 },
+                    { text: "Terus berenang", time: 348.04 },
+                    { text: "Lanjutlah mendaki", time: 352.79 },
+                    { text: "Terus berenang", time: 366.74 },
+                    { text: "Lanjutlah mendaki", time: 371.81 },
+                    { text: "Terus berenang", time: 385.83 },
+                    { text: "Lanjutlah mendaki", time: 390.63 },
+                    { text: "Terus berenang", time: 404.98 },
+                    { text: "Lanjutlah mendaki", time: 409.48 }
+                ]
+            },
+            "Tapi": {
+                lines: [
+                    { text: "Besok lusa aku ke Jakarta", time: 6.85 },
+                    { text: "Memulai lagi semuanya di sana", time: 14.1 },
+                    { text: "Kakak bilang siap-siap saja", time: 20.18 },
+                    { text: "Membatin, ku ingin semua batal juga", time: 27.17 },
+                    { text: "Bandung masih memelukku erat", time: 46.19 },
+                    { text: "Sementara ku masih ingin lewat Bubat", time: 53.15 },
+                    { text: "Mungkin untuk terakhir kalinya", time: 59.19 },
+                    { text: "Atau mungkin minggu depan ku pulang saja?", time: 66.32 },
+                    { text: "Tapi", time: 74.15 },
+                    { text: "Dunia boleh saja menahanku", time: 77.86 },
+                    { text: "Atau perlahan bongkar mimpiku", time: 84.02 },
+                    { text: "Dunia boleh saja menahanku", time: 90.76 },
+                    { text: "Kupunya doa Ibu", time: 97.26 },
+                    { text: "Rupanya susah memang yang kucari", time: 121.44 },
+                    { text: "Tak bisa andalkan siapa-siapa lagi", time: 128.39 },
+                    { text: "Selain akal dan hati nurani", time: 134.35 },
+                    { text: "Selain sarapan porsi tukang gali", time: 141.2 },
+                    { text: "Tapi", time: 149.33 },
+                    { text: "Dunia boleh saja menahanku", time: 153.15 },
+                    { text: "Atau perlahan bongkar mimpiku", time: 159.39 },
+                    { text: "Dunia boleh saja melawanku", time: 165.96 },
+                    { text: "Kupunya doa Ibu", time: 172.34 },
+                    { text: "Dunia boleh saja menahanku", time: 178.94 },
+                    { text: "Kupunya doa Ibu", time: 185.48 },
+                    { text: "Dunia boleh saja menahanku", time: 192.16 },
+                    { text: "Kupunya doa Ibu", time: 198.45 },
+                    { text: "Dunia boleh saja melawanku", time: 205.17 },
+                    { text: "Kupunya doa Ibu", time: 211.73 }
+                ]
+            },
+            "Ini Abadi": {
+                lines: [
+                    { text: "Dihentak sunyi", time: 5.27 },
+                    { text: "Geram-gusarmu mulai", time: 8.73 },
+                    { text: "Gerayangi kupingku", time: 14.31 },
+                    { text: "Dibungkam lagi", time: 19.81 },
+                    { text: "Janji yang sumbang itu", time: 23.64 },
+                    { text: "Tak semenarik dulu", time: 29.06 },
+                    { text: "Sejuk wangimu", time: 34.42 },
+                    { text: "Tersisa di sela-sela", time: 38.32 },
+                    { text: "Baju hangatku", time: 44.13 },
+                    { text: "Terakhir kali", time: 49.41 },
+                    { text: "Kita bicarakan semua", time: 53.07 },
+                    { text: "Besok 'kan bagaimana?", time: 58.52 },
+                    { text: "Lihatlah semua sudut itu", time: 64.13 },
+                    { text: "Bandung 'kan selalu memelukmu", time: 71.54 },
+                    { text: "Dinginnya hangatkanmu selalu", time: 78.98 },
+                    { text: "Dilengkapi lapisan selimut", time: 86.35 },
+                    { text: "Yang berupa dekapan nadi yang mengalir", time: 91.99 },
+                    { text: "Menjadi seruan di hati", time: 102.84 },
+                    { text: "Bermuarakan kabar baru", time: 110.29 },
+                    { text: "Tentang mimpi berkecukupan", time: 117.87 },
+                    { text: "Tanpa harus lembur lagi, ke Gambir lagi", time: 125.08 },
+                    { text: "Senin pagi, dilanjut taksi, tenangkanlah", time: 136.38 },
+                    { text: "Ini abadi", time: 147.3 },
+                    { text: "Wo-oh-oh-uh", time: 154.84 },
+                    { text: "Ho-oh-ho-uh (abadi)", time: 164.17 },
+                    { text: "Oh-ho-oh-uh (abadi)", time: 169.77 },
+                    { text: "(Abadi, abadi)", time: 174.46 },
+                    { text: "(Abadi) ho-uh (abadi) ho-ho", time: 180.72 },
+                    { text: "(Abadi, abadi)", time: 189.15 },
+                    { text: "(Abadi) ho-uh (abadi) ho-ho", time: 196.42 },
+                    { text: "(Abadi, abadi)", time: 203.87 }
+                ]
+            },
+            "Pastikan Riuh Akhiri Malammu": {
+                lines: [
+                    { text: "Tumbuhlah mendaki", time: 1.08 },
+                    { text: "Seribu upaya 'kan kau nikmati", time: 9.65 },
+                    { text: "Besok hari Senin", time: 18.55 },
+                    { text: "Kutemani senyummu seperti kemarin", time: 27.3 },
+                    { text: "Silih berganti ruang kaupenuhi", time: 36.25 },
+                    { text: "Ku perlu hadir di semua yang kau tangisi", time: 44.71 },
+                    { text: "Panggil aku kapanpun kutemani", time: 53.49 },
+                    { text: "Pastikan riuh akhiri malammu lagi", time: 62.05 },
+                    { text: "Melantunlah semerdu mungkin (melantunlah)", time: 71.32 },
+                    { text: "Merdumu yang buatku pulih (melantunlah)", time: 80.23 },
+                    { text: "Genggam jariku seeratnya (melantunlah)", time: 88.94 },
+                    { text: "Kubuat angin berpihak gerak searah", time: 97.69 },
+                    { text: "Silih berganti ruang kaupenuhi", time: 140.94 },
+                    { text: "Ku perlu hadir di semua yang kau tangisi", time: 149.39 },
+                    { text: "Panggil aku kapanpun kutemani", time: 158.05 },
+                    { text: "Pastikan riuh akhiri malammu lagi", time: 167.04 },
+                    { text: "Melantunlah semerdu mungkin (melantunlah)", time: 176.1 },
+                    { text: "Merdumu yang buatku pulih (melantunlah)", time: 185.09 },
+                    { text: "Genggam jariku seeratnya (melantunlah)", time: 193.46 },
+                    { text: "Kubuat angin berpihak gerak searah", time: 202.45 },
+                    { text: "Melantunlah semerdu mungkin (melantunlah)", time: 210.92 },
+                    { text: "Merdumu yang buatku pulih (melantunlah)", time: 219.63 },
+                    { text: "Genggam jariku seeratnya (melantunlah)", time: 228.66 },
+                    { text: "Kubuat angin berpihak gerak searah", time: 237.46 }
+                ]
+            },
+            "Menyala": {
+                lines: [
+                    { text: "Peran yang tak berbatas benahi", time: 5.71 },
+                    { text: "Rasa kalut mendalam mencabik", time: 16.58 },
+                    { text: "Mulailah hela nafas tabrak titik terang", time: 25.84 },
+                    { text: "Diam lantas lelah kau jadikan teman", time: 32.55 },
+                    { text: "Menahan semua duka sendiri", time: 39.53 },
+                    { text: "Berjabat tangan dengan sang perih", time: 50.83 },
+                    { text: "Mulailah pelan gontai", time: 59.47 },
+                    { text: "Berat langkah mulai", time: 63.56 },
+                    { text: "Paksa bantai dobrak semua halangan", time: 66.17 },
+                    { text: "Merah menyala", time: 72.12 },
+                    { text: "Menyala", time: 77.82 },
+                    { text: "Menyala", time: 80.55 },
+                    { text: "Merah menjelma", time: 83.54 },
+                    { text: "Benderang", time: 89.09 },
+                    { text: "Sinarnya", time: 91.86 },
+                    { text: "Semua yang tlah kau reka kembali", time: 107.17 },
+                    { text: "Pastikan mereka juga mengerti", time: 118.52 },
+                    { text: "Mulailah pelan gontai", time: 127.32 },
+                    { text: "Berat langkah mulai", time: 131.54 },
+                    { text: "Paksa bantai dobrak semua halangan", time: 134.24 },
+                    { text: "Merah menyala", time: 139.8 },
+                    { text: "Menyala", time: 145.42 },
+                    { text: "Menyala", time: 148.33 },
+                    { text: "Merah menjelma", time: 151.24 },
+                    { text: "Benderang", time: 156.81 },
+                    { text: "Sinarnya", time: 159.6 },
+                    { text: "Merah menyala", time: 162.55 },
+                    { text: "Menyala", time: 168.72 },
+                    { text: "Menyala", time: 170.99 },
+                    { text: "Merah menjelma", time: 173.94 },
+                    { text: "Benderang", time: 179.32 },
+                    { text: "Sinar", time: 182.11 }
+                ]
+            },
+            "Gemilang": {
+                lines: [
+                    { text: "Terjilat", time: 31.42 },
+                    { text: "Matahari timur yang kejam", time: 34.62 },
+                    { text: "Sengat melekat di bahuku", time: 39.23 },
+                    { text: "Perlukah", time: 43.5 },
+                    { text: "Menepi menyisi sebentar?", time: 46.78 },
+                    { text: "Tapi ku wajib tepat waktu", time: 51.28 },
+                    { text: "Keluhan demi keluhan", time: 56.05 },
+                    { text: "Segera kugilas perlahan", time: 62.2 },
+                    { text: "Karena ini yang kumau", time: 69.33 },
+                    { text: "Berkah kepala yang batu", time: 75.34 },
+                    { text: "Semua yang ragukan atau tak percaya", time: 80.46 },
+                    { text: "Debu pagi kujelang", time: 86.49 },
+                    { text: "Tak terasa", time: 103.38 },
+                    { text: "Sebelas tahun t'lah berselang", time: 107.2 },
+                    { text: "Masih terasa di bahuku", time: 111.89 },
+                    { text: "Beban yang", time: 115.86 },
+                    { text: "Bercampur bangga t'lah kurengkuh", time: 119.54 },
+                    { text: "Semua berpihak kepadaku", time: 124.09 },
+                    { text: "Pasti doamu yang lancarkan upayaku", time: 127.79 },
+                    { text: "Mesti doa yang meluncur dari bibirmu", time: 133.64 },
+                    { text: "Dan yang kutahu kau takkan pernah berhenti", time: 139.6 },
+                    { text: "Tumbuhku kini semoga sesuai yang kau impi", time: 145.76 },
+                    { text: "Tertulis jelas namaku", time: 154.1 },
+                    { text: "Di setiap harap malammu", time: 160.48 },
+                    { text: "Tentang masa depan, tentang masa terang", time: 165.2 },
+                    { text: "Warisan akal budi gemilang", time: 170.95 },
+                    { text: "Pelan pasti ku kabulkan", time: 178.21 },
+                    { text: "S'gala catatan harapmu", time: 184.22 },
+                    { text: "Tentang masa depan, tentang masa terang", time: 189.1 },
+                    { text: "Kebul jalan kuterjang", time: 195.12 }
+                ]
+            },
+            "Amalan Baik": {
+                lines: [
+                    { text: "Ada gila-gilanya kurasa", time: 33.23 },
+                    { text: "Harus gesit berkelit hadapi realita", time: 36.36 },
+                    { text: "Masih harus melangkah tentukan arah", time: 44.12 },
+                    { text: "Mungkin harus percepat jadi dewasa", time: 47.57 },
+                    { text: "Ayah tidak mengerti pekerjaanku", time: 55.2 },
+                    { text: "Ibu khawatirkan jalan yang kutempuh", time: 58.49 },
+                    { text: "Ku tak pernah berharap mereka pahami", time: 66.36 },
+                    { text: "Selama doa terkirim tanpa henti setiap hari", time: 69.68 },
+                    { text: "Buka telinga selebar-lebarnya", time: 76.7 },
+                    { text: "Baca buku apapun yang kau suka", time: 81.76 },
+                    { text: "Isikan penuh hati dan kepala", time: 87.65 },
+                    { text: "Amalan baik yang kan jadi tenaga", time: 92.94 },
+                    { text: "Lebih takut gagal di Jakarta", time: 104.94 },
+                    { text: "Dibandingkan dengan ku takut masuk neraka", time: 107.74 },
+                    { text: "Dan makin kesini semakin sadari", time: 115.98 },
+                    { text: "Neraka itu adalah kota ini. Kau tak sendiri", time: 119.04 },
+                    { text: "Buka telinga selebar-lebarnya", time: 126.31 },
+                    { text: "Baca buku apapun yang kau suka", time: 131.57 },
+                    { text: "Isikan penuh hati dan kepala", time: 137.22 },
+                    { text: "Amalan baik yang kan jadi tenaga", time: 142.42 },
+                    { text: "Kumpulkan niat yang tulus dan mapan", time: 148.15 },
+                    { text: "Tak perlu harus ikut arus tuntutan", time: 153.56 },
+                    { text: "Tatapan lurus dan tanyakan hati", time: 159.27 },
+                    { text: "Raup semua nyali tarik nafas lagi", time: 164.99 }
+                ]
+            },
+             "Separuh Aku": {
+                lines: [
+                    { text: "Dan terjadi lagi", time: 45.05 },
+                    { text: "Kisah lama yang terulang kembali", time: 49.20 },
+                    { text: "Kau terluka lagi", time: 57.63 },
+                    { text: "Dari cinta rumit yang kau jalani", time: 62.24 },
+                    { text: "Aku ingin kau merasa", time: 67.77 },
+                    { text: "Kamu mengerti aku mengerti kamu", time: 74.09 },
+                    { text: "Aku ingin kau sadari", time: 80.68 },
+                    { text: "Cintamu bukanlah dia", time: 86.50 },
+                    { text: "Dengar laraku", time: 91.89 },
+                    { text: "Suara hati ini memanggil namamu", time: 98.06 },
+                    { text: "Kar'na separuh aku", time: 104.54 },
+                    { text: "Dirimu", time: 110.99 },
+                    { text: "Ku ada di sini", time: 124.89 },
+                    { text: "Pahamilah, kau tak pernah sendiri", time: 129.43 },
+                    { text: "Kar'na aku s'lalu", time: 137.70 },
+                    { text: "Di dekatmu saat engkau terjatuh", time: 142.26 },
+                    { text: "Aku ingin kau merasa", time: 147.89 },
+                    { text: "Kamu mengerti aku mengerti kamu", time: 154.37 },
+                    { text: "Aku ingin kau pahami", time: 160.59 },
+                    { text: "Cintamu bukanlah dia", time: 166.64 },
+                    { text: "Dengar laraku", time: 174.90 },
+                    { text: "Suara hati ini memanggil namamu", time: 181.21 },
+                    { text: "Kar'na separuh aku", time: 187.69 },
+                    { text: "Dirimu, uh-oh", time: 194.21 },
+                    { text: "Ah-ah, oh-oh", time: 200.63 },
+                    { text: "Dengar laraku", time: 206.90 },
+                    { text: "Suara hati ini memanggil namamu", time: 213.23 },
+                    { text: "Kar'na separuh aku", time: 219.75 },
+                    { text: "Menyentuh laramu", time: 225.60 },
+                    { text: "Semua lukamu t'lah menjadi lirihku", time: 232.62 },
+                    { text: "Kar'na separuh aku", time: 238.82 },
+                    { text: "Dirimu", time: 245.45 }
+                ]
+            },
+            "Yang Terdalam": {
+                lines: [
+                    { text: "Kulepas semua yang kuinginkan", time: 28.27 },
+                    { text: "Tak akan kuulangi", time: 35.15 },
+                    { text: "Maafkan jika kau kusayangi", time: 42.06 },
+                    { text: "Dan bila ku menanti", time: 49.16 },
+                    { text: "Pernahkah engkau coba mengerti?", time: 56.05 },
+                    { text: "Lihatlah ku di sini", time: 63.06 },
+                    { text: "Mungkinkah jika aku bermimpi?", time: 69.92 },
+                    { text: "Salahkah 'tuk menanti?", time: 76.89 },
+                    { text: "Takkan lelah aku menanti", time: 96.64 },
+                    { text: "Takkan hilang cintaku ini", time: 103.55 },
+                    { text: "Hingga saat kau tak kembali", time: 110.54 },
+                    { text: "'Kan kukenang di hati saja", time: 117.58 },
+                    { text: "Kau telah tinggalkan", time: 167.63 },
+                    { text: "Hati yang terdalam", time: 173.32 },
+                    { text: "Hingga tiada cinta", time: 180.65 },
+                    { text: "Yang tersisa di jiwa", time: 186.20 }
+                ]
+            },
+            "Tak Bisakah": {
+                lines: [
+                    { text: "Hatiku bimbang namun tetap pikirkanmu", time: 15.99 },
+                    { text: "Selalu, slalu dalam hatiku", time: 20.25 },
+                    { text: "Ku melangkah sejauh apapun itu", time: 24.29 },
+                    { text: "Selalu kau didalam hatiku", time: 28.40 },
+                    { text: "Ku berjalan, berjalan memutar waktu", time: 40.96 },
+                    { text: "Berharap temukan sisa hatimu", time: 45.14 },
+                    { text: "Mengertilah ku ingin engkau begitu", time: 49.44 },
+                    { text: "Mengerti kau di dalam hatiku", time: 53.14 },
+                    { text: "Tak Bisakah kau menungguku", time: 57.24 },
+                    { text: "Hingga nanti tetap menunggu", time: 61.18 },
+                    { text: "Tak Bisakah kau menuntunku", time: 65.74 },
+                    { text: "Menemani dalam hidupku", time: 69.31 },
+                    { text: "Dara, kau menjadi hidupku", time: 107.57 },
+                    { text: "Kemana, kau tahu isi hatiku", time: 112.03 },
+                    { text: "Tunggu, sejenak aku disitu", time: 115.82 },
+                    { text: "Jalanku, jalan menemukanmu", time: 120.55 }
+                ]
+            },
+            "Menghapus Jejakmu": {
+                lines: [
+                    { text: "Terus melangkah melupakanmu", time: 17.78 },
+                    { text: "Lelah hati perhatikan sikapmu", time: 21.57 },
+                    { text: "Jalan pikiranmu buatku ragu", time: 25.15 },
+                    { text: "Tak mungkin ini tetap bertahan", time: 28.99 },
+                    { text: "Perlahan mimpi terasa mengganggu", time: 32.93 },
+                    { text: "Kucoba untuk terus menjauh", time: 36.77 },
+                    { text: "Perlahan hatiku terbelenggu", time: 40.56 },
+                    { text: "Kucoba untuk lanjutkan hidup", time: 44.45 },
+                    { text: "Engkau bukanlah segalaku", time: 49.83 },
+                    { text: "Bukan tempat 'tuk hentikan langkahku", time: 53.95 },
+                    { text: "Usai sudah, semua berlalu", time: 57.84 },
+                    { text: "Biar hujan menghapus jejakmu", time: 61.70 },
+                    { text: "Terus melangkah melupakanmu", time: 67.46 },
+                    { text: "Lelah hati perhatikan sikapmu", time: 71.47 },
+                    { text: "Jalan pikiranmu buatku ragu", time: 74.91 },
+                    { text: "Tak mungkin ini tetap bertahan", time: 79.09 },
+                    { text: "Perlahan mimpi terasa mengganggu", time: 82.85 },
+                    { text: "Kucoba untuk terus menjauh", time: 86.61 },
+                    { text: "Perlahan hatiku terbelenggu", time: 90.43 },
+                    { text: "Kucoba untuk lanjutkan hidup", time: 94.21 },
+                    { text: "Engkau bukanlah segalaku", time: 98.17 },
+                    { text: "Bukan tempat 'tuk hentikan langkahku", time: 101.99 },
+                    { text: "Usai sudah, semua berlalu", time: 105.99 },
+                    { text: "Biar hujan menghapus jejakmu", time: 109.69 },
+                    { text: "Lepaskan segalanya", time: 116.22 },
+                    { text: "Lepaskan segalanya", time: 120.43 },
+                    { text: "Engkau bukanlah segalaku", time: 130.78 },
+                    { text: "Bukan tempat 'tuk hentikan langkahku", time: 134.65 },
+                    { text: "Usai sudah, semua berlalu", time: 138.64 },
+                    { text: "Biar hujan menghapus jejakmu", time: 142.40 },
+                    { text: "Engkau bukanlah segalaku", time: 145.89 },
+                    { text: "Bukan tempat 'tuk hentikan langkahku", time: 150.02 },
+                    { text: "Usai sudah, semua berlalu", time: 153.88 },
+                    { text: "Biar hujan menghapus jejakmu", time: 157.65 },
+                    { text: "Na-na-na-na-na, na-na-na-na-na", time: 162.02 },
+                    { text: "Na-na-na-na-na, na-na-na-na-na", time: 165.91 },
+                    { text: "Na-na-na-na-na, na-na-na-na-na", time: 169.52 },
+                    { text: "Na-na-na-na-na, na-na-na-na-na", time: 173.49 }
+                ]
+            },
+            "Semua Tentang Kita": {
+                lines: [
+                    { text: "Waktu terasa semakin berlalu", time: 45.64 },
+                    { text: "Tinggalkan cerita tentang kita", time: 55.26 },
+                    { text: "Akan tiada lagi kini tawamu", time: 66.02 },
+                    { text: "'Tuk hapuskan semua sepi di hati", time: 75.32 },
+                    { text: "Ada cerita tentang aku dan dia", time: 88.03 },
+                    { text: "Dan kita bersama saat dulu kala", time: 98.01 },
+                    { text: "Ada cerita tentang masa yang indah", time: 108.07 },
+                    { text: "Saat kita berduka, saat kita tertawa", time: 118.22 },
+                    { text: "Teringat di saat kita tertawa bersama", time: 176.33 },
+                    { text: "Ceritakan semua tentang kita", time: 187.13 },
+                    { text: "Ada cerita tentang aku dan dia", time: 199.18 },
+                    { text: "Dan kita bersama saat dulu kala", time: 209.05 },
+                    { text: "Ada cerita tentang masa yang indah", time: 219.39 },
+                    { text: "Saat kita berduka, saat kita tertawa", time: 229.24 }
+                ]
+            },
+            "Mungkin Nanti": {
+                lines: [
+                    { text: "Saatnya ku berkata", time: 6.40 },
+                    { text: "Mungkin yang terakhir kalinya", time: 14.68 },
+                    { text: "Sudahlah lepaskan semua", time: 22.94 },
+                    { text: "Ku yakin inilah waktunya", time: 31.24 },
+                    { text: "Mungkin saja kau bukan yang dulu lagi", time: 39.56 },
+                    { text: "Mungkin saja rasa itu telah pergi", time: 47.80 },
+                    { text: "Dan mungkin bila nanti kita kan bertemu lagi", time: 57.14 },
+                    { text: "Satu pintaku jangan kau coba tanyakan kembali", time: 64.64 },
+                    { text: "Rasa yang kutinggal mati", time: 72.92 },
+                    { text: "Seperti hari kemarin", time: 77.06 },
+                    { text: "Saat semua di sini", time: 81.18 },
+                    { text: "Dan bila hatimu termenung", time: 89.12 },
+                    { text: "Bangun dari mimpi-mimpimu", time: 114.02 },
+                    { text: "Membuka hatimu yang dulu", time: 122.30 },
+                    { text: "Cerita saat bersamaku", time: 130.54 },
+                    { text: "Mungkin saja kau bukan yang dulu lagi", time: 138.80 },
+                    { text: "Mungkin saja rasa itu telah pergi", time: 147.02 },
+                    { text: "Dan mungkin bila nanti kita kan bertemu lagi", time: 152.30 },
+                    { text: "Satu pintaku jangan kau coba tanyakan kembali", time: 159.74 },
+                    { text: "Rasa yang kuntinggal mati", time: 168.06 },
+                    { text: "Seperti hari kemarin", time: 172.22 },
+                    { text: "Saat semua di sini", time: 176.34 },
+                    { text: "Dan mungkin bila nanti", time: 181.96 },
+                    { text: "Kita kan bertemu lagi", time: 201.16 },
+                    { text: "Satu pintaku jangan kau coba tanyakan kembali", time: 205.26 },
+                    { text: "Rasa yang kuntinggal mati", time: 213.58 },
+                    { text: "Seperti hari kemarin", time: 217.70 },
+                    { text: "Saat semua di sini", time: 221.80 },
+                    { text: "Tak usah kau tanyakan lagi", time: 225.74 },
+                    { text: "Simpan untukku sendiri", time: 230.16 },
+                    { text: "Semua sesal yang kau cari", time: 234.26 },
+                    { text: "Semua rasa yang kau beri", time: 238.36 }
+                ]
+            },
+            "Ada Apa Denganmu": {
+                lines: [
+                    { text: "Sudah maafkan aku segala salahku", time: 9.18 },
+                    { text: "Dan bila kau tetap bisu, ungkapkan salahmu", time: 17.40 },
+                    { text: "Dan aku sifatku dan aku khilafku", time: 26.08 },
+                    { text: "Dan aku cintaku dan aku rinduku", time: 34.84 },
+                    { text: "Sudah lupakan semua, segala berubah", time: 45.50 },
+                    { text: "Dan kita terlupa dan kita terluka", time: 71.90 },
+                    { text: "Dan aku sifatku dan aku khilafku", time: 80.60 },
+                    { text: "Dan aku cintaku dan aku rinduku", time: 89.38 },
+                    { text: "Kutanya malam, dapatkah kau lihatnya perbedaan yang tak terungkapkan", time: 100.52 },
+                    { text: "Tapi mengapa kau tak berubah? Ada apa denganmu", time: 109.28 },
+                    { text: "Hanya malam dapat meleburkan segala rasa yang tak terungkapkan", time: 118.24 },
+                    { text: "Tapi mengapa kau tak berubah? Ada apa denganmu", time: 126.74 },
+                    { text: "Dan aku sifatku dan aku khilafku", time: 155.42 },
+                    { text: "Dan aku cintaku dan aku rinduku", time: 163.56 },
+                    { text: "Kutanya malam, dapatkah kau lihatnya perbedaan yang tak terungkapkan", time: 174.74 },
+                    { text: "Tapi mengapa kau tak berubah? Ada apa denganmu", time: 183.46 },
+                    { text: "Hanya malam dapat meleburkan segala rasa yang tak terungkapkan", time: 191.34 },
+                    { text: "Tapi mengapa kau tak berubah? Ada apa denganmu", time: 200.94 },
+                    { text: "Kutanya malam, dapatkah kau lihatnya perbedaan yang tak terungkapkan", time: 230.06 },
+                    { text: "Tapi mengapa kau tak berubah? Ada apa denganmu", time: 240.20 }
+                ]
+            },
+            "Bintang Di Surga": {
+                lines: [
+                    { text: "Masih ku merasa angkuh", time: 43.01 },
+                    { text: "Terbangkan anganku jauh", time: 46.26 },
+                    { text: "Langit 'kan menangkapku", time: 49.48 },
+                    { text: "Walau 'kan terjatuh", time: 52.59 },
+                    { text: "Dan bila semua tercipta", time: 55.97 },
+                    { text: "Hanya untuk ku merasakan", time: 58.90 },
+                    { text: "Semua yang tercipta", time: 62.63 },
+                    { text: "Hampa hidup terasa", time: 65.52 },
+                    { text: "Lelah, tetap ku mencari", time: 81.41 },
+                    { text: "Arti untuk ku membagi", time: 84.68 },
+                    { text: "Menemani langkahku", time: 87.80 },
+                    { text: "Namun tak berarti", time: 90.95 },
+                    { text: "Dan bila semua tercipta", time: 94.25 },
+                    { text: "Tanpa harus ku merasakan", time: 97.45 },
+                    { text: "Cinta yang tersisa", time: 100.95 },
+                    { text: "Hampa hidup terasa", time: 103.98 },
+                    { text: "Bagai bintang di surga", time: 111.02 },
+                    { text: "Dan seluruh warna", time: 114.52 },
+                    { text: "Dan kasih yang setia", time: 117.93 },
+                    { text: "Dan cahaya nyata", time: 120.98 },
+                    { text: "Oh, bintang di surga", time: 124.33 },
+                    { text: "Berikan cerita", time: 127.60 },
+                    { text: "Dan kasih yang setia", time: 130.42 },
+                    { text: "Dan cahaya nyata", time: 133.73 },
+                    { text: "Lelah, tetap ku mencari", time: 155.19 },
+                    { text: "Arti untuk ku membagi", time: 158.27 },
+                    { text: "Menemani langkahku", time: 161.55 },
+                    { text: "Namun tak berarti", time: 164.49 },
+                    { text: "Dan bila semua tercipta", time: 167.83 },
+                    { text: "Tanpa harus ku merasakan", time: 171.17 },
+                    { text: "Cinta yang tersisa", time: 174.86 },
+                    { text: "Hampa hidup terasa", time: 177.45 },
+                    { text: "Bagai bintang di surga", time: 181.43 },
+                    { text: "Dan seluruh warna", time: 185.15 },
+                    { text: "Dan kasih yang setia", time: 188.24 },
+                    { text: "Dan cahaya nyata", time: 191.40 },
+                    { text: "Oh, bintang di surga", time: 194.76 },
+                    { text: "Berikan cerita", time: 197.87 },
+                    { text: "Dan kasih yang setia", time: 201.01 },
+                    { text: "Dan cahaya nyata", time: 204.18 },
+                    { text: "Bintang di surga", time: 233.45 }
+                ]
+            },
+            "Walau Habis Terang": {
+                lines: [
+                    { text: "Ku terbiasa tersenyum tenang walau", time: 15.33 },
+                    { text: "Ah-ah, hatiku menangis", time: 22.82 },
+                    { text: "Kaulah cerita, tertulis dengan pasti", time: 30.67 },
+                    { text: "Selamanya dalam pikiranku", time: 38.20 },
+                    { text: "Uh-uh-uh", time: 47.50 },
+                    { text: "Selamanya", time: 52.11 },
+                    { text: "Peluk tubuhku untuk sejenak", time: 61.22 },
+                    { text: "Dan biarkan kita memudar dengan pasti", time: 68.12 },
+                    { text: "Biarkan semua seperti seharusnya", time: 76.81 },
+                    { text: "Takkan pernah menjadi milikku", time: 84.39 },
+                    { text: "Lupakan semua, tinggalkan ini", time: 91.86 },
+                    { text: "Ku 'kan tenang dan kau 'kan pergi", time: 99.76 },
+                    { text: "Berjalanlah walau habis terang", time: 107.34 },
+                    { text: "Ambil cahaya cinta, kuterangi jalanmu", time: 113.71 },
+                    { text: "Di antara beribu lainnya", time: 122.77 },
+                    { text: "Kau tetap, kau tetap", time: 129.01 },
+                    { text: "Kau tetap benderang", time: 132.93 },
+                    { text: "Ah-ah, ah, ah-ah", time: 137.74 },
+                    { text: "Ah, ah-ah, ah, ah-ah", time: 140.95 },
+                    { text: "Lupakan semua, tinggalkan ini", time: 153.62 },
+                    { text: "Ku 'kan tenang dan kau 'kan pergi", time: 161.25 },
+                    { text: "Berjalanlah walau habis terang", time: 170.89 },
+                    { text: "Ambil cahaya cinta, kuterangi jalanmu", time: 177.44 },
+                    { text: "Di antara beribu lainnya", time: 186.26 },
+                    { text: "Kau tetap, kau tetap", time: 192.75 },
+                    { text: "Kau tetap benderang", time: 196.59 },
+                    { text: "Hu-uh-uh", time: 205.33 }
+                ]
+            },
+            "Hidup Untukmu, Mati Tanpamu": {
+                lines: [
+                    { text: "Begitu banyak hal", time: 77.90 },
+                    { text: "Yang kualami, yang kutemui", time: 82.62 },
+                    { text: "Saat bersamamu", time: 89.62 },
+                    { text: "Kurasa senang, kurasa sedih", time: 94.85 },
+                    { text: "Air mata ini menyadarkanku", time: 101.82 },
+                    { text: "Kau takkan pernah jadi milikku", time: 113.96 },
+                    { text: "Air mata ini menyadarkanku", time: 138.11 },
+                    { text: "Kau takkan pernah menjadi milikku", time: 150.00 },
+                    { text: "Tak pernah ku mengerti", time: 162.65 },
+                    { text: "Aku segila ini", time: 165.98 },
+                    { text: "Aku hidup untukmu", time: 168.89 },
+                    { text: "Aku mati tanpamu", time: 171.85 },
+                    { text: "Tak pernah kusadari", time: 174.84 },
+                    { text: "Aku sebodoh ini", time: 177.94 },
+                    { text: "Aku hidup untukmu", time: 180.94 },
+                    { text: "Aku mati tanpamu", time: 183.84 },
+                    { text: "Oh-oh-uh", time: 188.48 },
+                    { text: "Uh-oh-oh-oh", time: 192.34 },
+                    { text: "Oh-oh-oh-oh, oh-oh-oh", time: 199.71 },
+                    { text: "Uh-oh-oh-ah", time: 205.97 },
+                    { text: "Air mata ini menyadarkanku", time: 222.72 },
+                    { text: "Kau takkan pernah menjadi milikku", time: 234.92 },
+                    { text: "Tak pernah ku mengerti", time: 247.64 },
+                    { text: "Aku segila ini", time: 250.76 },
+                    { text: "Aku hidup untukmu", time: 253.87 },
+                    { text: "Aku mati tanpamu", time: 256.79 },
+                    { text: "Tak pernah kusadari", time: 259.98 },
+                    { text: "Aku sebodoh ini", time: 262.82 },
+                    { text: "Aku hidup untukmu", time: 265.83 },
+                    { text: "Aku mati tanpamu", time: 268.88 },
+                    { text: "Oh-oh-uh", time: 273.18 },
+                    { text: "Oh-oh-oh-oh", time: 278.11 }
+                ]
+            },
+            "Kangen": {
+                lines: [
+                    { text: "Kuterima suratmu, telah kubaca dan aku mengerti", time: 15.66 },
+                    { text: "Betapa merindunya dirimu akan hadirnya diriku", time: 22.74 },
+                    { text: "Di dalam hari-harimu, bersama lagi", time: 30.51 },
+                    { text: "Kau tanyakan padaku, \"Kapan aku akan kembali lagi?\"", time: 38.08 },
+                    { text: "Katamu kau tak kuasa melawan gejolak di dalam dada", time: 46.11 },
+                    { text: "Yang membara menahan rasa pertemuan kita nanti", time: 54.02 },
+                    { text: "Saat bersama dirimu", time: 62.74 },
+                    { text: "Semua kata rindumu semakin membuatku tak berdaya", time: 66.95 },
+                    { text: "Menahan rasa ingin jumpa", time: 75.01 },
+                    { text: "Percayalah padaku aku pun rindu kamu, ku akan pulang", time: 80.05 },
+                    { text: "Melepas semua kerinduan yang terpendam", time: 87.38 },
+                    { text: "Kau tuliskan padaku kata cinta yang manis dalam suratmu", time: 113.43 },
+                    { text: "Kau katakan padaku saat ini kuingin hangat pelukmu", time: 121.26 },
+                    { text: "Dan belai lembut kasihmu", time: 128.85 },
+                    { text: "Takkan kulupa selamanya saat kau ada di sisiku", time: 132.89 },
+                    { text: "Semua kata rindumu semakin membuatku tak berdaya", time: 142.72 },
+                    { text: "Menahan rasa ingin jumpa", time: 150.36 },
+                    { text: "Percayalah padaku aku pun rindu kamu, ku akan pulang", time: 158.17 },
+                    { text: "Melepas semua kerinduan yang terpendam", time: 163.15 },
+                    { text: "Jangan katakan cinta menambah beban rasa", time: 173.56 },
+                    { text: "Sudah simpan saja sedihmu itu", time: 180.70 },
+                    { text: "Ku akan datang oh...", time: 186.67 },
+                    { text: "Semua kata rindumu semakin membuatku tak berdaya", time: 226.23 },
+                    { text: "Menahan rasa ingin jumpa", time: 234.40 },
+                    { text: "Percayalah padaku aku pun rindu kamu, ku akan pulang", time: 239.47 },
+                    { text: "Melepas semua kerinduan yang terpendam", time: 247.25 },
+                    { text: "Semua kata rindumu semakin membuatku tak berdaya", time: 260.83 },
+                    { text: "Menahan rasa ingin jumpa", time: 268.60 },
+                    { text: "Percayalah padaku aku pun rindu kamu, ku akan pulang", time: 273.55 },
+                    { text: "Melepas semua kerinduan yang terpendam", time: 281.71 }
+                ]
+            },
+            "Separuh Nafas": {
+                lines: [
+                    { text: "Separuh nafasku terbang bersama dirimu", time: 28.46 },
+                    { text: "Saat kautinggalkanku, salahkanku", time: 38.28 },
+                    { text: "Salahkah aku bila aku bukanlah seperti", time: 46.66 },
+                    { text: "Aku yang dahulu?", time: 58.15 },
+                    { text: "Ada makna tergali dari sini", time: 67.33 },
+                    { text: "Dari pertikaian yang terjadi", time: 76.34 },
+                    { text: "Kauhancurkan diriku", time: 86.00 },
+                    { text: "Bila kautinggalkan aku", time: 91.58 },
+                    { text: "Kau dewiku", time: 96.84 },
+                    { text: "Kembalilah padaku", time: 105.09 },
+                    { text: "Bawa separuh nafasku", time: 109.83 },
+                    { text: "Kau dewiku", time: 116.48 },
+                    { text: "Salahkah aku bila aku bukanlah seperti", time: 132.62 },
+                    { text: "Aku yang dahulu?", time: 144.56 },
+                    { text: "Ada makna tergali dari sini", time: 153.25 },
+                    { text: "Dari pertikaian yang terjadi", time: 162.97 },
+                    { text: "Kauhancurkan diriku", time: 172.22 },
+                    { text: "Bila kautinggalkan aku", time: 177.65 },
+                    { text: "Kau dewiku", time: 183.33 },
+                    { text: "Kembalilah padaku", time: 191.92 },
+                    { text: "Bawa separuh nafasku", time: 197.04 },
+                    { text: "Kau dewiku", time: 202.40 }
+                ]
+            },
+            "Risalah Hati": {
+                lines: [
+                    { text: "Hidupku tanpa cintamu", time: 15.03 },
+                    { text: "Bagai malam tanpa bintang", time: 20.87 },
+                    { text: "Cintaku tanpa sambutmu", time: 27.37 },
+                    { text: "Bagai panas tanpa hujan", time: 33.46 },
+                    { text: "Jiwaku berbisik lirih", time: 40.26 },
+                    { text: "Ku harus milikimu", time: 46.16 },
+                    { text: "Aku bisa membuatmu jatuh cinta kepadaku", time: 52.55 },
+                    { text: "Meski kau tak cinta kepadaku", time: 58.46 },
+                    { text: "Beri sedikit waktu", time: 65.12 },
+                    { text: "Biar cinta datang kar'na telah terbiasa", time: 68.59 },
+                    { text: "Simpan mawar yang kuberi", time: 78.63 },
+                    { text: "Mungkin wanginya mengilhami", time: 84.65 },
+                    { text: "Sudikah dirimu untuk", time: 91.14 },
+                    { text: "Kenali aku dulu?", time: 97.28 },
+                    { text: "Sebelum kauludahi aku", time: 103.73 },
+                    { text: "Sebelum kaurobek hatiku", time: 109.92 },
+                    { text: "Aku bisa membuatmu jatuh cinta kepadaku", time: 116.14 },
+                    { text: "Meski kau tak cinta kepadaku", time: 122.50 },
+                    { text: "Beri sedikit waktu", time: 129.28 },
+                    { text: "Biar cinta datang kar'na telah terbiasa", time: 132.37 },
+                    { text: "Aku bisa membuatmu jatuh cinta kepadaku", time: 172.42 },
+                    { text: "Meski kau tak cinta kepadaku", time: 178.43 },
+                    { text: "Beri sedikit waktu", time: 185.12 },
+                    { text: "Biar cinta datang kar'na telah terbiasa", time: 188.21 },
+                    { text: "Aku bisa membuatmu jatuh cinta kepadaku", time: 197.99 },
+                    { text: "Meski kau tak cinta, kau tak cinta", time: 203.91 },
+                    { text: "Aku bisa membuatmu jatuh cinta kepadaku", time: 210.53 },
+                    { text: "Meski kau tak cinta kepadaku", time: 216.67 },
+                    { text: "Aku bisa membuatmu jatuh cinta kepadaku", time: 223.45 },
+                    { text: "Meski kau tak cinta kepadaku", time: 229.42 },
+                    { text: "Beri sedikit waktu", time: 236.32 },
+                    { text: "Biar cinta datang kar'na telah terbiasa", time: 239.38 },
+                    { text: "Hidupku tanpa cintamu", time: 262.39 },
+                    { text: "Bagai malam tanpa bintang", time: 268.10 },
+                    { text: "Cintaku tanpa sambutmu", time: 274.84 },
+                    { text: "Bagai panas tanpa hujan", time: 281.16 }
+                ]
+            },
+            "Pupus": {
+                lines: [
+                    { text: "Aku tak mengerti", time: 13.74 },
+                    { text: "Apa yang ku rasa", time: 17.06 },
+                    { text: "Rindu yang tak pernah", time: 20.99 },
+                    { text: "Begitu hebatnya", time: 24.28 },
+                    { text: "Aku mencintaimu lebih dari yang kau tahu", time: 27.60 },
+                    { text: "Meski kau takkan pernah tahu", time: 34.69 },
+                    { text: "Aku persembahkan hidupku untukmu", time: 41.56 },
+                    { text: "Telah kurelakan hatiku padamu", time: 48.54 },
+                    { text: "Namun kau masih bisu", time: 55.49 },
+                    { text: "Diam seribu bahasa", time: 58.59 },
+                    { text: "Dan hati kecilku bicara", time: 62.23 },
+                    { text: "Baru ku sadari", time: 69.70 },
+                    { text: "Cintaku bertepuk sebelah tangan", time: 74.96 },
+                    { text: "Kau buat remuk seluruh hatiku", time: 83.59 },
+                    { text: "Semoga waktu akan mengilhami sisi hatimu yang beku", time: 97.07 },
+                    { text: "Semoga akan datang keajaiban", time: 103.99 },
+                    { text: "Hingga akhirnya kau pun mau", time: 107.84 },
+                    { text: "Aku mencintaimu", time: 110.50 },
+                    { text: "Lebih dari yang kau tahu", time: 113.41 },
+                    { text: "Meski kau takkan pernah tahu", time: 117.39 },
+                    { text: "Baru ku sadari", time: 124.91 },
+                    { text: "Cintaku bertepuk sebelah tangan", time: 130.02 },
+                    { text: "Kau buat remuk seluruh hatiku", time: 138.50 },
+                    { text: "Baru ku sadari", time: 183.13 },
+                    { text: "Cintaku bertepuk sebelah tangan", time: 188.35 },
+                    { text: "Kau buat remuk", time: 196.90 },
+                    { text: "Seluruh hatiku", time: 200.62 },
+                    { text: "Baru ku sadari (ohh baru kusadari)", time: 211.02 },
+                    { text: "Cintaku bertepuk sebelah tangan (bertepuk sebelah tangan)", time: 216.65 },
+                    { text: "Kau buat remuk", time: 224.42 },
+                    { text: "Seluruh hatiku", time: 228.06 },
+                    { text: "Hoooh hoooeaaaahh", time: 238.20 }
+                ]
+            },
+            "Cinta Kan Membawamu Kembali": {
+                lines: [
+                    { text: "Tiba saat mengerti", time: 26.34 },
+                    { text: "Jerit suara hati", time: 30.62 },
+                    { text: "Letih meski mencoba", time: 33.34 },
+                    { text: "Melabuhkan", time: 37.67 },
+                    { text: "Rasa yang ada", time: 41.15 },
+                    { text: "Mohon tinggal sejenak", time: 46.86 },
+                    { text: "Lupakanlah waktu", time: 51.10 },
+                    { text: "Temani air mataku", time: 53.86 },
+                    { text: "Teteskan lara", time: 58.01 },
+                    { text: "Merajut asa, menjalin mimpi", time: 61.89 },
+                    { text: "Endapkan sepi-sepi", time: 68.86 },
+                    { text: "Cinta 'kan membawamu", time: 76.48 },
+                    { text: "Kembali di sini", time: 85.47 },
+                    { text: "Menuai rindu, membasuh perih", time: 88.92 },
+                    { text: "Bawa serta dirimu", time: 95.53 },
+                    { text: "Dirimu yang dulu", time: 104.48 },
+                    { text: "Mencintaiku apa adanya", time: 107.56 },
+                    { text: "Saat dusta mengalir", time: 119.05 },
+                    { text: "Jujurkanlah hati", time: 123.37 },
+                    { text: "Genangkan batin jiwamu", time: 125.51 },
+                    { text: "Genangkan cinta", time: 130.06 },
+                    { text: "Seperti dulu, saat bersama", time: 133.78 },
+                    { text: "Tak ada keraguan", time: 140.56 },
+                    { text: "Cinta 'kan membawamu", time: 148.55 },
+                    { text: "Kembali di sini", time: 157.63 },
+                    { text: "Menuai rindu, membasuh perih", time: 160.75 },
+                    { text: "Bawa serta dirimu", time: 167.40 },
+                    { text: "Dirimu yang dulu", time: 176.19 },
+                    { text: "Mencintaiku apa adanya", time: 179.65 },
+                    { text: "Cinta 'kan membawamu", time: 189.79 },
+                    { text: "Kembali di sini", time: 198.43 },
+                    { text: "Menuai rindu, membasuh perih", time: 202.18 },
+                    { text: "Bawa serta dirimu", time: 208.62 },
+                    { text: "Dirimu yang dulu", time: 217.47 },
+                    { text: "Mencintaiku apa adanya", time: 220.96 },
+                    { text: "Cinta 'kan membawamu", time: 227.36 },
+                    { text: "Kembali di sini", time: 236.12 },
+                    { text: "Menuai rindu, membasuh perih", time: 239.55 }
+                ]
+            },
+            "Aku Milikmu (Malam Ini)": {
+                lines: [
+                    { text: "Terdengar lirih bisikanmu", time: 15.42 },
+                    { text: "Di antara bayang-bayangmu", time: 18.97 },
+                    { text: "Terucap kata cinta", time: 23.30 },
+                    { text: "Yang dulu tersimpan", time: 26.80 },
+                    { text: "Dan tak mau pergi", time: 30.41 },
+                    { text: "Sekejap cinta yang terjalin", time: 43.83 },
+                    { text: "Dan menjadi sebuah cerita", time: 47.33 },
+                    { text: "Yang tak mungkin terlupa", time: 51.31 },
+                    { text: "Terukir di hati", time: 55.20 },
+                    { text: "Dan tak mau pergi", time: 58.66 },
+                    { text: "Mungkinkah kumiliki", time: 65.16 },
+                    { text: "Cinta seperti ini lagi", time: 67.74 },
+                    { text: "Jangan biarkan aku", time: 72.31 },
+                    { text: "Kehilangan dirimu", time: 74.67 },
+                    { text: "Coba dengarkanlah sumpahku", time: 81.21 },
+                    { text: "(Janji suci) dari hati", time: 84.32 },
+                    { text: "Aku cinta kamu", time: 90.15 },
+                    { text: "Jangan dengar kata mereka", time: 95.35 },
+                    { text: "Yang tak ingin kita satu", time: 98.81 },
+                    { text: "Yakinkan aku milikmu", time: 103.85 },
+                    { text: "Aku milikmu", time: 108.78 },
+                    { text: "Jalinan cinta tulus suci", time: 120.43 },
+                    { text: "Terpadu terikat erat", time: 123.86 },
+                    { text: "Jangan terpisah lagi", time: 127.95 },
+                    { text: "Waktu 'kan menguji", time: 131.70 },
+                    { text: "Cinta kita berdua", time: 135.13 },
+                    { text: "Mungkinkah kumiliki", time: 141.57 },
+                    { text: "Cinta seperti ini lagi", time: 144.18 },
+                    { text: "Jangan biarkan aku", time: 148.75 },
+                    { text: "Kehilangan dirimu", time: 151.37 },
+                    { text: "Coba dengarkanlah sumpahku", time: 157.61 },
+                    { text: "(Janji suci) dari hati", time: 160.87 },
+                    { text: "Aku cinta kamu", time: 166.54 },
+                    { text: "Jangan dengar kata mereka", time: 171.61 },
+                    { text: "Yang tak ingin kita satu", time: 175.38 },
+                    { text: "Yakinkan aku milikmu", time: 180.35 },
+                    { text: "Aku milikmu", time: 185.12 },
+                    { text: "Mungkinkah kumiliki", time: 210.90 },
+                    { text: "Cinta seperti ini lagi", time: 213.35 },
+                    { text: "Jangan biarkan aku", time: 218.11 },
+                    { text: "Kehilangan dirimu", time: 220.47 },
+                    { text: "Coba dengarkanlah sumpahku", time: 227.02 },
+                    { text: "(Janji suci) dari hati", time: 230.07 },
+                    { text: "Aku cinta kamu", time: 235.78 },
+                    { text: "Jangan dengar kata mereka", time: 241.19 },
+                    { text: "Yang tak ingin kita satu", time: 244.57 },
+                    { text: "Yakinkan aku milikmu", time: 249.60 },
+                    { text: "Aku milikmu", time: 254.44 },
+                    { text: "Coba dengarkanlah sumpahku", time: 258.72 },
+                    { text: "(Janji suci) dari hati (dari lubuk hati)", time: 261.92 },
+                    { text: "Aku cinta kamu (aku cinta kamu)", time: 267.99 },
+                    { text: "Jangan dengar kata mereka", time: 273.11 },
+                    { text: "Yang tak ingin kita satu", time: 276.55 },
+                    { text: "Yakinkan aku milikmu", time: 281.76 },
+                    { text: "Aku milikmu", time: 286.45 }
+                ]
+            },
+            "Roman Picisan": {
+                lines: [
+                    { text: "Tatap matamu bagai busur panah", time: 52.67 },
+                    { text: "Yang kau lepaskan ke jantung hatiku", time: 57.22 },
+                    { text: "Meski kau simpan cintamu masih", time: 61.72 },
+                    { text: "Tetap nafasmu wangi hiasi suasana", time: 66.27 },
+                    { text: "Saat kukecup manis bibirmu", time: 72.96 },
+                    { text: "Cintaku tak harus, miliki dirimu", time: 78.84 },
+                    { text: "Meski perih mengiris", time: 87.76 },
+                    { text: "Iris segala janji", time: 92.01 },
+                    { text: "Aku berdansa diujung gelisah", time: 98.86 },
+                    { text: "Di iringi syahdu lembut lakumu", time: 103.58 },
+                    { text: "Kau sebar benih anggun jiwamu", time: 108.06 },
+                    { text: "Namun kau tiada", time: 112.55 },
+                    { text: "Menuai buah cintaku", time: 116.33 },
+                    { text: "Yang ada hanya sekuntum rindu", time: 119.64 },
+                    { text: "Cintaku tak harus,", time: 125.00 },
+                    { text: "Miliki dirimu", time: 129.58 },
+                    { text: "Meski perih mengiris", time: 134.04 },
+                    { text: "Iris segala janji", time: 138.39 },
+                    { text: "Malam-malamku bagai malam seribu bintang", time: 166.83 },
+                    { text: "Yang terbentang di angkasa bila kau disini", time: 171.68 },
+                    { text: "'Tuk sekedar menemani, 'tuk melintasi wangi", time: 175.81 },
+                    { text: "Yang s'lalu tersaji di satu sisi hati", time: 180.76 },
+                    { text: "Malam-malamku bagai malam seribu bintang", time: 185.15 },
+                    { text: "Yang terbentang di angkasa bila kau disini", time: 189.56 },
+                    { text: "'Tuk sekedar menemani, 'tuk melintasi wangi", time: 194.12 },
+                    { text: "Yang s'lalu tersaji di satu sisi hati", time: 199.05 },
+                    { text: "Malam-malamku bagai malam seribu bintang", time: 202.93 },
+                    { text: "Yang terbentang di angkasa bila kau disini", time: 207.62 },
+                    { text: "'Tuk sekedar menemani, 'tuk melintasi wangi", time: 212.14 },
+                    { text: "Yang s'lalu tersaji di satu sisi hati", time: 217.10 },
+                    { text: "Cintaku tak harus, miliki dirimu", time: 221.00 },
+                    { text: "Meski perih mengiris", time: 230.01 },
+                    { text: "Iris segala janji", time: 234.52 },
+                    { text: "Cintaku tak harus, miliki dirimu", time: 239.13 },
+                    { text: "Meski perih mengiris", time: 248.19 },
+                    { text: "Iris segala janji", time: 252.68 },
+                    { text: "Sya-lala-lala-la", time: 257.37 },
+                    { text: "Sya-lala-lala-la", time: 261.85 },
+                    { text: "Sya-lala-lala-la", time: 266.40 },
+                    { text: "Sya-lala-lala-la", time: 270.93 },
+                    { text: "Sya-lala-lala-la", time: 275.54 },
+                    { text: "Sya-lala-lala-la", time: 279.96 },
+                    { text: "Sya-lala-lala-la", time: 284.39 }
+                ]
+            },
+
+            "Dewi": {
+        lines: [
+            { text: "Dewi, aku mohon, beri kesempatan", time: 15.67 },
+            { text: "'Tuk bisa menebus dosaku kepadamu", time: 20.31 },
+            { text: "Maafkanlah aku yang menyakitimu", time: 27.66 },
+            { text: "Aku tidak pernah menyangka bisa begini", time: 32.68 },
+            { text: "Oh, dewi, dengarkanlah", time: 39.00 },
+            { text: "Dewi, kaulah hidupku", time: 44.97 },
+            { text: "Aku cinta padamu sampai mati", time: 50.60 },
+            { text: "Oh, dewi, belahlah dadaku", time: 56.13 },
+            { text: "Agar kau tahu, agar kau mengerti", time: 61.41 },
+            { text: "Wo-wo-uh, wo-wo", time: 66.91 },
+            { text: "Semua terjadi begitu saja", time: 84.58 },
+            { text: "Tak ada yang serius antara dia dan aku", time: 89.20 },
+            { text: "Tidak ada cinta dan tak ada hati", time: 96.45 },
+            { text: "Hanya karena aku lelaki dan dia wanita", time: 101.55 },
+            { text: "Oh, dewi, dengarkanlah", time: 107.95 },
+            { text: "Dewi, kaulah hidupku", time: 113.95 },
+            { text: "Aku cinta padamu sampai mati", time: 119.48 },
+            { text: "Oh, dewi, belahlah dadaku", time: 125.22 },
+            { text: "Agar kau tahu, agar kau mengerti", time: 130.63 },
+            { text: "Wo-wo-uh, wo-wo", time: 136.13 },
+            { text: "Oh, dewi, dengarkanlah", time: 176.78 },
+            { text: "Dewi, kaulah hidupku", time: 182.93 },
+            { text: "Aku cinta padamu sampai mati", time: 188.40 },
+            { text: "Oh, dewi, belahlah dadaku", time: 194.02 },
+            { text: "Agar kau tahu, agar kau mengerti", time: 199.63 },
+            { text: "Wo-wo-uh, wo-wo", time: 205.08 },
+            { text: "Dewi, kaulah hidupku", time: 209.87 },
+            { text: "Aku cinta padamu sampai mati", time: 215.35 },
+            { text: "Oh, dewi, belahlah dadaku", time: 221.09 },
+            { text: "Agar kau tahu, agar kau mengerti", time: 226.53 },
+            { text: "Wo-wo, wo-wo", time: 232.07 },
+            { text: "Wo-uh-wo, wo-wo", time: 235.46 },
+            { text: "Aku cinta padamu sampai mati", time: 242.45 },
+            { text: "Oh, dewi, belahlah dadaku", time: 248.03 },
+            { text: "Agar kau tahu, agar kau mengerti", time: 253.85 },
+            { text: "Wo-wo, wo-wo, oh, yeah", time: 258.94 }
+        ]
+    },
+    "Arjuna": {
+        lines: [
+            { text: "Sudah kudaki gunung tertinggi", time: 2.27 },
+            { text: "Hanya untuk mencari di mana dirimu", time: 7.57 },
+            { text: "Sudah kujelajahi isi bumi", time: 15.03 },
+            { text: "Hanya untuk dapat hidup bersamamu", time: 20.70 },
+            { text: "Sudah kuarungi laut samudra", time: 29.53 },
+            { text: "Hanya untuk mencari tempat berlabuhmu", time: 35.30 },
+            { text: "Tapi semakin jauh 'ku mencari", time: 42.12 },
+            { text: "Cinta semakin aku tak mengerti", time: 49.03 },
+            { text: "Akulah Arjuna", time: 56.74 },
+            { text: "Yang mencari cinta", time: 65.44 },
+            { text: "Wahai wanita", time: 71.41 },
+            { text: "Cintailah aku", time: 79.57 },
+            { text: "Mungkin kutemui cinta sejati", time: 85.88 },
+            { text: "Saat aku hembuskan napas terakhirku", time: 95.06 },
+            { text: "Mungkin cinta sejati memang tak ada", time: 102.29 },
+            { text: "Dalam cerita kehidupan ini", time: 108.77 },
+            { text: "Akulah Arjuna", time: 117.75 },
+            { text: "Yang mencari cinta", time: 124.48 },
+            { text: "Wahai wanita", time: 132.14 },
+            { text: "Cintailah aku", time: 138.92 },
+            { text: "Akulah Arjuna", time: 145.63 },
+            { text: "Arjuna", time: 152.68 },
+            { text: "Akulah Arjuna", time: 155.57 },
+            { text: "Akulah Arjuna", time: 158.95 },
+            { text: "Akulah Arjuna", time: 162.46 },
+            { text: "Akulah Arjuna", time: 171.55 },
+            { text: "Akulah Arjuna", time: 181.04 },
+            { text: "Akulah Arjuna yang mencari cinta", time: 187.40 },
+            { text: "Wahai wanita cintailah aku", time: 228.96 },
+            { text: "Akulah Arjuna yang mencari cinta", time: 237.91 },
+            { text: "Wahai wanita cintailah aku", time: 241.57 }
+        ]
+    },
+    "Kamulah Satu-Satunya": {
+        lines: [
+            { text: "Laras hati", time: 13.31 },
+            { text: "Berkelana iris janji", time: 16.97 },
+            { text: "Menyulih bisikan", time: 20.32 },
+            { text: "Bisikan memacu hasrat", time: 23.10 },
+            { text: "Desir-desir mimpi", time: 26.94 },
+            { text: "Isyaratkan legit dunia", time: 29.82 },
+            { text: "Kamulah satu-satunya", time: 34.78 },
+            { text: "Yang ternyata mengerti aku", time: 38.09 },
+            { text: "Maafkan aku selama ini", time: 41.51 },
+            { text: "Yang sedikit melupakanmu", time: 45.51 },
+            { text: "S'gala santun", time: 49.53 },
+            { text: "Yang kauendap di jiwaku", time: 52.52 },
+            { text: "Tak terisap dulu", time: 56.00 },
+            { text: "Kini kecapkan sesalku", time: 59.10 },
+            { text: "Anyaman cintamu", time: 62.67 },
+            { text: "Terkoyak buram mataku", time: 65.57 },
+            { text: "Kamulah satu-satunya", time: 70.45 },
+            { text: "Yang ternyata mengerti aku", time: 73.62 },
+            { text: "Maafkan aku selama ini", time: 77.38 },
+            { text: "Yang sedikit melupakanmu", time: 81.31 },
+            { text: "Laras hati", time: 93.13 },
+            { text: "Alirkan diri kembali", time: 96.84 },
+            { text: "Membujur tubuhku", time: 100.35 },
+            { text: "Sejuk pangkuan dirimu", time: 103.32 },
+            { text: "Tak ingin terbungkus", time: 106.65 },
+            { text: "Terbungkus penyesalan", time: 109.69 },
+            { text: "Puing-puing janjiku", time: 114.43 },
+            { text: "Kupugar kembali untukmu", time: 117.76 },
+            { text: "Segala denyut nadi memanggil", time: 121.16 },
+            { text: "Kamulah satu-satunya", time: 125.09 },
+            { text: "Kamulah satu-satunya", time: 129.32 },
+            { text: "Kamulah satu-satunya", time: 134.17 },
+            { text: "Kamulah satu-satunya", time: 141.87 },
+            { text: "Maafkanlah aku selama ini", time: 146.56 },
+            { text: "Kamulah satu-satunya", time: 153.76 },
+            { text: "Yang ternyata mengerti aku", time: 156.71 },
+            { text: "Maafkan aku selama ini", time: 160.68 },
+            { text: "Yang sedikit melupakanmu", time: 164.23 },
+            { text: "Puing-puing janjiku", time: 167.10 },
+            { text: "Kupugar kembali untukmu", time: 169.78 },
+            { text: "Segala denyut nadi memanggil", time: 173.35 },
+            { text: "Kamulah satu-satunya", time: 176.82 },
+            { text: "Kamulah satu-satunya", time: 179.80 },
+            { text: "Yang ternyata mengerti aku", time: 182.85 },
+            { text: "Maafkan aku selama ini", time: 186.12 },
+            { text: "Yang sedikit melupakanmu", time: 189.48 },
+            { text: "Puing-puing janjiku", time: 192.71 },
+            { text: "Kupugar kembali untukmu", time: 195.66 },
+            { text: "Segala denyut nadi memanggil", time: 199.09 },
+            { text: "Kamulah satu-satunya", time: 202.59 }
+        ]
+    },
+    "Cukup Siti Nurbaya": {
+        lines: [
+            { text: "Oh, masih ada", time: 10.52 },
+            { text: "Belenggu ruang cinta", time: 15.17 },
+            { text: "Meresap kini di dinding zaman", time: 20.43 },
+            { text: "Mencoba-coba kikis naluri", time: 25.58 },
+            { text: "Agitasi murahan yang ada lagi", time: 30.72 },
+            { text: "Mohon acuhkan, palingkan muka", time: 35.65 },
+            { text: "Uh!", time: 41.63 },
+            { text: "Oh, memang dunia", time: 44.21 },
+            { text: "Buramkan satu logika", time: 48.77 },
+            { text: "Seolah-olah hidup kita ini", time: 53.97 },
+            { text: "Hanya ternilai sebatas rupiah", time: 59.26 },
+            { text: "Dengarkan manusia yang terasah falsafah", time: 64.21 },
+            { text: "Sesaat katanya itu bukan dogma", time: 69.07 },
+            { text: "Uh!", time: 75.22 },
+            { text: "Katakan pada mama", time: 77.30 },
+            { text: "Cinta bukan hanya harta dan tahta", time: 82.73 },
+            { text: "Pastikan pada semua", time: 87.52 },
+            { text: "Hanya cinta yang sejukkan dunia", time: 93.17 },
+            { text: "(Bukan itu mama, bukan itu papa)", time: 97.49 },
+            { text: "(Bukan itu mama, bukan itu papa)", time: 102.51 },
+            { text: "Oh, cukup Siti Nurbaya yang mengalami", time: 108.91 },
+            { text: "Pahitnya dunia", time: 115.72 },
+            { text: "Hidupku, kamu, dan mereka semua", time: 118.63 },
+            { text: "Takkan ada yang bisa memaksakan jalan", time: 122.41 },
+            { text: "Hidup yang 'kan tertempuh", time: 126.89 },
+            { text: "Dengarkan manusia yang terasah oleh falsafah", time: 128.97 },
+            { text: "Sesaat katanya itu bukan dogma", time: 133.96 },
+            { text: "Katakan pada mama", time: 141.94 },
+            { text: "Cinta bukan hanya harta dan tahta", time: 147.12 },
+            { text: "Pastikan pada semua", time: 152.28 },
+            { text: "Hanya cinta yang sejukkan dunia", time: 157.52 },
+            { text: "Katakan (katakan)", time: 201.32 },
+            { text: "Pada mama (pada mama papa)", time: 203.55 },
+            { text: "Cinta bukan hanya harta dan tahta (bukan harta dan tahta)", time: 206.85 },
+            { text: "Pastikan (pastikan)", time: 211.61 },
+            { text: "Pada semua (pada semua)", time: 213.85 },
+            { text: "Hanya cinta yang sejukkan dunia", time: 217.28 },
+            { text: "Katakan ('kan) pada mama", time: 221.93 },
+            { text: "Cinta bukan hanya harta dan tahta (bukan harta tahta)", time: 227.57 },
+            { text: "Pastikan pada semua (hanya cinta sejukkan)", time: 232.56 },
+            { text: "Hanya cinta yang sejukkan dunia (cinta sejukkan dunia)", time: 237.99 },
+            { text: "Bukan itu mama, bukan itu papa (bukan, bukan)", time: 242.12 },
+            { text: "Bukan itu mama (bukan, bukan)", time: 247.37 },
+            { text: "Bukan itu papa (bukan, bukan)", time: 250.17 },
+            { text: "Bukan itu mama (bukan, bukan)", time: 252.66 },
+            { text: "Bukan itu papa (bukan, bukan)", time: 255.46 },
+            { text: "Bukan itu mama (bukan, bukan)", time: 258.10 },
+            { text: "Bukan itu papa (bukan, bukan)", time: 260.38 },
+            { text: "Bukan itu mama (bukan, bukan)", time: 263.03 },
+            { text: "Bukan itu papa (bukan, bukan)", time: 265.71 },
+            { text: "Bukan itu mama (bukan, bukan)", time: 268.27 },
+            { text: "Bukan itu papa (bukan, bukan)", time: 270.85 },
+            { text: "Bukan itu mama (bukan, bukan)", time: 273.12 },
+            { text: "Bukan itu papa (bukan, bukan)", time: 276.11 },
+            { text: "Bukan itu mama (bukan, bukan)", time: 278.46 },
+            { text: "Bukan itu papa (bukan, bukan)", time: 281.01 }
+        ]
+    },
+    "Sedang Ingin Bercinta": {
+        lines: [
+            { text: "Setiap ada kamu", time: 11.43 },
+            { text: "Mengapa jantungku", time: 14.38 },
+            { text: "Berdetak lebih kencang", time: 17.03 },
+            { text: "Seperti genderang mau perang", time: 19.28 },
+            { text: "Setiap ada kamu", time: 22.76 },
+            { text: "Mengapa darahku", time: 25.63 },
+            { text: "Mengalir lebih cepat", time: 28.57 },
+            { text: "Dari ujung kaki ke ujung kepala", time: 30.77 },
+            { text: "Setiap ada kamu", time: 34.25 },
+            { text: "Otakku berfikir", time: 36.97 },
+            { text: "Bagaimana caranya", time: 39.87 },
+            { text: "Untuk berdua bersama kamu", time: 42.16 },
+            { text: "Aku sedang ingin bercinta karena", time: 44.57 },
+            { text: "Mungkin ada kamu di sini aku ingin", time: 50.03 },
+            { text: "Aku sedang ingin bercinta karena", time: 55.80 },
+            { text: "Mungkin ada kamu di sini aku ingin", time: 61.23 },
+            { text: "Setiap ada kamu", time: 79.25 },
+            { text: "Mengapa jantung ini", time: 81.34 },
+            { text: "Berdetak lebih kencang", time: 84.69 },
+            { text: "Seperti genderang mau perang", time: 87.13 },
+            { text: "Setiap ada kamu", time: 90.52 },
+            { text: "Mengapa darah ini", time: 92.74 },
+            { text: "Mengalir lebih kencang", time: 95.80 },
+            { text: "Dari ujung kaki ke ujung kepala", time: 98.68 },
+            { text: "Di setiap ada kamu", time: 101.67 },
+            { text: "Mengapa jantungku berdetak", time: 103.63 },
+            { text: "Berdetaknya lebih kencang", time: 106.84 },
+            { text: "Seperti genderang mau perang", time: 109.42 },
+            { text: "Di setiap ada kamu", time: 112.81 },
+            { text: "Mengapa darahku mengalir", time: 115.19 },
+            { text: "Mengalir lebih cepat", time: 118.31 },
+            { text: "Dari ujung kaki ke ujung kepala", time: 120.63 },
+            { text: "Aku sedang ingin bercinta karena", time: 123.57 },
+            { text: "Mungkin ada kamu di sini aku ingin", time: 129.06 },
+            { text: "Aku sedang ingin bercinta karena", time: 134.83 },
+            { text: "Mungkin ada kamu di sini aku ingin", time: 140.42 },
+            { text: "Di setiap ada kamu", time: 146.68 },
+            { text: "Mengapa jantungku berdetak", time: 148.99 },
+            { text: "Berdetaknya lebih kencang", time: 152.20 },
+            { text: "Seperti genderang mau perang", time: 154.34 },
+            { text: "Di setiap ada kamu", time: 157.97 },
+            { text: "Mengapa darahku mengalir", time: 160.17 },
+            { text: "Mengalir lebih cepat", time: 163.60 },
+            { text: "Dari ujung kaki ke ujung kepala", time: 165.72 },
+            { text: "Aku sedang ingin bercinta karena", time: 168.58 },
+            { text: "Mungkin ada kamu di sini aku ingin", time: 174.28 },
+            { text: "Aku sedang ingin bercinta karena", time: 179.87 },
+            { text: "Mungkin ada kamu di sini aku ingin", time: 185.64 },
+            { text: "Aku sedang ingin (aku sedang ingin)", time: 213.94 },
+            { text: "Bercinta karena (aku sedang)", time: 216.04 },
+            { text: "Mungkin ada kamu (mungkin ada kamu)", time: 219.57 },
+            { text: "Di sini aku ingin (aku sedang)", time: 221.56 },
+            { text: "Aku sedang ingin (aku sedang ingin)", time: 225.19 },
+            { text: "Bercinta karena (aku sedang)", time: 227.49 },
+            { text: "Mungkin ada kamu (mungkin ada kamu)", time: 230.74 },
+            { text: "Di sini aku ingin", time: 232.97 }
+        ]
+    },
+
+"Dan": {
+        lines: [
+            { text: "Dan...", time: 17.11 },
+            { text: "Dan bila esok datang kembali", time: 20.79 },
+            { text: "Seperti sedia kala", time: 27.67 },
+            { text: "Di mana kau bisa bercanda", time: 29.73 },
+            { text: "Dan...", time: 32.74 },
+            { text: "Perlahan kau pun lupakan aku", time: 36.02 },
+            { text: "Mimpi burukmu", time: 43.52 },
+            { text: "Di mana telah kutancapkan duri tajam", time: 45.40 },
+            { text: "Kau pun menangis, menangis sedih", time: 50.61 },
+            { text: "Maafkan aku", time: 58.63 },
+            { text: "Dan...", time: 63.77 },
+            { text: "Bukan maksudku, bukan inginku", time: 66.66 },
+            { text: "Melukaimu", time: 74.13 },
+            { text: "Sadarkah kau di sini ku pun terluka", time: 75.92 },
+            { text: "Melupakanmu, menepikanmu", time: 82.39 },
+            { text: "Maafkan aku", time: 89.39 },
+            { text: "Lupakanlah saja diriku", time: 92.50 },
+            { text: "Bila itu bisa membuatmu", time: 97.23 },
+            { text: "Kembali bersinar dan berpijar", time: 100.86 },
+            { text: "Seperti dulu kala", time: 104.06 },
+            { text: "Caci-maki saja diriku", time: 108.50 },
+            { text: "Bila itu bisa membuatmu", time: 112.32 },
+            { text: "Kembali bersinar dan berpijar", time: 116.38 },
+            { text: "Seperti dulu kala", time: 119.39 },
+            { text: "Dan...", time: 132.97 },
+            { text: "Bukan maksudku, bukan inginku", time: 135.73 },
+            { text: "Melukaimu", time: 143.44 },
+            { text: "Sadarkah kau di sini 'ku pun terluka", time: 145.45 },
+            { text: "Melupakanmu, menepikanmu", time: 150.97 },
+            { text: "Maafkan aku", time: 158.85 },
+            { text: "Lupakanlah saja diriku", time: 161.99 },
+            { text: "Bila itu bisa membuatmu", time: 165.78 },
+            { text: "Kembali bersinar dan berpijar", time: 169.73 },
+            { text: "Seperti dulu kala", time: 173.36 },
+            { text: "Caci-maki saja diriku", time: 177.60 },
+            { text: "Bila itu bisa membuatmu", time: 181.37 },
+            { text: "Kembali bersinar dan berpijar", time: 185.19 },
+            { text: "Seperti dulu kala", time: 188.72 },
+            { text: "Lupakanlah saja diriku", time: 223.28 },
+            { text: "Bila itu bisa membuatmu", time: 227.20 },
+            { text: "Kembali bersinar dan berpijar", time: 231.45 },
+            { text: "Seperti dulu kala", time: 234.24 },
+            { text: "Caci-maki saja diriku", time: 238.76 },
+            { text: "Bila itu bisa membuatmu", time: 242.68 },
+            { text: "Kembali bersinar dan berpijar", time: 246.17 },
+            { text: "Seperti dulu kala", time: 250.35 },
+            { text: "Wo-ho, wo-ho,wo-oo", time: 255.47 }
+        ]
+    },
+    "Melompat Lebih Tinggi": {
+        lines: [
+            { text: "Kita berlari dan terus 'kan bernyanyi", time: 5.32 },
+            { text: "Kita buka lebar pelukan mentari", time: 10.78 },
+            { text: "Bila ku terjatuh nanti", time: 16.28 },
+            { text: "Kau siap mengangkat aku lebih tinggi", time: 19.14 },
+            { text: "Uh, uh, uh", time: 26.97 },
+            { text: "Seperti pedih yang telah kita bagi", time: 33.05 },
+            { text: "Layaknya luka yang telah terobati", time: 38.54 },
+            { text: "Bila kita jatuh nanti", time: 44.30 },
+            { text: "Kita siap 'tuk melompat lebih tinggi", time: 47.06 },
+            { text: "Bersama kita bagai hutan dan hujan", time: 53.11 },
+            { text: "Aku ada kar'na kau telah tercipta, ha-ah", time: 58.87 },
+            { text: "Kupetik bintang untuk kau simpan", time: 66.83 },
+            { text: "Cahayanya tenang, berikan kau perlindungan", time: 72.69 },
+            { text: "Sebagai pengingat teman", time: 78.12 },
+            { text: "Juga s'bagai jawaban semua tantangan", time: 81.15 },
+            { text: "Kupetik bintang untuk kau simpan", time: 89.33 },
+            { text: "Cahayanya tenang, berikan kau perlindungan", time: 94.91 },
+            { text: "Sebagai pengingat teman", time: 100.47 },
+            { text: "Juga s'bagai jawaban semua tantangan", time: 103.46 },
+            { text: "Sebelum waktu memisahkan detikku, detikmu", time: 140.95 },
+            { text: "Sebelum dewasa, menua memisahkan kita", time: 143.81 },
+            { text: "Degupan jantung kita akan s'lalu seirama", time: 146.57 },
+            { text: "Bila kau rindu aku", time: 149.32 },
+            { text: "Kupetik bintang untuk kau simpan", time: 150.79 },
+            { text: "Cahayanya tenang, berikan kau perlindungan", time: 156.33 },
+            { text: "Sebagai pengingat teman", time: 161.73 },
+            { text: "Juga s'bagai jawaban semua tantangan", time: 164.68 },
+            { text: "Kupetik bintang untuk kau simpan", time: 173.19 },
+            { text: "Cahayanya tenang, berikan kau perlindungan", time: 178.60 },
+            { text: "Sebagai pengingat teman", time: 184.12 },
+            { text: "Juga s'bagai jawaban semua tantangan", time: 187.03 }
+        ]
+    },
+    "Sephia": {
+        lines: [
+            { text: "Hei, Sephia", time: 6.91 },
+            { text: "Malam ini ku takkan datang", time: 9.24 },
+            { text: "Mencoba 'tuk berpaling sayang", time: 15.01 },
+            { text: "Dari cintamu", time: 18.74 },
+            { text: "Hei, Sephia", time: 23.73 },
+            { text: "Malam ini ku takkan pulang", time: 30.27 },
+            { text: "Tak usah kau mencari aku", time: 33.72 },
+            { text: "Demi cintamu", time: 38.13 },
+            { text: "Hadapilah ini", time: 47.23 },
+            { text: "Kisah kita takkan abadi", time: 50.23 },
+            { text: "S'lamat tidur, kekasih gelapku", time: 55.71 },
+            { text: "S'moga cepat kau lupakan aku", time: 63.84 },
+            { text: "Kekasih sejatimu", time: 69.08 },
+            { text: "Takkan pernah sanggup untuk melupakanmu", time: 74.11 },
+            { text: "S'lamat tinggal, kasih tak terungkap", time: 78.99 },
+            { text: "S'moga kau lupakan aku cepat", time: 84.88 },
+            { text: "Kekasih sejatimu", time: 91.66 },
+            { text: "Takkan pernah sanggup untuk meninggalkanmu", time: 95.24 },
+            { text: "Hei, Sephia", time: 101.79 },
+            { text: "Jangan pernah panggil namaku", time: 107.15 },
+            { text: "Bila kita bertemu lagi", time: 111.22 },
+            { text: "Di lain hari", time: 120.30 },
+            { text: "Hadapilah ini", time: 121.86 },
+            { text: "Kisah kita takkan abadi", time: 128.72 },
+            { text: "S'lamat tidur, kekasih gelapku (oh, Sephia)", time: 134.13 },
+            { text: "S'moga cepat kau lupakan aku (oh, Sephia)", time: 140.75 },
+            { text: "Kekasih sejatimu", time: 144.18 },
+            { text: "Takkan pernah sanggup untuk melupakanmu", time: 147.94 },
+            { text: "S'lamat tinggal, kasih tak terungkap (oh, Sephia)", time: 153.48 },
+            { text: "S'moga kau lupakan aku cepat (oh, Sephia)", time: 159.75 },
+            { text: "Kekasih sejatimu", time: 164.94 },
+            { text: "Takkan pernah sanggup untuk meninggalkanmu", time: 170.29 },
+            { text: "S'lamat tidur, kekasih gelapku (oh, Sephia)", time: 177.29 },
+            { text: "S'moga cepat kau lupakan aku (oh, Sephia)", time: 182.26 },
+            { text: "Kekasih sejatimu", time: 185.44 },
+            { text: "Takkan pernah sanggup untuk melupakanmu (wo-oh)", time: 193.61 },
+            { text: "S'lamat tinggal, kasih tak terungkap (oh, Sephia)", time: 197.74 },
+            { text: "S'moga kau lupakan aku cepat (oh, Sephia)", time: 202.36 },
+            { text: "Kekasih sejatimu", time: 206.45 },
+            { text: "Takkan pernah sanggup untuk meninggalkanmu, oh-ho", time: 211.76 },
+            { text: "(Oh, Sephia) Wo-ho-wo-ho", time: 212.10 },
+            { text: "(Oh, Sephia) Wo-ah", time: 213.07 },
+            { text: "Oh-ho, wo-ho, wo-uh-oh-ho", time: 214.00 },
+            { text: "Wo-uh-oh-ho-oh", time: 214.80 },
+            { text: "(Oh, Sephia) Wo, oh-wo-wo-wo-oh", time: 215.37 },
+            { text: "(Oh, Sephia) Wo-ah-ho-oh, yeah, yeah", time: 216.09 },
+            { text: "Wo-ho-wo-ho-oh", time: 216.77 },
+            { text: "Wo-wo-wo-ho-ho", time: 217.43 },
+            { text: "(Oh, Sephia) Yeah, eh, e, e, ey", time: 218.42 },
+            { text: "(Oh, Sephia)", time: 219.17 }
+        ]
+    },
+    "Film Favorit": {
+        lines: [
+            { text: "Terkadang hidup menggariskan misteri", time: 10.10 },
+            { text: "Yang takkan pernah bisa aku pahami", time: 15.37 },
+            { text: "Seperti aku yang tak pernah berhenti", time: 20.68 },
+            { text: "Mencari celah menaklukkan hati", time: 26.27 },
+            { text: "Mereka bilang, \"Cobalah kau sadari", time: 31.32 },
+            { text: "Misteri ini harusnya disudahi\"", time: 36.73 },
+            { text: "Aku mencoba sederhanakan ini", time: 42.07 },
+            { text: "Agar semua orang memahami", time: 47.66 },
+            { text: "Sama seperti di film favoritmu", time: 55.84 },
+            { text: "Semua cara akan kucoba", time: 61.47 },
+            { text: "Walau peran yang aku mainkan", time: 66.62 },
+            { text: "Bukan pemeran utamanya", time: 71.97 },
+            { text: "Karena mereka tak ikut merasakan", time: 79.48 },
+            { text: "Indahnya hidup jatuh hati padamu", time: 84.77 },
+            { text: "Sekali lagi aku 'kan menjelaskan", time: 90.16 },
+            { text: "Berhenti bukan pilihan bagiku", time: 95.44 },
+            { text: "Sama seperti di film favoritmu", time: 101.44 },
+            { text: "Semua cara akan kucoba", time: 106.70 },
+            { text: "Walau peran yang aku mainkan", time: 111.98 },
+            { text: "Bukan pemeran utamanya", time: 117.34 },
+            { text: "Nana nananana", time: 124.40 },
+            { text: "Nana nananana", time: 135.13 },
+            { text: "Sama seperti di film favoritmu", time: 141.29 },
+            { text: "Semua cara akan kucoba", time: 146.52 },
+            { text: "Walau peran yang aku mainkan", time: 151.97 },
+            { text: "Bukan pemeran utamanya", time: 157.25 },
+            { text: "Sama seperti di film favoritmu", time: 159.96 },
+            { text: "Aku takkan pernah menyerah", time: 165.42 },
+            { text: "Tak peduli yang aku mainkan (Kumainkan)", time: 170.65 },
+            { text: "Aku mainkan", time: 175.83 },
+            { text: "Bukan pemeran utamanya", time: 178.63 },
+            { text: "Nana nananana", time: 185.74 }
+        ]
+    },
+    "Sahabat Sejati": {
+        lines: [
+            { text: "Sahabat sejatiku", time: 5.26 },
+            { text: "Hilangkah dari ingatanmu", time: 7.81 },
+            { text: "Di hari kita saling berbagi", time: 10.74 },
+            { text: "Dengan kotak sejuta mimpi", time: 16.72 },
+            { text: "Aku datang menghampirimu", time: 19.57 },
+            { text: "Kuperlihatkan semua hartaku", time: 22.31 },
+            { text: "Kita s'lalu berpendapat", time: 28.35 },
+            { text: "Kita ini yang terhebat", time: 31.08 },
+            { text: "Kesombongan di masa muda yang indah", time: 34.33 },
+            { text: "Aku raja kaupun raja", time: 40.09 },
+            { text: "Aku hitam kaupun hitam", time: 43.05 },
+            { text: "Arti teman lebih dari sekedar materi", time: 45.96 },
+            { text: "Pegang pundakku, jangan pernah lepaskan", time: 52.91 },
+            { text: "Bila kumulai lelah?", time: 56.88 },
+            { text: "Lelah dan tak bersinar", time: 60.77 },
+            { text: "Remas sayapku, jangan pernah Lepaskan", time: 64.69 },
+            { text: "Bila kuingin terbang?", time: 69.01 },
+            { text: "Terbang meninggalkanmu", time: 72.31 },
+            { text: "Ku s'lalu membanggakanmu", time: 81.23 },
+            { text: "Kaupun s'lalu menyanjungku", time: 83.99 },
+            { text: "Aku dan kamu darah abadi", time: 87.06 },
+            { text: "Demi bermain bersama", time: 92.92 },
+            { text: "Kita duakan segalanya", time: 95.93 },
+            { text: "Merdeka kita, kita merdeka", time: 98.85 },
+            { text: "Pegang pundakku, jangan pernah lepaskan", time: 105.50 },
+            { text: "Bila kumulai lelah?", time: 110.11 },
+            { text: "Lelah dan tak bersinar", time: 113.34 },
+            { text: "Remas sayapku, jangan pernah lepaskan", time: 117.20 },
+            { text: "Bila kuingin terbang?", time: 122.04 },
+            { text: "Terbang meninggalkanmu", time: 124.82 },
+            { text: "Tak pernah kita pikirkan ujung perjalanan ini", time: 146.67 },
+            { text: "Tak usah kita pikirkan ujung perjalanan ini", time: 152.21 },
+            { text: "Dan tak usah kita pikirkan ujung perjalanan ini", time: 158.44 }
+        ]
+    },
+    "Betapa": {
+        lines: [
+            { text: "Seminggu setelah kau pergi", time: 16.04 },
+            { text: "Teman silih berganti", time: 22.82 },
+            { text: "Menghiburku", time: 26.46 },
+            { text: "Berkata semua teratasi", time: 30.70 },
+            { text: "Dan terus sembunyi", time: 36.80 },
+            { text: "Di balik senyum palsu", time: 40.70 },
+            { text: "Ku dengar dirimu", time: 44.25 },
+            { text: "Tak sendiri lagi", time: 47.35 },
+            { text: "Betapa hancurnya", time: 56.37 },
+            { text: "Hati dan jiwaku", time: 63.57 },
+            { text: "Setahun setelah kau pergi", time: 84.23 },
+            { text: "Ku masih sembunyi", time: 90.64 },
+            { text: "Di balik senyum palsu", time: 94.42 },
+            { text: "Ku dengar dirimu", time: 97.83 },
+            { text: "Tak sendiri lagi", time: 101.23 },
+            { text: "Betapa hancurnya", time: 109.57 },
+            { text: "Hati dan jiwaku", time: 117.24 },
+            { text: "Betapa hancurnya", time: 124.64 },
+            { text: "Tolong bantu aku", time: 150.56 },
+            { text: "Melewati semua", time: 157.97 },
+            { text: "Betapa hancurnya", time: 168.78 },
+            { text: "Hati dan jiwaku", time: 176.19 },
+            { text: "Betapa betapa", time: 183.48 }
+        ]
+    },
+    "J.A.P": {
+        lines: [
+            { text: "Lelap haru di taman", time: 27.17 },
+            { text: "Bias makna yang terpendam", time: 34.85 },
+            { text: "Alas tonggak harapan", time: 38.13 },
+            { text: "Belai indah matamu", time: 41.70 },
+            { text: "Teman mimpi tanpa jemu", time: 47.85 },
+            { text: "Biar terkadang semu", time: 51.41 },
+            { text: "Untaian bunga canda", time: 68.27 },
+            { text: "Tempat kau lepaskan tawa", time: 74.51 },
+            { text: "Tenang hati terbaca", time: 79.06 },
+            { text: "Kini tiba waktuku", time: 82.18 },
+            { text: "Untuk puitiskan sayang", time: 88.99 },
+            { text: "Untuk katakan cinta", time: 92.27 },
+            { text: "Jadikanlah aku pacarmu", time: 95.10 },
+            { text: "'Kan kubingkai selalu indahmu", time: 97.93 },
+            { text: "Jadikanlah aku pacarmu", time: 101.11 },
+            { text: "Iringilah kisahku", time: 104.31 },
+            { text: "Jadikanlah aku pacarmu", time: 108.08 },
+            { text: "'Kan kubingkai selalu indahmu", time: 111.10 },
+            { text: "Jadikanlah aku pacarmu", time: 114.35 },
+            { text: "Iringilah kisahku", time: 118.05 },
+            { text: "Kini tiba waktuku", time: 142.75 },
+            { text: "Untuk puitiskan sayang", time: 149.85 },
+            { text: "Untuk katakan cinta", time: 153.08 },
+            { text: "Jangan pernah lari dariku", time: 156.43 },
+            { text: "Jangan engkau lupakan aku", time: 163.02 },
+            { text: "Jangan pernah lari dariku", time: 169.93 },
+            { text: "Jangan engkau lupakan aku", time: 176.78 },
+            { text: "Jadikanlah aku pacarmu", time: 182.83 },
+            { text: "'Kan kubingkai selalu indahmu", time: 185.30 },
+            { text: "Jadikanlah aku pacarmu", time: 189.02 },
+            { text: "Iringilah kisahku", time: 192.13 },
+            { text: "Jadikanlah aku pacarmu", time: 196.08 },
+            { text: "'Kan kubingkai selalu indahmu", time: 199.17 },
+            { text: "Jadikanlah aku pacarmu", time: 202.35 },
+            { text: "Iringilah kisahku", time: 206.09 },
+            { text: "Jadikanlah aku pacarmu", time: 240.43 },
+            { text: "'Kan kubingkai selalu indahmu", time: 243.17 },
+            { text: "Jadikanlah aku pacarmu", time: 246.76 },
+            { text: "Iringilah kisahku", time: 249.95 },
+            { text: "Jadikanlah aku pacarmu", time: 253.33 },
+            { text: "'Kan kubingkai selalu indahmu", time: 256.85 },
+            { text: "Jadikanlah aku pacarmu", time: 260.04 },
+            { text: "Iringilah kisahku", time: 262.50 }
+        ]
+    },
+    "Hari Bersamanya": {
+        lines: [
+            { text: "Hari telah berganti", time: 16.91 },
+            { text: "Tak bisa kuhindari", time: 21.06 },
+            { text: "Tibalah saat ini bertemu dengannya", time: 24.90 },
+            { text: "Jantungku berdegup cepat", time: 32.99 },
+            { text: "Kaki bergetar hebat", time: 37.06 },
+            { text: "Akankah aku ulangi merusak harinya?", time: 40.98 },
+            { text: "Mohon, Tuhan, untuk kali ini saja", time: 52.17 },
+            { text: "Beri aku kekuatan 'tuk menatap matanya", time: 59.22 },
+            { text: "Mohon, Tuhan, untuk kali ini saja", time: 68.22 },
+            { text: "Lancarkanlah hariku, hariku bersamanya", time: 75.17 },
+            { text: "Hariku bersamanya", time: 83.06 },
+            { text: "Kau tahu betapa aku", time: 92.94 },
+            { text: "Lemah di hadapannya", time: 97.06 },
+            { text: "Kau tahu berapa lama aku mendambanya", time: 100.91 },
+            { text: "Mohon, Tuhan, untuk kali ini saja", time: 108.36 },
+            { text: "Beri aku kekuatan 'tuk menatap matanya", time: 115.38 },
+            { text: "Mohon, Tuhan, untuk kali ini saja", time: 124.26 },
+            { text: "Lancarkanlah hariku, hariku bersamanya", time: 131.15 },
+            { text: "Hariku bersamanya", time: 139.03 },
+            { text: "Tuhan, tolonglah (hari bersamanya)", time: 155.74 },
+            { text: "Tuhan, tolonglah (hari bersamanya)", time: 159.60 },
+            { text: "Mohon, Tuhan, untuk kali ini saja", time: 164.38 },
+            { text: "Beri aku kekuatan 'tuk menatap matanya", time: 171.24 },
+            { text: "Mohon, Tuhan, untuk kali ini saja", time: 180.29 },
+            { text: "Lancarkanlah hariku, hariku bersamanya", time: 187.33 },
+            { text: "Hariku bersamanya", time: 195.18 },
+            { text: "(Hari bersamanya, hari bersamanya)", time: 197.41 },
+            { text: "(Hari bersamanya, hari bersamanya)", time: 201.46 },
+            { text: "(Hari bersamanya, hari bersamanya)", time: 205.65 },
+            { text: "(Hari bersamanya)", time: 209.66 },
+            { text: "Tuhan, tolonglah (hari bersamanya)", time: 211.62 },
+            { text: "Tuhan, tolonglah (hari bersamanya, ha-ha)", time: 215.65 }
+        ]
+    },
+    "Bila Kau Tak Disampingku": {
+        lines: [
+            { text: "Tak seharusnya kita terpisah", time: 12.99 },
+            { text: "Tak semestinya kita bertengkar", time: 16.84 },
+            { text: "Karena diriku masih butuh kau", time: 20.71 },
+            { text: "Maafkanlah sikapku, lupakanlah salahku itu", time: 27.76 },
+            { text: "Terlalu bodoh untuk diriku", time: 42.10 },
+            { text: "Menahan berat jutaan rindu apalagi menahan egoku", time: 45.07 },
+            { text: "Maafkanlah sikapku, lupakanlah salahku", time: 55.70 },
+            { text: "Luapkan kepadaku, wo-oo-ho", time: 63.75 },
+            { text: "Takkan kubiarkan kau menangis", time: 71.81 },
+            { text: "Takkan kubiarkan kau terkikis", time: 75.52 },
+            { text: "Terluka perasaan oleh semua ucapanku", time: 79.99 },
+            { text: "Maafkanlah semua sifat kasarku", time: 87.61 },
+            { text: "Bukan maksud untuk melukaimu", time: 91.62 },
+            { text: "Aku hanyalah orang yang penuh rasa cemburu", time: 96.00 },
+            { text: "Bila kau tak di sampingku", time: 105.23 },
+            { text: "Terlalu bodoh untuk diriku", time: 113.16 },
+            { text: "Menahan berat jutaan rindu apalagi menahan egoku", time: 125.10 },
+            { text: "Maafkanlah sikapku, lupakanlah salahku", time: 136.22 },
+            { text: "Luapkan kepadaku, wo-oo-ho", time: 144.52 },
+            { text: "Woo-oo-ho", time: 153.36 },
+            { text: "Takkan kubiarkan kau menangis", time: 159.83 },
+            { text: "Takkan kubiarkan kau terkikis", time: 164.06 },
+            { text: "Terluka perasaan oleh semua ucapanku", time: 168.61 },
+            { text: "Maafkanlah semua sifat kasarku", time: 176.69 },
+            { text: "Bukan maksud untuk melukaimu", time: 180.06 },
+            { text: "Aku hanyalah orang yang penuh rasa cemburu", time: 186.38 },
+            { text: "Dan bila kau tak di sampingku", time: 193.70 },
+            { text: "Bila kau tak di sampingku", time: 195.95 },
+            { text: "Bila kau tak di sampingku", time: 201.64 }
+        ]
+    },
+    "Pemuja Rahasia": {
+        lines: [
+            { text: "Na-na-na-na-na-na-na", time: 0.33 },
+            { text: "Na-na-na-na-na-na-na", time: 3.38 },
+            { text: "Na-na-na-na-na-na-na", time: 6.65 },
+            { text: "Na-na-na-na-na-na-na", time: 9.95 },
+            { text: "'Ku awali hariku dengan mendoakanmu", time: 12.37 },
+            { text: "Agar kau selalu sehat dan bahagia di sana", time: 15.52 },
+            { text: "Sebelum kau melupakanku lebih jauh", time: 19.21 },
+            { text: "Sebelum kau meninggalkanku lebih jauh", time: 22.41 },
+            { text: "'Ku tak pernah berharap kau 'kan merindukan", time: 25.74 },
+            { text: "Keberadaanku yang menyedihkan ini", time: 28.36 },
+            { text: "'Ku hanya ingin bila kau melihatku", time: 32.32 },
+            { text: "Kapanpun, di manapun hatimu 'kan berkata seperti ini", time: 34.92 },
+            { text: "Pria inilah yang jatuh hati padamu", time: 39.03 },
+            { text: "Pria inilah yang 'kan selalu memujamu", time: 42.21 },
+            { text: "A-ha, yeah, a-ha, yeah", time: 45.67 },
+            { text: "Begitu para rapper coba menghiburku", time: 48.92 },
+            { text: "Na-na-na-na-na-na-na", time: 52.83 },
+            { text: "Na-na-na-na-na-na-na", time: 56.03 },
+            { text: "Na-na-na-na-na-na-na", time: 59.38 },
+            { text: "Na-na-na-na-na-na-na", time: 62.65 },
+            { text: "Akulah orang yang selalu menaruh bunga", time: 64.89 },
+            { text: "Dan menuliskan cinta di atas meja kerjamu", time: 68.14 },
+            { text: "Akulah orang yang 'kan selalu mengawasimu", time: 71.89 },
+            { text: "Menikmati indahmu dari sisi gelapku", time: 75.07 },
+            { text: "Dan biarkan aku jadi pemujamu", time: 78.48 },
+            { text: "Jangan pernah hiraukan perasaan hatiku", time: 80.89 },
+            { text: "Tenanglah, tenang, pujaan hatiku, sayang", time: 84.80 },
+            { text: "Aku takkan sampai hati bila menyentuhmu", time: 88.23 },
+            { text: "Mungkin kau takkan pernah tahu", time: 91.97 },
+            { text: "Betapa mudahnya kau untuk dikagumi", time: 95.16 },
+            { text: "Na-na-na-na-na-na-na", time: 98.86 },
+            { text: "Na-na-na-na-na-na-na", time: 102.01 },
+            { text: "Mungkin kau takkan pernah sadar", time: 105.24 },
+            { text: "Betapa mudahnya kau untuk dicintai", time: 108.42 },
+            { text: "Na-na-na-na-na-na-na", time: 112.07 },
+            { text: "Na-na-na-na-na-na-na", time: 115.21 },
+            { text: "Akulah orang yang akan selalu memujamu", time: 144.75 },
+            { text: "Akulah orang yang akan selalu mengintaimu", time: 151.28 },
+            { text: "Akulah orang yang akan selalu memujamu", time: 157.83 },
+            { text: "Akulah orang yang akan selalu mengintaimu", time: 164.49 },
+            { text: "Mungkin kau takkan pernah tahu (Na-na-na-na-na-na-na)", time: 171.05 },
+            { text: "Betapa mudahnya kau untuk dikagumi (Na-na-na-na-na-na-na)", time: 174.16 },
+            { text: "Na-na-na-na-na-na-na", time: 177.81 },
+            { text: "Na-na-na-na-na-na-na", time: 181.08 },
+            { text: "Mungkin kau takkan pernah sadar (Na-na-na-na-na-na-na)", time: 184.17 },
+            { text: "Betapa mudahnya kau untuk dicintai (Na-na-na-na-na-na-na)", time: 187.39 },
+            { text: "Na-na-na-na-na-na-na", time: 190.91 },
+            { text: "Na-na-na-na-na-na-na", time: 194.10 },
+            { text: "Karena hanya dengan perasaan rinduku", time: 197.02 },
+            { text: "Yang dalam padamu, 'ku pertahankan hidup", time: 199.59 },
+            { text: "Maka hanya dengan jejak-jejak hatimu", time: 203.56 },
+            { text: "Ada arti 'ku telusuri hidup ini", time: 206.82 },
+            { text: "Selamanya hanya 'ku bisa memujamu", time: 210.13 },
+            { text: "Selamanya hanya 'ku bisa merindukanmu", time: 213.35 }
+        ]
+    },
+};
+
+
         
         // --- MASTER SEARCH INDEX FOR BANDS & ARTISTS ---
         const searchIndexArtists = [
@@ -14727,6 +16131,11 @@ function updateMediaSession() {
         </div>
         `;
     }).join('');
+    
+    // Reinitialize swipe to queue
+    if (typeof window.reinitSwipeToQueue === 'function') {
+        setTimeout(() => window.reinitSwipeToQueue(), 100);
+    }
 }
 
         
@@ -14796,6 +16205,11 @@ function updateMediaSession() {
     // After rendering, check offline status and update song availability
     if (window.updateSongListForOfflineMode) {
         setTimeout(() => window.updateSongListForOfflineMode(), 100);
+    }
+    
+    // Reinitialize swipe to queue
+    if (typeof window.reinitSwipeToQueue === 'function') {
+        setTimeout(() => window.reinitSwipeToQueue(), 100);
     }
 }
 
@@ -17227,9 +18641,16 @@ function renderProfilePublicPlaylists() {
             const lyricsContainer = document.getElementById('play-screen-lyrics-container');
             const lyrics = lyricsDatabase[song.title];
             if (lyrics && lyrics.lines) {
-                lyricsContainer.innerHTML = lyrics.lines.map((line, idx) => 
-                    `<div class="play-screen-lyric-line" data-idx="${idx}" data-time="${line.time || 0}" onclick="playScreenSeekToLyric(event)" onmousedown="startPlayScreenLyricDrag(event)" ontouchstart="startPlayScreenLyricDrag(event)">${line.text}</div>`
-                ).join('');
+                lyricsContainer.innerHTML = lyrics.lines.map((line, idx) => {
+                    // Escape HTML entities to prevent syntax errors
+                    const escapedText = String(line.text)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                    return `<div class="play-screen-lyric-line" data-idx="${idx}" data-time="${line.time || 0}" onclick="playScreenSeekToLyric(event)" onmousedown="startPlayScreenLyricDrag(event)" ontouchstart="startPlayScreenLyricDrag(event)">${escapedText}</div>`;
+                }).join('');
             } else {
                 lyricsContainer.innerHTML = '<div class="play-screen-lyric-line">Lirik tidak tersedia</div>';
             }
@@ -17281,6 +18702,52 @@ function renderProfilePublicPlaylists() {
             }
         }
 
+
+        // Update play screen info when song changes (without reopening)
+        function updatePlayScreenInfo(song) {
+            if (!song) return;
+            
+            // Update background
+            const bg = document.getElementById('play-screen-bg');
+            if (bg && song.cover) {
+                bg.style.backgroundImage = `url('${song.cover}')`;
+            }
+
+            // Update album art
+            const cover = document.getElementById('play-screen-cover');
+            if (cover) cover.src = song.cover;
+
+            // Update song info
+            const title = document.getElementById('play-screen-song-title');
+            if (title) title.textContent = song.title;
+            
+            const artist = document.getElementById('play-screen-song-artist');
+            if (artist) artist.textContent = song.artist;
+            
+            const lyricsTitle = document.getElementById('play-screen-lyrics-title');
+            if (lyricsTitle) lyricsTitle.textContent = song.title;
+
+            // Re-render lyrics
+            const lyricsContainer = document.getElementById('play-screen-lyrics-container');
+            if (lyricsContainer) {
+                const lyrics = lyricsDatabase[song.title];
+                if (lyrics && lyrics.lines) {
+                    lyricsContainer.innerHTML = lyrics.lines.map((line, idx) => {
+                        const escapedText = String(line.text)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+                        return `<div class="play-screen-lyric-line" data-time="${line.time}" data-index="${idx}" onclick="seekToLyricTime(${line.time})">${escapedText}</div>`;
+                    }).join('');
+                } else {
+                    lyricsContainer.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px;">Lirik tidak tersedia</div>';
+                }
+            }
+            
+            console.log('[OK] Play screen info updated for:', song.title);
+        }
         function playScreenTogglePlay() {
             if (isPlaying) {
                 pauseAudio();
@@ -18431,10 +19898,10 @@ function openArtistBandOverlay(artistData, songsList) {
         lyricsState.currentLineIndex = 0;
     }
     
-    // Load lyrics for Perunggu songs if available
+    // Load lyrics for songs if available
     if (typeof updateLyricsDisplay === 'function') {
-        console.log('[MUSIC] Calling updateLyricsDisplay with song ID:', song.id, 'Type:', typeof song.id);
-        updateLyricsDisplay(song.id);
+        console.log('[MUSIC] Calling updateLyricsDisplay with song:', song.title);
+        updateLyricsDisplay(song);
     } else {
         console.log('❌ updateLyricsDisplay function not found');
     }
@@ -18643,6 +20110,11 @@ function openArtistBandOverlay(artistData, songsList) {
         if (lyricsPageContent) {
             lyricsPageContent.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Lirik tidak tersedia untuk lagu ini</p>';
         }
+    }
+    
+    // Update play screen if it is open
+    if (typeof updatePlayScreenInfo === 'function') {
+        updatePlayScreenInfo(song);
     }
 }
         // --- ARTIST PROFILE LOGIC ---
@@ -19083,6 +20555,7 @@ window.toggleShuffle = toggleShuffle;
 window.openPlayScreenUnified = openPlayScreenUnified;
 window.closePlayScreenUnified = closePlayScreenUnified;
 window.toggleDesktopLyrics = toggleDesktopLyrics;
+window.updatePlayScreenInfo = updatePlayScreenInfo;
 window.playScreenTogglePlay = playScreenTogglePlay;
 window.playScreenSeek = playScreenSeek;
 window.playScreenSeekToLyric = playScreenSeekToLyric;
@@ -22136,6 +23609,115 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+// ===== SWIPE TO ADD TO QUEUE FEATURE =====
+(function() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let currentSwipeRow = null;
+    let swipeThreshold = 80; // pixels to swipe for action
+    let isSwipeActive = false;
+    
+    function initSwipeToQueue() {
+        // Add swipe indicators to all song rows
+        document.querySelectorAll('.song-row').forEach(row => {
+            if (!row.querySelector('.song-row-swipe-indicator')) {
+                const indicator = document.createElement('div');
+                indicator.className = 'song-row-swipe-indicator';
+                indicator.innerHTML = '<i class="ph-fill ph-playlist"></i>';
+                row.appendChild(indicator);
+            }
+        });
+        
+        // Add touch event listeners
+        document.addEventListener('touchstart', handleTouchStart, { passive: false });
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd, { passive: false });
+    }
+    
+    function handleTouchStart(e) {
+        const row = e.target.closest('.song-row');
+        if (!row || window.innerWidth > 768) return; // Only on mobile
+        
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        currentSwipeRow = row;
+        isSwipeActive = false;
+    }
+    
+    function handleTouchMove(e) {
+        if (!currentSwipeRow || window.innerWidth > 768) return;
+        
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        const deltaX = touchX - touchStartX;
+        const deltaY = touchY - touchStartY;
+        
+        // Check if horizontal swipe (not vertical scroll)
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+            isSwipeActive = true;
+            e.preventDefault(); // Prevent scroll
+            
+            // Only allow swipe left (deltaX < 0)
+            if (deltaX < 0) {
+                currentSwipeRow.classList.add('swiping');
+                const translateX = Math.max(deltaX, -swipeThreshold);
+                currentSwipeRow.style.transform = `translateX(${translateX}px)`;
+            }
+        }
+    }
+    
+    function handleTouchEnd(e) {
+        if (!currentSwipeRow || window.innerWidth > 768) return;
+        
+        const touchX = e.changedTouches[0].clientX;
+        const deltaX = touchX - touchStartX;
+        
+        // Save reference before nulling
+        const swipeRow = currentSwipeRow;
+        
+        swipeRow.classList.remove('swiping');
+        
+        // If swiped enough, add to queue
+        if (deltaX < -swipeThreshold && isSwipeActive) {
+            // Get song ID from row
+            const songId = parseInt(swipeRow.id.replace('row-', ''));
+            const song = songs.find(s => s.id === songId);
+            
+            if (song) {
+                // Add to queue - pass songId not song object
+                addToQueue(songId);
+                
+                // Visual feedback
+                swipeRow.style.transform = 'translateX(-100px)';
+                setTimeout(() => {
+                    if (swipeRow) {
+                        swipeRow.style.transform = '';
+                    }
+                }, 300);
+            }
+        } else {
+            // Reset position
+            swipeRow.style.transform = '';
+        }
+        
+        currentSwipeRow = null;
+        isSwipeActive = false;
+    }
+    
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSwipeToQueue);
+    } else {
+        initSwipeToQueue();
+    }
+    
+    // Re-initialize when song list changes
+    window.reinitSwipeToQueue = initSwipeToQueue;
+    
+    console.log('[OK] Swipe to queue initialized');
+})();
+
 // ===== PLAYBAR PROGRESS BAR WITH DRAG FUNCTIONALITY =====
 (function() {
     const progressContainer = document.getElementById('progress-container');
@@ -22295,6 +23877,19 @@ window.addEventListener('DOMContentLoaded', function() {
     
     console.log('[OK] Playbar progress with drag initialized');
 })();
+
+// ===== SEEK TO LYRIC TIME FUNCTION =====
+function seekToLyricTime(timeInSeconds) {
+    const audio = document.getElementById('audio-player');
+    if (audio && audio.duration) {
+        audio.currentTime = timeInSeconds;
+        // If audio is paused, play it
+        if (audio.paused) {
+            audio.play().catch(err => console.warn('Play failed:', err));
+        }
+        console.log(`⏩ Seeked to ${timeInSeconds}s`);
+    }
+}
 
 // ===== SILENT AUDIO & BACKGROUND PLAYBACK SYSTEM READY =====
 console.log('');
