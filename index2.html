@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Test Album Menu - Three Dot Fix</title>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-black: #000000;
+            --bg-dark: #121212;
+            --bg-card: #181818;
+            --bg-card-hover: #282828;
+            --primary-red: #e50914;
+            --text-white: #ffffff;
+            --text-gray: #b3b3b3;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-black);
+            color: var(--text-white);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            color: var(--primary-red);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .album-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .album-header {
+            padding: 24px;
+            background: linear-gradient(180deg, #282828 0%, var(--bg-card) 100%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .album-cover {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary-red), #ff6b6b);
+            flex-shrink: 0;
+        }
+
+        .album-info h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .album-info p {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .song-list {
+            padding: 0;
+        }
+
+        .song-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            gap: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .song-row:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .song-number {
+            width: 24px;
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .song-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .song-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .song-artist {
+            color: var(--text-gray);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .song-duration {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .song-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .like-btn, .add-queue-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 20px;
+            padding: 8px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .like-btn:hover, .add-queue-btn:hover {
+            color: white;
+        }
+
+        .like-btn.liked {
+            color: var(--primary-red);
+        }
+
+        .song-actions-menu {
+            position: relative;
+            z-index: 101;
+        }
+
+        .song-menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 20px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
+            border-radius: 4px;
+            position: relative;
+            z-index: 102;
+            pointer-events: auto;
+            touch-action: manipulation;
+        }
+
+        .song-menu-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .song-menu-dropdown {
+            position: absolute;
+            top: auto;
+            bottom: 100%;
+            right: -16px;
+            background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 50%, #1f1f1f 100%);
+            border: 1px solid rgba(229, 9, 20, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 200px;
+            z-index: 99999;
+            overflow: hidden;
+            margin-bottom: 12px;
+            display: none;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+            touch-action: manipulation;
+            isolation: isolate;
+        }
+
+        .song-menu-dropdown.active {
+            display: block;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-item {
+            width: 100%;
+            padding: 14px 18px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid rgba(229, 9, 20, 0.08);
+            position: relative;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(229, 9, 20, 0.1);
+            padding-left: 22px;
+        }
+
+        .menu-item i {
+            font-size: 20px;
+            color: var(--text-gray);
+            transition: color 0.2s;
+        }
+
+        .menu-item:hover i {
+            color: var(--primary-red);
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 12px 24px;
+            border-radius: 24px;
+            border: 1px solid rgba(229, 9, 20, 0.3);
+            color: var(--text-gray);
+            font-size: 14px;
+            z-index: 100000;
+            display: none;
+        }
+
+        .status-bar.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            .album-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .album-info h2 {
+                font-size: 20px;
+            }
+
+            .song-row {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎵 Test Menu Titik 3</h1>
+        <p>Halaman testing untuk menu dropdown di Android</p>
+        <p style="margin-top: 8px; font-size: 12px;">✅ Sudah diperbaiki dengan touch events</p>
+    </div>
+
+    <div class="album-container">
+        <div class="album-header">
+            <div class="album-cover"></div>
+            <div class="album-info">
+                <h2>Test Album</h2>
+                <p>Various Artists • 2024 • 10 lagu</p>
+            </div>
+        </div>
+
+        <div class="song-list" id="songList">
+            <!-- Songs will be generated here -->
+        </div>
+    </div>
+
+    <div class="status-bar" id="statusBar"></div>
+
+    <script>
+        // Sample songs data
+        const songs = [
+            { id: 1, title: "Lagu Pertama", artist: "Artist A", duration: "3:45" },
+            { id: 2, title: "Lagu Kedua", artist: "Artist B", duration: "4:12" },
+            { id: 3, title: "Lagu Ketiga", artist: "Artist C", duration: "3:28" },
+            { id: 4, title: "Lagu Keempat", artist: "Artist D", duration: "5:03" },
+            { id: 5, title: "Lagu Kelima", artist: "Artist E", duration: "3:56" },
+            { id: 6, title: "Lagu Keenam", artist: "Artist F", duration: "4:20" },
+            { id: 7, title: "Lagu Ketujuh", artist: "Artist G", duration: "3:15" },
+            { id: 8, title: "Lagu Kedelapan", artist: "Artist H", duration: "4:45" },
+            { id: 9, title: "Lagu Kesembilan", artist: "Artist I", duration: "3:33" },
+            { id: 10, title: "Lagu Kesepuluh", artist: "Artist J", duration: "4:08" }
+        ];
+
+        // Track liked songs
+        const likedSongs = new Set();
+
+        // Render songs
+        function renderSongs() {
+            const songList = document.getElementById('songList');
+            songList.innerHTML = songs.map(song => `
+                <div class="song-row" data-song-id="${song.id}">
+                    <div class="song-number">${song.id}</div>
+                    <div class="song-info">
+                        <div class="song-title">${song.title}</div>
+                        <div class="song-artist">${song.artist}</div>
+                    </div>
+                    <div class="song-duration">${song.duration}</div>
+                    <div class="song-actions">
+                        <button class="like-btn" onclick="toggleLike(${song.id})">
+                            <i class="ph ${likedSongs.has(song.id) ? 'ph-heart-fill' : 'ph-heart'}"></i>
+                        </button>
+                        <button class="add-queue-btn" onclick="addToQueue(${song.id})">
+                            <i class="ph ph-plus-circle"></i>
+                        </button>
+                        <div class="song-actions-menu">
+                            <button class="song-menu-btn" onclick="toggleMenu(event, ${song.id})">
+                                <i class="ph ph-dots-three-vertical"></i>
+                            </button>
+                            <div class="song-menu-dropdown" id="menu-${song.id}">
+                                <button class="menu-item" onclick="handleMenuAction('play-next', ${song.id})">
+                                    <i class="ph ph-play-circle"></i>
+                                    <span>Putar Selanjutnya</span>
+                                </button>
+                                <button class="menu-item" onclick="handleMenuAction('add-to-queue', ${song.id})">
+                                    <i class="ph ph-queue"></i>
+                                    <span>Tambah ke Antrian</span>
+                                </button>
+                                <button class="menu-item" onclick="handleMenuAction('add-to-playlist', ${song.id})">
+                                    <i class="ph ph-playlist"></i>
+                                    <span>Tambah ke Playlist</span>
+                                </button>
+                                <button class="menu-item" onclick="handleMenuAction('share', ${song.id})">
+                                    <i class="ph ph-share-network"></i>
+                                    <span>Bagikan</span>
+                                </button>
+                                <button class="menu-item" onclick="handleMenuAction('go-to-artist', ${song.id})">
+                                    <i class="ph ph-user"></i>
+                                    <span>Lihat Artist</span>
+                                </button>
+                                <button class="menu-item" onclick="handleMenuAction('go-to-album', ${song.id})">
+                                    <i class="ph ph-disc"></i>
+                                    <span>Lihat Album</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle menu
+        function toggleMenu(event, songId) {
+            event.stopPropagation();
+            
+            const menu = document.getElementById(`menu-${songId}`);
+            const allMenus = document.querySelectorAll('.song-menu-dropdown');
+            
+            // Close all other menus
+            allMenus.forEach(m => {
+                if (m !== menu) {
+                    m.classList.remove('active');
+                }
+            });
+            
+            // Toggle current menu
+            menu.classList.toggle('active');
+        }
+
+        // Handle menu actions
+        function handleMenuAction(action, songId) {
+            const song = songs.find(s => s.id === songId);
+            let message = '';
+            
+            switch(action) {
+                case 'play-next':
+                    message = `🎵 "${song.title}" akan diputar selanjutnya`;
+                    break;
+                case 'add-to-queue':
+                    message = `➕ "${song.title}" ditambahkan ke antrian`;
+                    break;
+                case 'add-to-playlist':
+                    message = `📝 "${song.title}" ditambahkan ke playlist`;
+                    break;
+                case 'share':
+                    message = `🔗 Membagikan "${song.title}"`;
+                    break;
+                case 'go-to-artist':
+                    message = `👤 Membuka halaman ${song.artist}`;
+                    break;
+                case 'go-to-album':
+                    message = `💿 Membuka album`;
+                    break;
+            }
+            
+            showStatus(message);
+            
+            // Close menu
+            const menu = document.getElementById(`menu-${songId}`);
+            menu.classList.remove('active');
+        }
+
+        // Toggle like
+        function toggleLike(songId) {
+            const song = songs.find(s => s.id === songId);
+            
+            if (likedSongs.has(songId)) {
+                likedSongs.delete(songId);
+                showStatus(`💔 "${song.title}" dihapus dari favorit`);
+            } else {
+                likedSongs.add(songId);
+                showStatus(`❤️ "${song.title}" ditambahkan ke favorit`);
+            }
+            
+            renderSongs();
+        }
+
+        // Add to queue
+        function addToQueue(songId) {
+            const song = songs.find(s => s.id === songId);
+            showStatus(`➕ "${song.title}" ditambahkan ke antrian`);
+        }
+
+        // Show status message
+        function showStatus(message) {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+            statusBar.classList.add('show');
+            
+            setTimeout(() => {
+                statusBar.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.song-actions-menu')) {
+                document.querySelectorAll('.song-menu-dropdown').forEach(menu => {
+                    menu.classList.remove('active');
+                });
+            }
+        });
+
+        // ANDROID FIX: Touch event handlers
+        document.addEventListener('touchstart', function(e) {
+            const menuItem = e.target.closest('.menu-item');
+            if (menuItem) {
+                e.stopPropagation();
+                menuItem.style.background = 'rgba(229, 9, 20, 0.15)';
+                
+                setTimeout(() => {
+                    menuItem.style.background = '';
+                }, 200);
+            }
+        }, { passive: false, capture: true });
+
+        document.addEventListener('touchend', function(e) {
+            const menuItem = e.target.closest('.menu-item');
+            if (menuItem) {
+                e.stopPropagation();
+                e.preventDefault();
+                menuItem.click();
+            }
+        }, { passive: false, capture: true });
+
+        // Initialize
+        renderSongs();
+
+        // Show welcome message
+        setTimeout(() => {
+            showStatus('👋 Coba klik tombol titik 3 di setiap lagu!');
+        }, 500);
+    </script>
+</body>
+</html>
