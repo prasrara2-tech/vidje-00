@@ -14876,6 +14876,9 @@ function renderFriendPlaylists(playlists) {
                 'play': 'Putar',
                 'pause': 'Jeda',
                 'liked-songs': 'Lagu Disukai',
+                'like-song': 'Sukai Lagu',
+                'unlike-song': 'Batal Sukai',
+                'remove-from-playlist': 'Hapus dari Playlist',
                 'profile': 'Profil',
                 'logout': 'Keluar',
                 'back': 'Kembali',
@@ -14894,7 +14897,6 @@ function renderFriendPlaylists(playlists) {
                 'add': 'Tambah',
                 'remove': 'Hapus',
                 'share': 'Bagikan',
-                'download-offline': 'Download untuk Offline',
                 'offline-music-title': 'Musik Offline',
                 'cached-songs': 'Lagu Tersimpan',
                 'clear-all-cache': 'Hapus Semua Cache',
@@ -15004,6 +15006,9 @@ function renderFriendPlaylists(playlists) {
                 'play': 'Play',
                 'pause': 'Pause',
                 'liked-songs': 'Liked Songs',
+                'like-song': 'Like Song',
+                'unlike-song': 'Unlike Song',
+                'remove-from-playlist': 'Remove from Playlist',
                 'profile': 'Profile',
                 'logout': 'Logout',
                 'back': 'Back',
@@ -15022,7 +15027,6 @@ function renderFriendPlaylists(playlists) {
                 'add': 'Add',
                 'remove': 'Remove',
                 'share': 'Share',
-                'download-offline': 'Download for Offline',
                 'offline-music-title': 'Offline Music',
                 'cached-songs': 'Cached Songs',
                 'clear-all-cache': 'Clear All Cache',
@@ -16247,7 +16251,7 @@ function updateMediaSession() {
                     
                         <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
                             <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
-                            <span data-i18n="liked-songs">Liked Songs</span>
+                            <span data-i18n="${likedSongs.includes(s.id) ? 'unlike-song' : 'like-song'}">${likedSongs.includes(s.id) ? 'Unlike Song' : 'Like Song'}</span>
                         </button>
                         <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-list-plus"></i>
@@ -16260,10 +16264,6 @@ function updateMediaSession() {
                         <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-share-network"></i>
                             <span data-i18n="share">Share</span>
-                        </button>
-                        <button class="menu-item menu-download-${s.id}" onclick="event.stopPropagation(); window.downloadSongFromMenu(${s.id}); window.toggleSongMenu(${s.id})">
-                            <i class="ph ph-download-simple"></i>
-                            <span data-i18n="download-offline">Download for Offline</span>
                         </button>
                         </button>
                     </div>
@@ -16304,7 +16304,7 @@ function updateMediaSession() {
 }
 
         
-       function renderSongList(data, containerId) {
+       function renderSongList(data, containerId, isMyPlaylist = false) {
     const container = document.getElementById(containerId);
     if(!container || !data || data.length === 0) {
         if(container) container.innerHTML = '<div style="padding:20px; color:#666;">' + window.t('no-songs') + '</div>';
@@ -16315,6 +16315,38 @@ function updateMediaSession() {
     window.allSongs = data;
 
     container.innerHTML = data.map((s, i) => {
+        // Build menu items based on context
+        let menuItems = `
+            <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
+                <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
+                <span data-i18n="${likedSongs.includes(s.id) ? 'unlike-song' : 'like-song'}">${likedSongs.includes(s.id) ? 'Unlike Song' : 'Like Song'}</span>
+            </button>
+            <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
+                <i class="ph ph-list-plus"></i>
+                <span data-i18n="queue">Queue</span>
+            </button>`;
+        
+        // Add "Remove from Playlist" only if this is My Playlist view
+        if (isMyPlaylist) {
+            menuItems += `
+            <button class="menu-item" onclick="event.stopPropagation(); window.removeSongFromPlaylist(${s.id}); window.toggleSongMenu(${s.id})">
+                <i class="ph ph-x-circle"></i>
+                <span data-i18n="remove-from-playlist">Remove from Playlist</span>
+            </button>`;
+        }
+        
+        // Add "Add to Playlist" and "Share" for all views
+        menuItems += `
+            <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
+                <i class="ph ph-plus"></i>
+                <span data-i18n="add-to-playlist">Add to Playlist</span>
+            </button>
+            <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
+                <i class="ph ph-share-network"></i>
+                <span data-i18n="share">Share</span>
+            </button>
+        `;
+        
         return `
         <div class="song-row" id="row-${s.id}" onclick="window.playFromPlaylist(${s.id}, window.allSongs)">
             <div class="song-index">
@@ -16340,27 +16372,7 @@ function updateMediaSession() {
                         <i class="ph ph-dots-three-vertical"></i>
                     </button>
                     <div class="song-menu-dropdown" id="menu-${s.id}" style="display: none;">
-                        <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
-                            <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
-                            <span data-i18n="liked-songs">Liked Songs</span>
-                        </button>
-                        <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
-                            <i class="ph ph-list-plus"></i>
-                            <span data-i18n="queue">Queue</span>
-                        </button>
-                        <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
-                            <i class="ph ph-plus"></i>
-                            <span data-i18n="add-to-playlist">Add to Playlist</span>
-                        </button>
-                        <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
-                            <i class="ph ph-share-network"></i>
-                            <span data-i18n="share">Share</span>
-                        </button>
-                        <button class="menu-item menu-download-${s.id}" onclick="event.stopPropagation(); window.downloadSongFromMenu(${s.id}); window.toggleSongMenu(${s.id})">
-                            <i class="ph ph-download-simple"></i>
-                            <span data-i18n="download-offline">Download for Offline</span>
-                        </button>
-                        </button>
+                        ${menuItems}
                     </div>
                 </div>
             </div>
@@ -16843,7 +16855,7 @@ function updateMediaSession() {
                 .filter(song => song !== undefined); 
 
             document.getElementById('playlist-count').innerText = `${validSongDetails.length} ${window.t('songs-label')}`;
-            renderSongList(validSongDetails, 'playlist-songs-container');
+            renderSongList(validSongDetails, 'playlist-songs-container', isOwner);
             
             // Add to recently played
             addToRecentlyPlayed('playlist', { id: playlistId, name: playlist.name, cover: playlist.cover });
@@ -17739,6 +17751,81 @@ function renderProfilePublicPlaylists() {
         window.openAddSongModal = openAddSongModal;
         window.addSongTo = addSongTo;
         
+        // Remove song from current playlist
+        async function removeSongFromPlaylist(songId) {
+            if (!auth.currentUser) return;
+            if (!currentPlaylistId) {
+                window.showToast('❌ Playlist tidak ditemukan', 'error');
+                return;
+            }
+            
+            const userId = auth.currentUser.uid;
+            const playlist = currentUserData?.playlists?.[currentPlaylistId];
+            
+            if (!playlist) {
+                window.showToast('❌ Playlist tidak ditemukan', 'error');
+                return;
+            }
+            
+            // Check if user is the owner
+            if (!currentUserData.playlists[currentPlaylistId]) {
+                window.showToast('❌ Anda tidak bisa menghapus lagu dari playlist orang lain', 'error');
+                return;
+            }
+            
+            // Get song info before removal
+            const song = songs.find(s => s.id == songId);
+            const songName = song?.title || 'Lagu';
+            const playlistName = playlist.name || 'Playlist';
+            
+            // INSTANT UI UPDATE: Remove from DOM immediately
+            const songRow = document.getElementById(`row-${songId}`);
+            if (songRow) {
+                songRow.style.transition = 'all 0.3s ease';
+                songRow.style.opacity = '0';
+                songRow.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    songRow.remove();
+                    
+                    // Update song count immediately
+                    const container = document.getElementById('playlist-songs-container');
+                    if (container) {
+                        const remainingSongs = container.querySelectorAll('.song-row').length;
+                        const countEl = document.getElementById('playlist-count');
+                        if (countEl) {
+                            countEl.textContent = `${remainingSongs} ${window.t('songs-label')}`;
+                        }
+                        
+                        // Reorder index numbers
+                        container.querySelectorAll('.song-row').forEach((row, index) => {
+                            const indexNum = row.querySelector('.index-num');
+                            if (indexNum) {
+                                indexNum.textContent = index + 1;
+                            }
+                        });
+                    }
+                }, 300);
+            }
+            
+            // Show success message immediately
+            window.showToast(`✓ "${songName}" dihapus dari ${playlistName}`, 'info');
+            
+            // Update Firebase in background
+            try {
+                await remove(ref(db, `users/${userId}/playlists/${currentPlaylistId}/songs/${songId}`));
+            } catch (error) {
+                console.error('Error removing song from Firebase:', error);
+                // If Firebase fails, restore the UI by refreshing
+                window.showToast('⚠️ Sinkronisasi gagal, memuat ulang...', 'warning');
+                setTimeout(() => {
+                    openPlaylist(currentPlaylistId);
+                }, 1000);
+            }
+        }
+        
+        window.removeSongFromPlaylist = removeSongFromPlaylist;
+        
         function addToLiked(id) {
             if (!likedSongs.includes(id)) {
                 likedSongs.push(id);
@@ -17831,10 +17918,18 @@ function renderProfilePublicPlaylists() {
             const menuBtn = document.getElementById(`menu-like-${id}`);
             if(menuBtn) {
                 const icon = menuBtn.querySelector('i');
-                if(likedSongs.includes(id)) {
-                    if(icon) icon.className = 'ph-fill ph-heart';
-                } else {
-                    if(icon) icon.className = 'ph ph-heart';
+                const span = menuBtn.querySelector('span');
+                const isLiked = likedSongs.includes(id);
+                
+                if(icon) {
+                    icon.className = isLiked ? 'ph-fill ph-heart' : 'ph ph-heart';
+                }
+                
+                if(span) {
+                    span.setAttribute('data-i18n', isLiked ? 'unlike-song' : 'like-song');
+                    span.textContent = isLiked ? 
+                        (currentLanguage === 'id' ? 'Batal Sukai' : 'Unlike Song') : 
+                        (currentLanguage === 'id' ? 'Sukai Lagu' : 'Like Song');
                 }
             }
         }
