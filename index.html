@@ -284,65 +284,11 @@
                 overflow-x: hidden !important;
             }
 
-            /* Desktop: Default smaller size when lyrics NOT visible */
-            #play-screen-cover {
-                width: 280px !important;
-                height: 280px !important;
-                margin-bottom: 28px !important;
-            }
-
-            #play-screen-song-title {
-                font-size: 24px !important;
-            }
-
-            #play-screen-song-artist {
-                font-size: 14px !important;
-            }
-
-            /* Scale down album art even more when lyrics shown */
+            /* Scale down album art when lyrics shown */
             #play-screen-scroll.lyrics-visible #play-screen-cover {
-                width: 220px !important;
-                height: 220px !important;
-                margin-bottom: 20px !important;
-            }
-
-            #play-screen-scroll.lyrics-visible #play-screen-song-title {
-                font-size: 20px !important;
-            }
-
-            #play-screen-scroll.lyrics-visible #play-screen-song-artist {
-                font-size: 12px !important;
-            }
-
-            /* Desktop: Smaller progress bar container */
-            #play-screen-album > div:has([data-progress-bar]) {
-                max-width: 280px !important;
-                margin-bottom: 20px !important;
-            }
-
-            #play-screen-scroll.lyrics-visible #play-screen-album > div:has([data-progress-bar]) {
-                max-width: 240px !important;
-            }
-
-            /* Desktop: Smaller control buttons */
-            #play-screen-album > div:has(#ps-play) button {
-                font-size: 20px !important;
-            }
-
-            #play-screen-album > div:has(#ps-play) #ps-play {
-                width: 54px !important;
-                height: 54px !important;
-                font-size: 24px !important;
-            }
-
-            #play-screen-scroll.lyrics-visible #play-screen-album > div:has(#ps-play) button {
-                font-size: 18px !important;
-            }
-
-            #play-screen-scroll.lyrics-visible #play-screen-album > div:has(#ps-play) #ps-play {
-                width: 48px !important;
-                height: 48px !important;
-                font-size: 22px !important;
+                width: 240px !important;
+                height: 240px !important;
+                margin-bottom: 24px !important;
             }
 
             /* Hide navigate button in lyrics on desktop */
@@ -12002,7 +11948,7 @@ console.log('   getCurrentSong() - Check what song is detected');
         }
         
         // --- HISTORY / RECENTLY PLAYED ---
-        let recentlyPlayed = []; // Stores {type: 'song'|'playlist', data: object, timestamp}
+        window.recentlyPlayed = []; // Stores {type: 'song'|'playlist', data: object, timestamp}
         
         // --- LYRICS DATABASE ---
         const lyricsDatabase = {
@@ -13983,7 +13929,7 @@ console.log('   getCurrentSong() - Check what song is detected');
                         if (savedLiked) likedSongs = JSON.parse(savedLiked);
 
                         const savedHistory = localStorage.getItem('recentlyPlayed');
-                        if (savedHistory) recentlyPlayed = JSON.parse(savedHistory);
+                        if (savedHistory) window.recentlyPlayed = JSON.parse(savedHistory);
 
                         // Mulai memuat lagu secara background tanpa menahan UI
                         const songsPromise = loadSongsFromSupabase();
@@ -16269,13 +16215,13 @@ function updateMediaSession() {
         // --- RECENTLY PLAYED LOGIC ---
         function addToRecentlyPlayed(type, data) {
             // Remove duplicates of same ID
-            recentlyPlayed = recentlyPlayed.filter(item => !(item.type === type && item.data.id === data.id));
+            window.recentlyPlayed = window.recentlyPlayed.filter(item => !(item.type === type && item.data.id === data.id));
             // Add new to front
-            recentlyPlayed.unshift({ type, data, timestamp: Date.now() });
+            window.recentlyPlayed.unshift({ type, data, timestamp: Date.now() });
             // Limit to 20 items
-            if(recentlyPlayed.length > 20) recentlyPlayed = recentlyPlayed.slice(0, 20);
+            if(window.recentlyPlayed.length > 20) window.recentlyPlayed = window.recentlyPlayed.slice(0, 20);
             // Save to local storage
-            localStorage.setItem('recentlyPlayed', JSON.stringify(recentlyPlayed));
+            localStorage.setItem('recentlyPlayed', JSON.stringify(window.recentlyPlayed));
         }
 
         function handleSearch(query) {
@@ -16388,7 +16334,7 @@ function updateMediaSession() {
        function renderRecentlyPlayedList() {
     const container = document.getElementById('search-history-container');            
     const title = document.getElementById('search-history-title');
-    if (recentlyPlayed.length === 0) {
+    if (window.recentlyPlayed.length === 0) {
         container.innerHTML = '';
         title.style.display = 'none';
         return;
@@ -16396,11 +16342,11 @@ function updateMediaSession() {
     title.style.display = 'block';
 
     let html = '';
-    recentlyPlayed.forEach((item, i) => {
+    window.recentlyPlayed.forEach((item, i) => {
         if (item.type === 'song') {
             const s = item.data;
             html += `
-                <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id}, true, recentlyPlayed.filter(i => i.type === 'song').map(i => i.data))">
+                <div class="song-row" id="row-${s.id}" onclick="window.playSpecificSong(${s.id}, true, window.recentlyPlayed.filter(i => i.type === 'song').map(i => i.data))">
                     <div class="song-index">
                         <span class="index-num">${i + 1}</span>
                         <div class="playing-icon-container" style="display:none;">
@@ -16911,7 +16857,8 @@ function updateMediaSession() {
                 { name: "Shawn Mendes", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/shawn.jpg", onclick: "window.openShawnMendesAlbum()" },
                 { name: "James Arthur", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/james.jpg", onclick: "window.openJamesArthurAlbum()" },
                 { name: "Billie Eilish", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", onclick: "window.openBillieEilishAlbum()" },
-                { name: "Bad Bunny", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", onclick: "window.openBadBunnyAlbum()" }
+                { name: "Bad Bunny", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", onclick: "window.openBadBunnyAlbum()" },
+                { name: "Rex Orange County", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/roc.jpg", onclick: "window.openRexAlbum()" },
             ];
             const container = document.getElementById('foreign-solo-container');
             const maxShow = 6;
@@ -16964,7 +16911,6 @@ function updateMediaSession() {
             const allBands = [
                 // OLD FOREIGN BANDS
                 { name: "Cigarettes After Sex", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/cas.jpg", onclick: "window.openCigarettesAlbum()" },
-                { name: "Rex Orange County", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/roc.jpg", onclick: "window.openRexAlbum()" },
                 { name: "The Smiths", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/thesmith.jpg", onclick: "window.openSmithsAlbum()" },
                 { name: "Arctic Monkeys", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/articmonkeys.jpg", onclick: "window.openArcticAlbum()" },
                 { name: "Queen", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/queen.jpg", onclick: "window.openQueenAlbum()" },
@@ -17740,13 +17686,13 @@ function updateMediaSession() {
                     { name: "Drake", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/drake.jpg", onclick: "window.openDrakeAlbum()" },
                     { name: "Kendrick Lamar", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kendrick.jpg", onclick: "window.openKendrickAlbum()" },
                     { name: "The Weeknd", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/theweekend.jpg", onclick: "window.openTheWeekndAlbum()" },
-                    { name: "Olivia Rodrigo", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/olivia.jpg", onclick: "window.openOliviaAlbum()" }
+                    { name: "Olivia Rodrigo", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/olivia.jpg", onclick: "window.openOliviaAlbum()" },
+                    { name: "Rex Orange County", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/roc.jpg", onclick: "window.openRexAlbum()" }
                 ];
             } else if(type === 'foreign-bands') {
                 titleText = 'Band Asing';
                 dataList = [
                     { name: "Cigarettes After Sex", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/cas.jpg", onclick: "window.openCigarettesAlbum()" },
-                    { name: "Rex Orange County", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/roc.jpg", onclick: "window.openRexAlbum()" },
                     { name: "The Smiths", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/thesmith.jpg", onclick: "window.openSmithsAlbum()" },
                     { name: "Arctic Monkeys", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/articmonkeys.jpg", onclick: "window.openArcticAlbum()" },
                     { name: "Queen", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/queen.jpg", onclick: "window.openQueenAlbum()" },
