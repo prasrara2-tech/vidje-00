@@ -122,6 +122,21 @@
             }
         }
 
+
+        /* Desktop: Show shuffle and repeat in lyrics view */
+        @media (min-width: 769px) {
+            
+            /* Mobile: Hide shuffle and repeat in lyrics view (keep 3 buttons only) */
+        }
+        
+        @media (max-width: 768px) {
+        }
+        
+        /* Console debug untuk desktop */
+        @media (min-width: 769px) {
+            /* Add debugging info to browser console */
+        }
+
         /* Desktop: Show play screen with side-by-side layout */
         @media (min-width: 769px) {
             #play-screen-unified {
@@ -159,8 +174,8 @@
                 transition: width 0.4s ease !important;
             }
 
-            /* Desktop: Hide navigate to lyrics button (last child button in album) */
-            #play-screen-album button:last-child {
+            /* Desktop: Hide navigate to lyrics button (button dengan absolute position) */
+            #play-screen-album button[style*="position: absolute"] {
                 display: none !important;
                 pointer-events: none !important;
             }
@@ -215,9 +230,18 @@
                 align-items: center !important;
             }
 
-            /* Hide all divs (progress bar, controls) in lyrics except container */
-            #play-screen-lyrics > div:not(#play-screen-lyrics-container) {
-                display: none !important;
+            /* Desktop: Hide progress bar and controls in lyrics view */
+            @media (min-width: 769px) {
+                #play-screen-lyrics > div:not(#play-screen-lyrics-container) {
+                    display: none !important;
+                }
+            }
+            
+            /* Mobile: Show progress bar and controls in lyrics view */
+            @media (max-width: 768px) {
+                #play-screen-lyrics > div {
+                    display: flex !important;
+                }
             }
 
             #play-screen-lyrics.show {
@@ -1446,117 +1470,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .song-menu-dropdown {
-            position: absolute;
-            top: auto;
-            bottom: 100%;
-            right: -16px;
-            background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 50%, #1f1f1f 100%);
-            border: 1px solid rgba(229, 9, 20, 0.2);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 200px;
-            z-index: 2000;
-            overflow: hidden;
-            margin-bottom: 12px;
-            display: none;
-            backdrop-filter: blur(10px);
-        }
 
-        .song-menu-dropdown:hover {
-            border-color: rgba(229, 9, 20, 0.4);
-            box-shadow: 0 12px 40px rgba(229, 9, 20, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
-
-        @media (max-width: 768px) {
-            .song-menu-dropdown {
-                position: absolute !important;
-                top: auto !important;
-                bottom: 100% !important;
-                right: -16px !important;
-                left: auto !important;
-                width: auto !important;
-                max-width: 220px !important;
-                height: auto !important;
-                border-radius: 12px !important;
-                margin: 0 0 12px 0 !important;
-                z-index: 99999 !important;
-                background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 50%, #1f1f1f 100%);
-                border: 1px solid rgba(229, 9, 20, 0.25);
-                box-shadow: 0 12px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-                transform: none !important;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                display: none !important;
-                opacity: 1 !important;
-                padding: 0 !important;
-                min-width: 200px !important;
-                backdrop-filter: blur(10px);
-                pointer-events: auto !important;
-                touch-action: manipulation !important;
-            }
-            .song-menu-dropdown.active-slide {
-                display: block !important;
-                opacity: 1 !important;
-                animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            @keyframes slideDown {
-                from {
-                    opacity: 0;
-                    transform: translateY(8px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-        }
-
-        .menu-item {
-            width: 100%;
-            padding: 14px 18px;
-            border: none;
-            background: transparent;
-            color: white;
-            cursor: pointer;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            border-bottom: 1px solid rgba(229, 9, 20, 0.08);
-            position: relative;
-            pointer-events: auto;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: linear-gradient(180deg, rgba(229, 9, 20, 0.8), rgba(229, 9, 20, 0));
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .menu-item:hover {
-            background: rgba(229, 9, 20, 0.08);
-            padding-left: 22px;
-        }
-
-        .menu-item:hover::before {
-            opacity: 1;
-        }
-
-        .menu-item:last-child {
-            border-bottom: none;
-        }
 
         .song-menu-dropdown {
             position: absolute;
@@ -1568,11 +1482,13 @@
             border-radius: 8px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
             transition: all 0.2s ease;
-            min-width: 200px;
+            min-width: 280px !important;
+            width: 280px !important;
             z-index: 2000;
-            overflow: hidden;
+            overflow: visible;
             margin-bottom: 8px;
             display: none;
+            box-sizing: border-box;
         }
 
         .dropdown-cover {
@@ -1602,7 +1518,7 @@
                 right: -16px !important;
                 left: auto !important;
                 width: auto !important;
-                max-width: 200px !important;
+                max-width: none !important;
                 height: auto !important;
                 border-radius: 8px !important;
                 margin: 0 0 8px 0 !important;
@@ -1615,10 +1531,12 @@
                 display: none !important;
                 opacity: 1 !important;
                 padding: 0 !important;
-                min-width: 180px !important;
+                min-width: 280px !important;
                 pointer-events: auto !important;
                 touch-action: manipulation !important;
                 isolation: isolate !important;
+                overflow: visible !important;
+                box-sizing: border-box !important;
             }
             .song-menu-dropdown.active-slide {
                 display: block !important;
@@ -1630,31 +1548,26 @@
         }
 
         .menu-item {
-            width: 100%;
-            padding: 12px 16px;
+            width: 100% !important;
+            min-width: 200px !important;
+            padding: 14px 16px 14px 16px;
             border: none;
             background: transparent;
-            color: white;
+            color: white !important;
             cursor: pointer;
             text-align: left;
-            display: flex;
+            display: flex !important;
+            flex-direction: row !important;
             align-items: center;
-            gap: 12px;
-            font-size: 14px;
+            gap: 12px !important;
+            font-size: 14px !important;
             font-weight: 500;
             transition: all 0.2s ease;
             border-bottom: 1px solid rgba(229, 9, 20, 0.08);
             pointer-events: auto;
-        
-        /* Mobile: Larger touch area untuk menu items */
-        @media (max-width: 768px) {
-            .menu-item {
-                padding: 18px 20px;
-                min-height: 56px;
-            }
-        }
             touch-action: manipulation;
             -webkit-tap-highlight-color: rgba(229, 9, 20, 0.2);
+            box-sizing: border-box;
         }
 
         .menu-item:last-child {
@@ -1668,8 +1581,8 @@
         .menu-emoji {
             display: inline-block;
             font-size: 18px;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1679,13 +1592,16 @@
         .menu-item i {
             font-size: 20px;
             flex-shrink: 0;
+            flex-grow: 0;
             color: var(--text-gray);
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            min-width: 22px;
+            max-width: 22px;
+            height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: visible;
+            overflow: hidden;
             transition: color 0.2s ease;
         }
 
@@ -1694,7 +1610,16 @@
         }
 
         .menu-item span {
-            flex: 1;
+            flex: 1 1 auto;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: white !important;
+            font-size: 14px !important;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
 
             .icon-fallback {
@@ -1710,40 +1635,60 @@
 
         @media (max-width: 768px) {
             .song-menu-dropdown {
-                min-width: 180px;
+                min-width: 280px;
+                max-width: none;
                 left: 50%;
                 right: auto;
                 transform: translateX(-60%);
                 bottom: 110%;
                 margin-bottom: 12px;
+                overflow: visible !important;
+                box-sizing: border-box !important;
             }
 
             .menu-emoji {
-                font-size: 20px;
-                width: 26px;
-                height: 26px;
+                font-size: 16px;
+                width: 20px;
+                height: 20px;
             }
 
             .menu-item {
+                width: 100% !important;
+                min-width: 200px !important;
                 padding: 12px 14px;
-                font-size: 14px;
-                gap: 12px;
-                min-height: 44px;
+                min-height: 50px;
+                gap: 12px !important;
+                font-size: 14px !important;
+                box-sizing: border-box;
+                color: white !important;
+                display: flex !important;
+                flex-direction: row !important;
             }
 
             .menu-item i {
-                font-size: 22px;
-                width: 26px;
-                height: 26px;
+                font-size: 18px;
+                width: 20px;
+                min-width: 20px;
+                max-width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+                flex-grow: 0;
+                overflow: hidden;
             }
 
             .menu-item span {
-                flex: 1;
+                flex: 1 1 auto;
+                min-width: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 14px !important;
+                color: white !important;
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                line-height: 1.4;
             }
-        }
-
-        .menu-item span {
-            flex: 1;
         }
 
         /* Search */
@@ -6899,6 +6844,64 @@ input:checked + .toggle-slider:before {
                 display: none !important;
             }
         }
+
+        /* ✅ MOBILE: White line thumb indicator saat drag (progressbar ukuran asli) */
+        @media (max-width: 768px) {
+            /* Play Screen Album & Lyrics Progress Bar - UKURAN ASLI 2px */
+            #play-screen-album [data-progress-bar],
+            #play-screen-lyrics [data-progress-bar] {
+                padding: 4px 0 !important; /* Padding dikecilin jadi 4px */
+                position: relative;
+            }
+            
+            #play-screen-album [data-progress-bar] > div,
+            #play-screen-lyrics [data-progress-bar] > div {
+                position: relative;
+            }
+            
+            /* Thumb indicator yang muncul saat drag */
+            #play-screen-album [data-progress-bar].dragging::after,
+            #play-screen-lyrics [data-progress-bar].dragging::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: var(--thumb-position, 0%);
+                transform: translate(-50%, -50%);
+                width: 2px;
+                height: 14px;
+                background: white;
+                border-radius: 1px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                pointer-events: none;
+                z-index: 10;
+            }
+            
+            /* Art Overlay Progress Bar - UKURAN ASLI 4px */
+            .overlay-progress-bar {
+                padding: 4px 0 !important; /* Padding dikecilin jadi 4px */
+                position: relative;
+            }
+            
+            .overlay-progress-fill {
+                position: relative;
+            }
+            
+            /* Thumb indicator untuk overlay */
+            .overlay-progress-bar.dragging::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: var(--thumb-position, 0%);
+                transform: translate(-50%, -50%);
+                width: 2px;
+                height: 14px;
+                background: white;
+                border-radius: 1px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                pointer-events: none;
+                z-index: 10;
+            }
+        }
     </style>
 
     <script>
@@ -8875,7 +8878,7 @@ if (document.readyState === 'loading') {
 
                 <!-- Progress Bar -->
                 <div style="width: 100%; max-width: 320px; margin-bottom: 28px;">
-                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px; transition: all 0.2s ease; user-select: none; -webkit-user-select: none;">
+                    <div data-progress-bar class="play-screen-progress-bar" onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px; transition: all 0.2s ease; user-select: none; -webkit-user-select: none;">
                         <div id="play-screen-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px; transition: width 0.1s linear;"></div>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500;">
@@ -8926,7 +8929,7 @@ if (document.readyState === 'loading') {
 
                 <!-- Progress Bar (below lyrics) -->
                 <div style="width: 100%; max-width: 320px; margin-top: 40px; margin-bottom: 28px;">
-                    <div data-progress-bar onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px; transition: all 0.2s ease; user-select: none; -webkit-user-select: none;">
+                    <div data-progress-bar class="play-screen-progress-bar" onclick="playScreenSeek(event)" style="width: 100%; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; cursor: pointer; overflow: hidden; margin-bottom: 8px; transition: all 0.2s ease; user-select: none; -webkit-user-select: none;">
                         <div id="play-screen-lyrics-progress" style="height: 100%; background: rgba(255,255,255,0.8); width: 0%; border-radius: 1px; transition: width 0.1s linear;"></div>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500;">
@@ -8935,8 +8938,8 @@ if (document.readyState === 'loading') {
                     </div>
                 </div>
 
-                <!-- Controls (3 buttons only) -->
-                <div style="display: flex; justify-content: center; align-items: center; gap: 32px;">
+                <!-- Controls (3 buttons only - for mobile) -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: 32px;" id="ps-lyrics-controls">
                     <button onclick="window.playPrevious()" style="background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 8px; transition: all 0.2s;">
                         <i class="ph-fill ph-skip-back"></i>
                     </button>
@@ -15141,6 +15144,9 @@ function renderFriendPlaylists(playlists) {
             }
         };
         
+        // Expose translations to window for access from other functions
+        window.translations = translations;
+        
         function switchLanguage(lang) {
             if (!translations[lang]) lang = 'id'; // Fallback to Indonesian if invalid
             console.log('Switching language to:', lang);
@@ -16268,22 +16274,27 @@ function updateMediaSession() {
                         <i class="ph ph-dots-three-vertical"></i>
                     </button>
                     <div class="song-menu-dropdown" id="menu-${s.id}" style="display: none;">
+                    <style>
+                        #menu-${s.id} .menu-item { display: flex !important; align-items: center !important; gap: 12px !important; }
+                        #menu-${s.id} .menu-item i { width: 22px !important; max-width: 22px !important; flex-shrink: 0 !important; }
+                        #menu-${s.id} .menu-item span { flex: 1 !important; color: white !important; font-size: 14px !important; display: inline-block !important; min-width: 0 !important; }
+                    </style>
                     
                         <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
                             <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
-                            <span data-i18n="${likedSongs.includes(s.id) ? 'unlike-song' : 'like-song'}">${likedSongs.includes(s.id) ? 'Unlike Song' : 'Like Song'}</span>
+                            <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">${likedSongs.includes(s.id) ? 'Unlike Song' : 'Like Song'}</span>
                         </button>
                         <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-list-plus"></i>
-                            <span data-i18n="queue">Queue</span>
+                            <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">Queue</span>
                         </button>
                         <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-plus"></i>
-                            <span data-i18n="add-to-playlist">Add to Playlist</span>
+                            <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">Add to Playlist</span>
                         </button>
                         <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
                             <i class="ph ph-share-network"></i>
-                            <span data-i18n="share">Share</span>
+                            <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">Share</span>
                         </button>
                         </button>
                     </div>
@@ -16321,6 +16332,19 @@ function updateMediaSession() {
     if (typeof window.reinitSwipeToQueue === 'function') {
         setTimeout(() => window.reinitSwipeToQueue(), 100);
     }
+    
+    // Apply translations to newly rendered menu items
+    setTimeout(() => {
+        if (typeof window.switchLanguage === 'function') {
+            const currentLang = localStorage.getItem('appLanguage') || 'id';
+            document.querySelectorAll('.song-menu-dropdown [data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (window.translations && window.translations[currentLang] && window.translations[currentLang][key]) {
+                    el.textContent = window.translations[currentLang][key];
+                }
+            });
+        }
+    }, 150);
 }
 
         
@@ -16339,31 +16363,35 @@ function updateMediaSession() {
         let menuItems = `
             <button class="menu-item" onclick="event.stopPropagation(); window.toggleLike(${s.id}); window.toggleSongMenu(${s.id})" id="menu-like-${s.id}">
                 <i class="${likedSongs.includes(s.id) ? 'ph-fill ph-heart' : 'ph ph-heart'}"></i>
-                <span data-i18n="${likedSongs.includes(s.id) ? 'unlike-song' : 'like-song'}">${likedSongs.includes(s.id) ? 'Unlike Song' : 'Like Song'}</span>
+                <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">${likedSongs.includes(s.id) ? 'Unlike Song' : 'Like Song'}</span>
             </button>
             <button class="menu-item" onclick="event.stopPropagation(); window.addToQueue(${s.id}); window.toggleSongMenu(${s.id})">
                 <i class="ph ph-list-plus"></i>
-                <span data-i18n="queue">Queue</span>
+                <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">Queue</span>
             </button>`;
         
-        // Add "Remove from Playlist" only if this is My Playlist view
+        // Conditional menu items based on context
         if (isMyPlaylist) {
+            // My Playlist: Show "Remove from Playlist" instead of "Add to Playlist"
             menuItems += `
             <button class="menu-item" onclick="event.stopPropagation(); window.removeSongFromPlaylist(${s.id}); window.toggleSongMenu(${s.id})">
                 <i class="ph ph-x-circle"></i>
-                <span data-i18n="remove-from-playlist">Remove from Playlist</span>
+                <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">Remove from Playlist</span>
+            </button>`;
+        } else {
+            // Other views: Show "Add to Playlist"
+            menuItems += `
+            <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
+                <i class="ph ph-plus"></i>
+                <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">Add to Playlist</span>
             </button>`;
         }
         
-        // Add "Add to Playlist" and "Share" for all views
+        // Share button for all views
         menuItems += `
-            <button class="menu-item" onclick="event.stopPropagation(); window.openAddSongModal(${s.id}); window.toggleSongMenu(${s.id})">
-                <i class="ph ph-plus"></i>
-                <span data-i18n="add-to-playlist">Add to Playlist</span>
-            </button>
             <button class="menu-item" onclick="event.stopPropagation(); window.openShareModal('song', ${s.id}); window.toggleSongMenu(${s.id})">
                 <i class="ph ph-share-network"></i>
-                <span data-i18n="share">Share</span>
+                <span style="color: white !important; font-size: 14px !important; display: inline-block !important;">Share</span>
             </button>
         `;
         
@@ -16392,6 +16420,11 @@ function updateMediaSession() {
                         <i class="ph ph-dots-three-vertical"></i>
                     </button>
                     <div class="song-menu-dropdown" id="menu-${s.id}" style="display: none;">
+                    <style>
+                        #menu-${s.id} .menu-item { display: flex !important; align-items: center !important; gap: 12px !important; }
+                        #menu-${s.id} .menu-item i { width: 22px !important; max-width: 22px !important; flex-shrink: 0 !important; }
+                        #menu-${s.id} .menu-item span { flex: 1 !important; color: white !important; font-size: 14px !important; display: inline-block !important; min-width: 0 !important; }
+                    </style>
                         ${menuItems}
                     </div>
                 </div>
@@ -16409,6 +16442,19 @@ function updateMediaSession() {
     if (typeof window.reinitSwipeToQueue === 'function') {
         setTimeout(() => window.reinitSwipeToQueue(), 100);
     }
+    
+    // Apply translations to newly rendered menu items
+    setTimeout(() => {
+        if (typeof window.switchLanguage === 'function') {
+            const currentLang = localStorage.getItem('appLanguage') || 'id';
+            document.querySelectorAll('.song-menu-dropdown [data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (window.translations && window.translations[currentLang] && window.translations[currentLang][key]) {
+                    el.textContent = window.translations[currentLang][key];
+                }
+            });
+        }
+    }, 150);
 }
 
         // --- RENDERERS ---
@@ -18928,11 +18974,21 @@ function renderProfilePublicPlaylists() {
 
         // --- PLAY SCREEN FUNCTIONS (Mobile) ---
         function openPlayScreenUnified() {
+            console.log('🎬 [PLAY SCREEN] Opening unified play screen');
+            
             const screen = document.getElementById('play-screen-unified');
-            if (!screen) return;
+            if (!screen) {
+                console.error('❌ [PLAY SCREEN] Screen element not found');
+                return;
+            }
 
             const song = songs[currentSongIndex];
-            if (!song) return;
+            if (!song) {
+                console.error('❌ [PLAY SCREEN] No song selected');
+                return;
+            }
+            
+            console.log('🎵 [PLAY SCREEN] Song:', song.title, 'by', song.artist);
 
             // Set background
             const bg = document.getElementById('play-screen-bg');
@@ -18952,6 +19008,7 @@ function renderProfilePublicPlaylists() {
             const lyricsContainer = document.getElementById('play-screen-lyrics-container');
             const lyrics = lyricsDatabase[song.title];
             if (lyrics && lyrics.lines) {
+                console.log('📝 [LYRICS] Found', lyrics.lines.length, 'lines for', song.title);
                 lyricsContainer.innerHTML = lyrics.lines.map((line, idx) => {
                     // Escape HTML entities to prevent syntax errors
                     const escapedText = String(line.text)
@@ -18962,7 +19019,44 @@ function renderProfilePublicPlaylists() {
                         .replace(/'/g, '&#039;');
                     return `<div class="play-screen-lyric-line" data-idx="${idx}" data-time="${line.time || 0}" onclick="playScreenSeekToLyric(event)" onmousedown="startPlayScreenLyricDrag(event)" ontouchstart="startPlayScreenLyricDrag(event)">${escapedText}</div>`;
                 }).join('');
+                
+                // Initial scroll ke current lyric position (tanpa animasi)
+                setTimeout(() => {
+                    const currentTime = audio.currentTime || 0;
+                    let currentLineIdx = -1;
+                    
+                    // Cari baris yang aktif saat ini
+                    for (let i = 0; i < lyrics.lines.length; i++) {
+                        if (lyrics.lines[i].time <= currentTime) {
+                            currentLineIdx = i;
+                        }
+                    }
+                    
+                    if (currentLineIdx >= 0) {
+                        const currentLine = lyricsContainer.querySelector(`[data-idx="${currentLineIdx}"]`);
+                        if (currentLine) {
+                            // Scroll langsung tanpa animasi (instant)
+                            const targetScroll = currentLine.offsetTop - (lyricsContainer.clientHeight / 2) + (currentLine.clientHeight / 2);
+                            const maxScroll = lyricsContainer.scrollHeight - lyricsContainer.clientHeight;
+                            const clampedTarget = Math.max(0, Math.min(targetScroll, maxScroll));
+                            
+                            // Set flag agar scroll tracking tidak terdeteksi
+                            window.isProgrammaticScroll = true;
+                            lyricsContainer.scrollTop = clampedTarget;
+                            
+                            console.log('📍 [INITIAL SCROLL] Positioned at line', currentLineIdx, 'without animation');
+                            
+                            // Set lastHighlightedLineIdx agar auto-scroll tahu posisi awal
+                            lastHighlightedLineIdx = currentLineIdx;
+                            
+                            setTimeout(() => {
+                                window.isProgrammaticScroll = false;
+                            }, 200);
+                        }
+                    }
+                }, 100);
             } else {
+                console.warn('⚠️ [LYRICS] No lyrics found for', song.title);
                 lyricsContainer.innerHTML = '<div class="play-screen-lyric-line">Lirik tidak tersedia</div>';
             }
 
@@ -18977,8 +19071,14 @@ function renderProfilePublicPlaylists() {
 
             screen.classList.add('active');
             playScreenState.isOpen = true;
+            
+            console.log('🔧 [PLAY SCREEN] Setting up scroll tracking...');
             setupPlayScreenLyricsScrollTracking();
+            
+            console.log('▶️ [PLAY SCREEN] Starting sync...');
             startPlayScreenSync();
+            
+            console.log('✅ [PLAY SCREEN] Fully opened and ready');
         }
 
         function closePlayScreenUnified() {
@@ -19018,6 +19118,12 @@ function renderProfilePublicPlaylists() {
         function updatePlayScreenInfo(song) {
             if (!song) return;
             
+            console.log('🔄 [PLAY SCREEN] Updating info for new song:', song.title);
+            
+            // Reset last highlighted line index saat lagu berubah
+            lastHighlightedLineIdx = -1;
+            console.log('🔁 [LYRICS] Reset last highlighted line index');
+            
             // Update background
             const bg = document.getElementById('play-screen-bg');
             if (bg && song.cover) {
@@ -19043,6 +19149,7 @@ function renderProfilePublicPlaylists() {
             if (lyricsContainer) {
                 const lyrics = lyricsDatabase[song.title];
                 if (lyrics && lyrics.lines) {
+                    console.log('📝 [LYRICS] Re-rendering', lyrics.lines.length, 'lines');
                     lyricsContainer.innerHTML = lyrics.lines.map((line, idx) => {
                         const escapedText = String(line.text)
                             .replace(/&/g, '&amp;')
@@ -19050,14 +19157,26 @@ function renderProfilePublicPlaylists() {
                             .replace(/>/g, '&gt;')
                             .replace(/"/g, '&quot;')
                             .replace(/'/g, '&#039;');
-                        return `<div class="play-screen-lyric-line" data-time="${line.time}" data-index="${idx}" onclick="seekToLyricTime(${line.time})">${escapedText}</div>`;
+                        return `<div class="play-screen-lyric-line" data-idx="${idx}" data-time="${line.time || 0}" onclick="playScreenSeekToLyric(event)" onmousedown="startPlayScreenLyricDrag(event)" ontouchstart="startPlayScreenLyricDrag(event)">${escapedText}</div>`;
                     }).join('');
+                    
+                    // Scroll ke posisi awal lagu baru (biasanya baris 0)
+                    setTimeout(() => {
+                        window.isProgrammaticScroll = true;
+                        lyricsContainer.scrollTop = 0; // Scroll ke top untuk lagu baru
+                        console.log('📍 [SONG CHANGE] Reset scroll to top');
+                        
+                        setTimeout(() => {
+                            window.isProgrammaticScroll = false;
+                        }, 200);
+                    }, 100);
                 } else {
+                    console.warn('⚠️ [LYRICS] No lyrics available');
                     lyricsContainer.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 40px;">Lirik tidak tersedia</div>';
                 }
             }
             
-            console.log('[OK] Play screen info updated for:', song.title);
+            console.log('✅ [PLAY SCREEN] Info updated successfully');
         }
         function playScreenTogglePlay() {
             if (isPlaying) {
@@ -19104,6 +19223,9 @@ function renderProfilePublicPlaylists() {
                     const percent = Math.max(0, Math.min(1, x / rect.width));
                     const fillDiv = bar.querySelector('div');
                     if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+                    
+                    // Update thumb position
+                    bar.style.setProperty('--thumb-position', (percent * 100) + '%');
                 });
                 
                 bar.addEventListener('touchstart', (e) => {
@@ -19121,6 +19243,9 @@ function renderProfilePublicPlaylists() {
                     const percent = Math.max(0, Math.min(1, x / rect.width));
                     const fillDiv = bar.querySelector('div');
                     if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+                    
+                    // Update thumb position
+                    bar.style.setProperty('--thumb-position', (percent * 100) + '%');
                 });
             });
             
@@ -19138,6 +19263,9 @@ function renderProfilePublicPlaylists() {
                 // Only update visual fill
                 const fillDiv = bar.querySelector('div');
                 if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+                
+                // Update thumb position
+                bar.style.setProperty('--thumb-position', (percent * 100) + '%');
             });
             
             // Single document listener for all touchmove events
@@ -19155,6 +19283,9 @@ function renderProfilePublicPlaylists() {
                 // Only update visual fill
                 const fillDiv = bar.querySelector('div');
                 if (fillDiv) fillDiv.style.width = (percent * 100) + '%';
+                
+                // Update thumb position
+                bar.style.setProperty('--thumb-position', (percent * 100) + '%');
             });
         }, 100);
 
@@ -19162,27 +19293,66 @@ function renderProfilePublicPlaylists() {
         function setupProgressDragListeners() {}
 
         function playScreenSeekToLyric(event) {
+            console.log('👆 [LYRIC TAP] Seeking to lyric time');
             const lyricLine = event.currentTarget;
             const time = parseFloat(lyricLine.dataset.time) || 0;
+            const tappedIdx = parseInt(lyricLine.dataset.idx) || 0;
+            
+            // Set flag bahwa ini programmatic scroll (bukan manual scroll)
+            window.isProgrammaticScroll = true;
+            
             audio.currentTime = time;
             if (!isPlaying) playAudio();
+            
+            // Set lastHighlightedLineIdx ke baris yang di-tap
+            // Agar auto-scroll tidak langsung scroll (karena line belum berubah)
+            lastHighlightedLineIdx = tappedIdx;
+            
+            console.log('  ↳ Seeked to', time.toFixed(2), 's (line', tappedIdx + ')');
+            console.log('  ↳ Auto-scroll TETAP AKTIF - will follow next line');
+            
+            // JANGAN disable auto-scroll - biarkan tetap aktif!
+            // Clear flag programmatic setelah delay (perpanjang ke 300ms untuk safety)
+            setTimeout(() => {
+                window.isProgrammaticScroll = false;
+            }, 300);
         }
 
         // Track if lyric line is being dragged for seeking
         let isPlayScreenLyricDragging = false;
 
-        function startPlayScreenLyricDrag(event) {
+        // Make these functions global so they can be called from onclick/onmousedown attributes
+        window.startPlayScreenLyricDrag = function(event) {
+            console.log('👆 [LYRIC DRAG] Starting drag');
             // Prevent triggering click event if it's a drag
             isPlayScreenLyricDragging = true;
             const lyricLine = event.currentTarget;
             const time = parseFloat(lyricLine.dataset.time) || 0;
+            const draggedIdx = parseInt(lyricLine.dataset.idx) || 0;
+            
+            // Set flag bahwa ini programmatic scroll
+            window.isProgrammaticScroll = true;
+            
             audio.currentTime = time;
             if (!isPlaying) playAudio();
-        }
+            
+            // Set ke baris yang di-drag, bukan reset ke -1
+            lastHighlightedLineIdx = draggedIdx;
+            
+            console.log('  ↳ Dragged to', time.toFixed(2), 's (line', draggedIdx + ')');
+        };
 
-        function stopPlayScreenLyricDrag() {
+        window.stopPlayScreenLyricDrag = function() {
+            console.log('👆 [LYRIC DRAG] Stopped');
             isPlayScreenLyricDragging = false;
-        }
+            
+            // Clear flag setelah delay (perpanjang ke 300ms untuk safety)
+            setTimeout(() => {
+                window.isProgrammaticScroll = false;
+            }, 300);
+        };
+        
+        window.playScreenSeekToLyric = playScreenSeekToLyric;
 
         let playScreenState = {
             isOpen: false,
@@ -19191,16 +19361,41 @@ function renderProfilePublicPlaylists() {
         };
 
         function startPlayScreenSync() {
-            if (playScreenState.syncInterval) clearInterval(playScreenState.syncInterval);
+            console.log('⏱️ [SYNC] Starting play screen sync interval (100ms)');
+            
+            if (playScreenState.syncInterval) {
+                console.log('  ↳ Clearing existing interval');
+                clearInterval(playScreenState.syncInterval);
+            }
+            
+            let syncCount = 0;
             playScreenState.syncInterval = setInterval(() => {
+                syncCount++;
+                
+                // Log setiap 10 detik (100 ticks)
+                if (syncCount % 100 === 0) {
+                    console.log('⏱️ [SYNC] Still running...', {
+                        ticks: syncCount,
+                        currentTime: audio?.currentTime?.toFixed(2),
+                        isPlaying: isPlaying,
+                        manualScroll: isPlayScreenLyricsManualScroll
+                    });
+                }
+                
                 updatePlayScreenProgress();
                 updatePlayScreenLyricsSync();
                 updatePlayScreenControlStates();
             }, 100);
+            
+            console.log('✅ [SYNC] Interval started');
         }
 
         function stopPlayScreenSync() {
-            if (playScreenState.syncInterval) clearInterval(playScreenState.syncInterval);
+            console.log('⏹️ [SYNC] Stopping play screen sync');
+            if (playScreenState.syncInterval) {
+                clearInterval(playScreenState.syncInterval);
+                playScreenState.syncInterval = null;
+            }
         }
 
         function updatePlayScreenProgress() {
@@ -19237,6 +19432,9 @@ function renderProfilePublicPlaylists() {
         // Track if user is manually scrolling lyrics
         let isPlayScreenLyricsManualScroll = false;
         let playScreenLyricsScrollTimeout = null;
+        
+        // Track programmatic scroll (dari tap lirik) vs manual scroll (swipe)
+        window.isProgrammaticScroll = false;
 
         function smoothScrollLyricIntoView(element, container) {
             if (!element || !container) return;
@@ -19276,6 +19474,11 @@ function renderProfilePublicPlaylists() {
             requestAnimationFrame(animateScroll);
         }
 
+        // Track last highlighted line dan animasi scroll
+        let lastHighlightedLineIdx = -1;
+        let currentScrollAnimation = null;
+        let lastScrollCompleteTime = 0; // Track kapan terakhir scroll complete
+
         function updatePlayScreenLyricsSync() {
             const song = songs[currentSongIndex];
             if (!song) return;
@@ -19298,28 +19501,213 @@ function renderProfilePublicPlaylists() {
                 line.classList.remove('active');
                 if (idx === currentLineIdx) {
                     line.classList.add('active');
-                    // Only smooth scroll on DESKTOP if user is NOT manually scrolling
-                    // Mobile uses flex-start natural scrolling, no auto-scroll needed
+                    
+                    // ===== AUTO-SCROLL LOGIC =====
                     const isDesktop = window.innerWidth >= 769;
-                    if (!isPlayScreenLyricsManualScroll && isDesktop) {
-                        smoothScrollLyricIntoView(line, container);
+                    const isMobile = !isDesktop;
+                    
+                    // Hanya scroll jika baris berubah (bukan setiap frame!)
+                    const lineChanged = currentLineIdx !== lastHighlightedLineIdx;
+                    
+                    // Tambahan: cek jika ada animasi sedang jalan, skip
+                    const isAnimating = currentScrollAnimation !== null;
+                    
+                    // Tambahan: debounce - jangan scroll jika baru saja complete (< 500ms)
+                    const timeSinceLastScroll = Date.now() - lastScrollCompleteTime;
+                    const tooSoon = timeSinceLastScroll < 500;
+                    
+                    if (lineChanged) {
+                        console.log('🎵 [LYRICS] Line changed:', {
+                            oldIdx: lastHighlightedLineIdx,
+                            newIdx: currentLineIdx,
+                            time: currentTime.toFixed(2),
+                            text: lyrics.lines[currentLineIdx]?.text,
+                            isMobile: isMobile,
+                            isDesktop: isDesktop,
+                            manualScroll: isPlayScreenLyricsManualScroll,
+                            isAnimating: isAnimating,
+                            timeSinceLastScroll: timeSinceLastScroll
+                        });
+                        
+                        // Update last line
+                        lastHighlightedLineIdx = currentLineIdx;
+                        
+                        // Skip jika sedang animasi atau terlalu cepat setelah scroll
+                        if (isAnimating) {
+                            console.log('  ⚠️ Animation already running, skip new scroll');
+                            return;
+                        }
+                        
+                        if (tooSoon) {
+                            console.log('  ⚠️ Too soon after last scroll, skip');
+                            return;
+                        }
+                        
+                        // Desktop: scroll jika tidak manual scroll
+                        if (isDesktop && !isPlayScreenLyricsManualScroll) {
+                            console.log('  ↳ Desktop auto-scroll triggered');
+                            smoothScrollLyricIntoView(line, container);
+                        }
+                        
+                        // Mobile: scroll jika tidak manual scroll
+                        if (isMobile && !isPlayScreenLyricsManualScroll) {
+                            console.log('  ↳ Mobile auto-scroll triggered');
+                            smoothScrollLyricIntoViewMobile(line, container);
+                        }
                     }
                 }
             });
+        }
+        
+        // Mobile-specific smooth scroll function
+        function smoothScrollLyricIntoViewMobile(element, container) {
+            if (!element || !container) {
+                console.warn('⚠️ [MOBILE SCROLL] Element or container missing');
+                return;
+            }
+            
+            // Cancel animasi sebelumnya jika ada
+            if (currentScrollAnimation) {
+                console.log('  ↳ Canceling previous scroll animation');
+                cancelAnimationFrame(currentScrollAnimation);
+                currentScrollAnimation = null;
+            }
+            
+            const elementRect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            console.log('📱 [MOBILE SCROLL] Checking visibility:', {
+                elementTop: Math.round(elementRect.top),
+                elementBottom: Math.round(elementRect.bottom),
+                containerTop: Math.round(containerRect.top),
+                containerBottom: Math.round(containerRect.bottom),
+                containerHeight: Math.round(containerRect.height)
+            });
+            
+            // Check if element sudah dalam area yang baik (tengah ± 30% dari container)
+            const containerMidPoint = containerRect.top + (containerRect.height / 2);
+            const elementMidPoint = elementRect.top + (elementRect.height / 2);
+            const distanceFromCenter = Math.abs(elementMidPoint - containerMidPoint);
+            const acceptableRange = containerRect.height * 0.3; // 30% dari tinggi container
+            
+            const isWellPositioned = distanceFromCenter < acceptableRange;
+            
+            console.log('  ↳ Position check:', {
+                distanceFromCenter: Math.round(distanceFromCenter),
+                acceptableRange: Math.round(acceptableRange),
+                isWellPositioned: isWellPositioned
+            });
+            
+            if (isWellPositioned) {
+                console.log('  ↳ Already well positioned, skip scroll');
+                return;
+            }
+            
+            // Calculate target scroll position (centered)
+            const scrollTop = container.scrollTop;
+            const elementOffsetTop = element.offsetTop;
+            const targetScroll = elementOffsetTop - (container.clientHeight / 2) + (element.clientHeight / 2);
+            
+            // Pastikan target scroll tidak negatif dan tidak melebihi max scroll
+            const maxScroll = container.scrollHeight - container.clientHeight;
+            const clampedTarget = Math.max(0, Math.min(targetScroll, maxScroll));
+            
+            console.log('  ↳ Scrolling:', {
+                from: Math.round(scrollTop),
+                to: Math.round(clampedTarget),
+                distance: Math.round(Math.abs(clampedTarget - scrollTop)),
+                maxScroll: Math.round(maxScroll)
+            });
+            
+            // Skip jika jarak scroll terlalu kecil (< 5px)
+            if (Math.abs(clampedTarget - scrollTop) < 5) {
+                console.log('  ↳ Distance too small, skip scroll');
+                return;
+            }
+            
+            // Smooth scroll dengan requestAnimationFrame
+            const startTime = performance.now();
+            const duration = 300; // Lebih cepat untuk responsif
+            let isAnimating = true;
+            
+            function animateScroll(currentTime) {
+                // Stop jika user mulai scroll manual
+                if (isPlayScreenLyricsManualScroll) {
+                    console.log('  ⚠️ Manual scroll detected, stopping animation');
+                    currentScrollAnimation = null;
+                    return;
+                }
+                
+                if (!isAnimating) {
+                    currentScrollAnimation = null;
+                    return;
+                }
+                
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function (ease-out quad)
+                const easeProgress = 1 - Math.pow(1 - progress, 2);
+                const newScrollTop = scrollTop + (clampedTarget - scrollTop) * easeProgress;
+                
+                container.scrollTop = newScrollTop;
+                
+                if (progress < 1) {
+                    currentScrollAnimation = requestAnimationFrame(animateScroll);
+                } else {
+                    console.log('  ✅ Scroll complete at', Math.round(newScrollTop));
+                    isAnimating = false;
+                    currentScrollAnimation = null;
+                    
+                    // Set timestamp untuk debouncing
+                    lastScrollCompleteTime = Date.now();
+                    console.log('  ↳ Last scroll complete time updated');
+                }
+            }
+            
+            currentScrollAnimation = requestAnimationFrame(animateScroll);
         }
 
         // Setup lyrics container scroll tracking
         function setupPlayScreenLyricsScrollTracking() {
             const container = document.getElementById('play-screen-lyrics-container');
-            if (!container) return;
+            if (!container) {
+                console.warn('⚠️ [SCROLL TRACKING] Container not found');
+                return;
+            }
+            
+            console.log('✅ [SCROLL TRACKING] Initialized for lyrics container');
 
             container.addEventListener('scroll', () => {
+                // Ignore scroll events dari programmatic scroll (tap lirik)
+                if (window.isProgrammaticScroll) {
+                    console.log('  ↳ Programmatic scroll detected, ignoring');
+                    return;
+                }
+                
+                const isMobile = window.innerWidth < 769;
+                console.log('👆 [MANUAL SCROLL] User scrolling detected:', {
+                    isMobile: isMobile,
+                    scrollTop: Math.round(container.scrollTop),
+                    scrollHeight: container.scrollHeight,
+                    clientHeight: container.clientHeight
+                });
+                
+                // Cancel animasi scroll yang sedang jalan
+                if (currentScrollAnimation) {
+                    console.log('  ↳ Canceling auto-scroll animation');
+                    cancelAnimationFrame(currentScrollAnimation);
+                    currentScrollAnimation = null;
+                }
+                
                 isPlayScreenLyricsManualScroll = true;
                 clearTimeout(playScreenLyricsScrollTimeout);
-                // Reset manual scroll flag after 2 seconds of no scroll
+                
+                // Reset manual scroll flag after 1 second (lebih responsif!)
                 playScreenLyricsScrollTimeout = setTimeout(() => {
+                    console.log('⏰ [MANUAL SCROLL] Timeout reached, re-enabling auto-scroll');
                     isPlayScreenLyricsManualScroll = false;
-                }, 2000);
+                }, 1000); // Dikurangi dari 2000 jadi 1000ms
             });
         }
 
@@ -20085,6 +20473,9 @@ function openArtistBandOverlay(artistData, songsList) {
                     fill.style.width = (percent * 100) + '%';
                 }
                 
+                // Update thumb position
+                overlayProgressContainer.style.setProperty('--thumb-position', (percent * 100) + '%');
+                
                 const tooltip = getProgressTooltip();
                 tooltip.textContent = formatTimeTooltip(percent * audio.duration);
                 tooltip.style.display = 'block';
@@ -20106,6 +20497,9 @@ function openArtistBandOverlay(artistData, songsList) {
                     fill.style.transition = 'none';
                     fill.style.width = (percent * 100) + '%';
                 }
+                
+                // Update thumb position
+                overlayProgressContainer.style.setProperty('--thumb-position', (percent * 100) + '%');
                 
                 const tooltip = getProgressTooltip();
                 tooltip.textContent = formatTimeTooltip(percent * audio.duration);
@@ -20164,6 +20558,14 @@ function openArtistBandOverlay(artistData, songsList) {
 
         function loadSong(song) {
     // ✅ PERBAIKAN: Update semua elemen UI dengan data lagu yang benar
+    
+    // ✅ RESET MANUAL SCROLL FLAG - agar auto-scroll langsung aktif saat ganti lagu
+    if (typeof isPlayScreenLyricsManualScroll !== 'undefined') {
+        isPlayScreenLyricsManualScroll = false;
+        clearTimeout(playScreenLyricsScrollTimeout);
+        lastHighlightedLineIdx = -1;
+        console.log('🎵 [LOAD SONG] Resetting manual scroll for auto-scroll');
+    }
     
     const newSrc = song.audioUrl || song.audio_url || song.src;
     const currentSrc = audio.src;
@@ -20614,6 +21016,12 @@ function openArtistBandOverlay(artistData, songsList) {
         function playNext() {
             // Logic: Check Queue -> Check Repeat -> Check Playlist Context -> Next Song
             
+            // ✅ RESET MANUAL SCROLL FLAG - agar auto-scroll langsung aktif saat skip lagu
+            isPlayScreenLyricsManualScroll = false;
+            clearTimeout(playScreenLyricsScrollTimeout);
+            lastHighlightedLineIdx = -1; // Reset agar auto-scroll langsung jalan
+            console.log('⏭️ [SKIP NEXT] Resetting manual scroll for auto-scroll');
+            
             if(repeatMode === 2) {
                 // Repeat One
                 audio.currentTime = 0;
@@ -20698,6 +21106,13 @@ function openArtistBandOverlay(artistData, songsList) {
         }
         function playPrevious() {
             // Logic: Check if >3s -> restart, Check History, Check Playlist Context, Else prev in list
+            
+            // ✅ RESET MANUAL SCROLL FLAG - agar auto-scroll langsung aktif saat skip lagu
+            isPlayScreenLyricsManualScroll = false;
+            clearTimeout(playScreenLyricsScrollTimeout);
+            lastHighlightedLineIdx = -1; // Reset agar auto-scroll langsung jalan
+            console.log('⏮️ [SKIP PREV] Resetting manual scroll for auto-scroll');
+            
             if(audio.currentTime > 3) {
                 audio.currentTime = 0;
                 return;
@@ -24513,6 +24928,89 @@ console.log('══════════════════════�
 console.log('');
 
 
+
+    // ===== SYNC SHUFFLE/REPEAT STATE BETWEEN ALBUM AND LYRICS VIEW =====
+    (function() {
+        
+        // Store original functions
+        const originalToggleShuffle = window.toggleShuffle;
+        const originalToggleRepeat = window.toggleRepeat;
+        
+        // Override with sync version
+        window.toggleShuffle = function() {
+            // Call original
+            if (originalToggleShuffle) {
+                originalToggleShuffle();
+            }
+            
+            // Sync to lyrics view buttons
+            setTimeout(() => {
+                const albumBtn = document.getElementById('ps-shuffle');
+                
+                if (albumBtn && lyricsBtn) {
+                    if (albumBtn.classList.contains('active')) {
+                        lyricsBtn.classList.add('active');
+                        lyricsBtn.style.color = 'var(--primary-red, #e50914)';
+                    } else {
+                        lyricsBtn.classList.remove('active');
+                        lyricsBtn.style.color = 'rgba(255,255,255,0.7)';
+                    }
+                }
+            }, 50);
+        };
+        
+        window.toggleRepeat = function() {
+            // Call original
+            if (originalToggleRepeat) {
+                originalToggleRepeat();
+            }
+            
+            // Sync to lyrics view buttons
+            setTimeout(() => {
+                const albumBtn = document.getElementById('ps-repeat');
+                
+                if (albumBtn && lyricsBtn) {
+                    if (albumBtn.classList.contains('active')) {
+                        lyricsBtn.classList.add('active');
+                        lyricsBtn.style.color = 'var(--primary-red, #e50914)';
+                    } else {
+                        lyricsBtn.classList.remove('active');
+                        lyricsBtn.style.color = 'rgba(255,255,255,0.7)';
+                    }
+                }
+            }, 50);
+        };
+        
+        // Initial sync on page load
+        setTimeout(() => {
+            const albumShuffleBtn = document.getElementById('ps-shuffle');
+            const albumRepeatBtn = document.getElementById('ps-repeat');
+            
+            if (window.innerWidth >= 769) {
+                console.log('  Album shuffle:', albumShuffleBtn ? 'FOUND' : 'NOT FOUND');
+                console.log('  Lyrics shuffle:', lyricsShuffleBtn ? 'FOUND' : 'NOT FOUND');
+                console.log('  Album repeat:', albumRepeatBtn ? 'FOUND' : 'NOT FOUND');
+                console.log('  Lyrics repeat:', lyricsRepeatBtn ? 'FOUND' : 'NOT FOUND');
+                
+                // Sync initial state
+                if (albumShuffleBtn && lyricsShuffleBtn) {
+                    if (albumShuffleBtn.classList.contains('active')) {
+                        lyricsShuffleBtn.classList.add('active');
+                        lyricsShuffleBtn.style.color = 'var(--primary-red, #e50914)';
+                    }
+                }
+                
+                if (albumRepeatBtn && lyricsRepeatBtn) {
+                    if (albumRepeatBtn.classList.contains('active')) {
+                        lyricsRepeatBtn.classList.add('active');
+                        lyricsRepeatBtn.style.color = 'var(--primary-red, #e50914)';
+                    }
+                }
+            }
+        }, 1000);
+        
+    })();
+    
 </script>
 </body>
 </html>
