@@ -284,11 +284,65 @@
                 overflow-x: hidden !important;
             }
 
-            /* Scale down album art when lyrics shown */
+            /* Desktop: Default smaller size when lyrics NOT visible */
+            #play-screen-cover {
+                width: 280px !important;
+                height: 280px !important;
+                margin-bottom: 28px !important;
+            }
+
+            #play-screen-song-title {
+                font-size: 24px !important;
+            }
+
+            #play-screen-song-artist {
+                font-size: 14px !important;
+            }
+
+            /* Scale down album art even more when lyrics shown */
             #play-screen-scroll.lyrics-visible #play-screen-cover {
-                width: 240px !important;
-                height: 240px !important;
-                margin-bottom: 24px !important;
+                width: 220px !important;
+                height: 220px !important;
+                margin-bottom: 20px !important;
+            }
+
+            #play-screen-scroll.lyrics-visible #play-screen-song-title {
+                font-size: 20px !important;
+            }
+
+            #play-screen-scroll.lyrics-visible #play-screen-song-artist {
+                font-size: 12px !important;
+            }
+
+            /* Desktop: Smaller progress bar container */
+            #play-screen-album > div:has([data-progress-bar]) {
+                max-width: 280px !important;
+                margin-bottom: 20px !important;
+            }
+
+            #play-screen-scroll.lyrics-visible #play-screen-album > div:has([data-progress-bar]) {
+                max-width: 240px !important;
+            }
+
+            /* Desktop: Smaller control buttons */
+            #play-screen-album > div:has(#ps-play) button {
+                font-size: 20px !important;
+            }
+
+            #play-screen-album > div:has(#ps-play) #ps-play {
+                width: 54px !important;
+                height: 54px !important;
+                font-size: 24px !important;
+            }
+
+            #play-screen-scroll.lyrics-visible #play-screen-album > div:has(#ps-play) button {
+                font-size: 18px !important;
+            }
+
+            #play-screen-scroll.lyrics-visible #play-screen-album > div:has(#ps-play) #ps-play {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 22px !important;
             }
 
             /* Hide navigate button in lyrics on desktop */
@@ -2491,6 +2545,52 @@
             margin-top: 10px; 
             font-size: 12px; 
             color: #b3b3b3; 
+        }
+
+
+        /* MOBILE: Fix overlay progress fill visibility */
+        @media (max-width: 768px) {
+            .overlay-progress-bar {
+                height: 4px !important;
+                background: rgba(255, 255, 255, 0.2) !important;
+                position: relative !important;
+            }
+            
+            .overlay-progress-fill {
+                height: 100% !important;
+                background: white !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                z-index: 2 !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+        }
+
+
+        /* MOBILE: Fix play screen progress fill visibility */
+        @media (max-width: 768px) {
+            #play-screen-album [data-progress-bar],
+            #play-screen-lyrics [data-progress-bar] {
+                height: 2px !important;
+                background: rgba(255, 255, 255, 0.1) !important;
+                position: relative !important;
+            }
+            
+            #play-screen-progress,
+            #play-screen-lyrics-progress {
+                height: 100% !important;
+                background: rgba(255, 255, 255, 0.8) !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                z-index: 2 !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
         }
 
         /* Mobile bottom navigation (hidden by default) */
@@ -8455,6 +8555,60 @@ if (document.readyState === 'loading') {
                         <br><br><br>
                     </div>
 
+                    <!-- NAFF -->
+                    <div id="view-naff-album" class="view-section">
+                        <div class="playlist-header-view" id="naff-header-bg">
+                            <div class="playlist-cover-wrap">
+                                <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg" class="playlist-cover-big" id="naff-cover-view">
+                            </div>
+                            <div class="playlist-info-big">
+                                <span>ARTIS</span>
+                                <h1 id="naff-title-view">NAFF</h1>
+                                <div class="playlist-meta">
+                                    <span style="color: white;">Penyanyi Indonesia Populer</span> • <span id="naff-count">5 lagu</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="naff-songs-container"></div></div>
+                        <br><br><br>
+                    </div>
+
+                    <!-- The Script -->
+                    <div id="view-thescript-album" class="view-section">
+                        <div class="playlist-header-view" id="thescript-header-bg">
+                            <div class="playlist-cover-wrap">
+                                <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg" class="playlist-cover-big" id="thescript-cover-view">
+                            </div>
+                            <div class="playlist-info-big">
+                                <span>ARTIS</span>
+                                <h1 id="thescript-title-view">The Script</h1>
+                                <div class="playlist-meta">
+                                    <span style="color: white;">Penyanyi Asing Populer</span> • <span id="thescript-count">5 lagu</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="thescript-songs-container"></div></div>
+                        <br><br><br>
+                    </div>
+
+                    <!-- Bad Bunny -->
+                    <div id="view-badbunny-album" class="view-section">
+                        <div class="playlist-header-view" id="badbunny-header-bg">
+                            <div class="playlist-cover-wrap">
+                                <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg" class="playlist-cover-big" id="badbunny-cover-view">
+                            </div>
+                            <div class="playlist-info-big">
+                                <span>ARTIS</span>
+                                <h1 id="badbunny-title-view">Bad Bunny</h1>
+                                <div class="playlist-meta">
+                                    <span style="color: white;">Penyanyi Asing Populer</span> • <span id="badbunny-count">5 lagu</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 0 32px;"><div class="song-list-header"><div>#</div><div>Judul</div><div>Album</div><div><i class="ph ph-clock"></i></div><div></div></div><div id="badbunny-songs-container"></div></div>
+                        <br><br><br>
+                    </div>
+
                     <!-- VIEW: LIKED SONGS -->
                     <div id="view-liked" class="view-section">
                         <div class="playlist-header-view" id="liked-header-bg" style="position: relative;">
@@ -11699,7 +11853,25 @@ console.log('   getCurrentSong() - Check what song is detected');
             { id: 786, title: "Linger", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/linger.mp3" },
             { id: 787, title: "When You're Gone", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/whenyouregone.mp3" },
             { id: 788, title: "Zombie", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/zombie.mp3" },
-            { id: 789, title: "Dreams", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/dreams.mp3" }
+            { id: 789, title: "Dreams", artist: "The Cranberries", album: "Album", duration: "3:24", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thecranberries/dreams.mp3" },
+            // NAFF
+            { id: 790, title: "Kau Masih Kekasihku", artist: "NAFF", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/naff/kaumasihkekasihku.mp3" },
+            { id: 791, title: "Kenanglah Aku", artist: "NAFF", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/naff/kenanglahaku.mp3" },
+            { id: 792, title: "Akhirnya Ku Menemukanmu", artist: "NAFF", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/naff/akhirnyakumenemukanmu.mp3" },
+            { id: 793, title: "Terendap Laraku", artist: "NAFF", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/naff/terendaplaraku.mp3" },
+            { id: 794, title: "Tak Seindah Cinta Yang Semestinya", artist: "NAFF", album: "Album", duration: "3:30", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/naff/terendaplaraku.mp3" },
+            // The Script
+            { id: 795, title: "Breakeven", artist: "The Script", album: "Album", duration: "3:35", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thescript/breakeven.mp3" },
+            { id: 796, title: "The Man Who Can't Be Moved", artist: "The Script", album: "Album", duration: "3:35", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thescript/themanwhocantbemoved.mp3" },
+            { id: 797, title: "Hall of Fame", artist: "The Script", album: "Album", duration: "3:35", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thescript/halloffame.mp3" },
+            { id: 798, title: "For the First Time", artist: "The Script", album: "Album", duration: "3:35", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thescript/forthefirsttime.mp3" },
+            { id: 799, title: "Superheroes", artist: "The Script", album: "Album", duration: "3:35", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/thescript/superheroes.mp3" },
+            // Bad Bunny
+            { id: 800, title: "DtMF", artist: "Bad Bunny", album: "Album", duration: "3:20", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/badbunny/dtmf.mp3" },
+            { id: 801, title: "NuEVAYoL", artist: "Bad Bunny", album: "Album", duration: "3:20", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/badbunny/nuevayol.mp3" },
+            { id: 802, title: "I Like It", artist: "Bad Bunny", album: "Album", duration: "3:20", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/badbunny/ilikeit.mp3" },
+            { id: 803, title: "MONACO", artist: "Bad Bunny", album: "Album", duration: "3:20", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/badbunny/monaco.mp3" },
+            { id: 804, title: "PIToRRO DE COCO", artist: "Bad Bunny", album: "Album", duration: "3:20", cover: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", src: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/badbunny/pitorrodecoco.mp3" }
         ];
 
         const songs = [
@@ -13543,6 +13715,7 @@ console.log('   getCurrentSong() - Check what song is detected');
             { name: "The Lantis", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thelantis.jpg", fn: "window.openTheLantisAlbum()" },
             { name: "The Changcuters", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thechangcuters.jpg", fn: "window.openTheChangcutersAlbum()" },
             { name: "The Adams", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/theadams.jpg", fn: "window.openTheAdamsAlbum()" },
+            { name: "NAFF", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", fn: "window.openNaffAlbum()" },
             // Indonesian Singers
             { name: "Naykilla", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/nay.jpg", fn: "window.openNaykillaAlbum()" },
             { name: "Bernadya", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/bernadya.jpg", fn: "window.openBernardyaAlbum()" },
@@ -13557,15 +13730,54 @@ console.log('   getCurrentSong() - Check what song is detected');
             { name: "Sal Priadi", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/salpriadi.jpg", fn: "window.openSalPriadiAlbum()" },
             { name: "Juan Reza", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/juan.jpg", fn: "window.openJuanRezaAlbum()" },
             { name: "NIKI", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/niki.jpg", fn: "window.openNIKIAlbum()" },
+            { name: "Muria", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/muria.jpg", fn: "window.openMuriaAlbum()" },
+            { name: "Chrisye", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/chrisye.jpg", fn: "window.openChrisyeAlbum()" },
+            { name: "Kaleb J", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/kalebj.jpg", fn: "window.openKalebjAlbum()" },
+            { name: "Astrid", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/astrid.webp", fn: "window.openAstridAlbum()" },
+            { name: "Afgan", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/afgan.png", fn: "window.openAfganAlbum()" },
+            { name: "Tulus", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tulus.jpg", fn: "window.openTulusAlbum()" },
+            { name: "Mahalini", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/mahalini.jpg", fn: "window.openMahaliniAlbum()" },
+            { name: "Tenxi", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/tenxi.jpg", fn: "window.openTenxiAlbum()" },
             // Foreign Singers
+            { name: "Taylor Swift", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/taylor.jpg", fn: "window.openTaylorAlbum()" },
+            { name: "Justin Bieber", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/justin.jpg", fn: "window.openJustinAlbum()" },
+            { name: "Ed Sheeran", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/ed.jpg", fn: "window.openEdAlbum()" },
+            { name: "Bruno Mars", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bruno.jpg", fn: "window.openBrunoAlbum()" },
+            { name: "Daniel Caesar", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/daniel.jpg", fn: "window.openDanielAlbum()" },
+            { name: "Bob Marley", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/bob.jpg", fn: "window.openBobMarleyAlbum()" },
+            { name: "Frank Ocean", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/frank.jpg", fn: "window.openFrankOceanAlbum()" },
+            { name: "Drake", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/drake.jpg", fn: "window.openDrakeAlbum()" },
+            { name: "Kendrick Lamar", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/kendrick.jpg", fn: "window.openKendrickAlbum()" },
+            { name: "The Weeknd", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/theweekend.jpg", fn: "window.openTheWeekndAlbum()" },
+            { name: "Olivia Rodrigo", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/olivia.jpg", fn: "window.openOliviaAlbum()" },
+            { name: "SZA", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/sza.jpg", fn: "window.openSZAAlbum()" },
             { name: "Avicii", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/avicii.jpg", fn: "window.openAviciiAlbum()" },
             { name: "Adele", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/adele.jpg", fn: "window.openAdeleAlbum()" },
             { name: "Shawn Mendes", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/shawn.jpg", fn: "window.openShawnMendesAlbum()" },
             { name: "James Arthur", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/james.jpg", fn: "window.openJamesArthurAlbum()" },
             { name: "Billie Eilish", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", fn: "window.openBillieEilishAlbum()" },
+            { name: "Bad Bunny", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", fn: "window.openBadBunnyAlbum()" },
             // Foreign Bands
+            { name: "Cigarettes After Sex", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/cas.jpg", fn: "window.openCigarettesAlbum()" },
+            { name: "Rex Orange County", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/roc.jpg", fn: "window.openRexAlbum()" },
+            { name: "The Smiths", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/thesmith.jpg", fn: "window.openSmithsAlbum()" },
+            { name: "Arctic Monkeys", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/articmonkeys.jpg", fn: "window.openArcticAlbum()" },
+            { name: "Queen", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/queen.jpg", fn: "window.openQueenAlbum()" },
+            { name: "The Stone Roses", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/thestoneroses.jpg", fn: "window.openStoneRosesAlbum()" },
+            { name: "Neck Deep", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/neckdeep.jpg", fn: "window.openNeckDeepAlbum()" },
+            { name: "My Chemical Romance", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/chemical.jpg", fn: "window.openMCRAlbum()" },
+            { name: "The 1975", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/the1975.jpg", fn: "window.openThe1975Album()" },
+            { name: "The Chainsmokers", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/thechainmokers.jpg", fn: "window.openChainsmokersAlbum()" },
+            { name: "Avenged Sevenfold", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/avenged.jpg", fn: "window.openAvengedAlbum()" },
+            { name: "Coldplay", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/coldplay.jpg", fn: "window.openColdplayAlbum()" },
+            { name: "One Direction", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/onedirection.jpg", fn: "window.openOnedirectionAlbum()" },
+            { name: "Green Day", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/greenday.jpg", fn: "window.openGreendayAlbum()" },
+            { name: "Oasis", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/oasis.jpg", fn: "window.openOasisAlbum()" },
+            { name: "Radiohead", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg", fn: "window.openRadioheadAlbum()" },
+            { name: "The Cranberries", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", fn: "window.openCranberriesAlbum()" },
             { name: "The Beatles", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thebeatles.jpg", fn: "window.openBeatlesAlbum()" },
-            { name: "Maroon 5", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", fn: "window.openMaroon5Album()" }
+            { name: "Maroon 5", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", fn: "window.openMaroon5Album()" },
+            { name: "The Script", img: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", fn: "window.openTheScriptAlbum()" }
         ];
 
         const audio = document.getElementById('audio-player');
@@ -16553,7 +16765,8 @@ function updateMediaSession() {
                 { name: "HIVI!", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/hivi.jpg", onclick: "window.openHiviAlbum()" },
                 { name: "The Lantis", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thelantis.jpg", onclick: "window.openTheLantisAlbum()" },
                 { name: "The Changcuters", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thechangcuters.jpg", onclick: "window.openTheChangcutersAlbum()" },
-                { name: "The Adams", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/theadams.jpg", onclick: "window.openTheAdamsAlbum()" }
+                { name: "The Adams", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/theadams.jpg", onclick: "window.openTheAdamsAlbum()" },
+                { name: "NAFF", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", onclick: "window.openNaffAlbum()" }
             ];
             const container = document.getElementById('popular-bands-container');
             const maxShow = 6;
@@ -16697,7 +16910,8 @@ function updateMediaSession() {
                 { name: "Adele", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/adele.jpg", onclick: "window.openAdeleAlbum()" },
                 { name: "Shawn Mendes", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/shawn.jpg", onclick: "window.openShawnMendesAlbum()" },
                 { name: "James Arthur", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/james.jpg", onclick: "window.openJamesArthurAlbum()" },
-                { name: "Billie Eilish", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", onclick: "window.openBillieEilishAlbum()" }
+                { name: "Billie Eilish", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/billie.jpg", onclick: "window.openBillieEilishAlbum()" },
+                { name: "Bad Bunny", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", onclick: "window.openBadBunnyAlbum()" }
             ];
             const container = document.getElementById('foreign-solo-container');
             const maxShow = 6;
@@ -16768,7 +16982,8 @@ function updateMediaSession() {
                 { name: "The Cranberries", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", onclick: "window.openCranberriesAlbum()" },
                 { name: "Radiohead", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/albumphoto/radiohead.jpg", onclick: "window.openRadioheadAlbum()" },
                 { name: "The Beatles", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thebeatles.jpg", onclick: "window.openBeatlesAlbum()" },
-                { name: "Maroon 5", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", onclick: "window.openMaroon5Album()" }
+                { name: "Maroon 5", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/maroon5.jpg", onclick: "window.openMaroon5Album()" },
+                { name: "The Script", image: "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", onclick: "window.openTheScriptAlbum()" }
             ];
             const container = document.getElementById('foreign-bands-container');
             const maxShow = 6;
@@ -17442,6 +17657,21 @@ function updateMediaSession() {
             setupGenericAlbumView("The Cranberries", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thecranberries.jpg", 785, 789, "cranberries-album", "cranberries-title-view", "cranberries-cover-view", "cranberries-header-bg", "cranberries-count", "cranberries-songs-container");
         };
         window.playFirstSongOfCranberries = () => window.playSpecificSong(785);
+
+        window.openNaffAlbum = () => {
+            setupGenericAlbumView("NAFF", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/naff.jpg", 790, 794, "naff-album", "naff-title-view", "naff-cover-view", "naff-header-bg", "naff-count", "naff-songs-container");
+        };
+        window.playFirstSongOfNaff = () => window.playSpecificSong(790);
+
+        window.openTheScriptAlbum = () => {
+            setupGenericAlbumView("The Script", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/thescript.jpg", 795, 799, "thescript-album", "thescript-title-view", "thescript-cover-view", "thescript-header-bg", "thescript-count", "thescript-songs-container");
+        };
+        window.playFirstSongOfTheScript = () => window.playSpecificSong(795);
+
+        window.openBadBunnyAlbum = () => {
+            setupGenericAlbumView("Bad Bunny", "https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/newalbum/badbunny.jpg", 800, 804, "badbunny-album", "badbunny-title-view", "badbunny-cover-view", "badbunny-header-bg", "badbunny-count", "badbunny-songs-container");
+        };
+        window.playFirstSongOfBadBunny = () => window.playSpecificSong(800);
 
         // --- TOGGLE SHOW ALL FUNCTION ---
         window.toggleShowAll = (type, button) => {
