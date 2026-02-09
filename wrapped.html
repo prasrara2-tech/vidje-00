@@ -32,6 +32,21 @@
             width: 100vw;
             height: 100vh;
             position: fixed;
+            transition: background-color 0.5s ease;
+        }
+        
+        /* Subtle background pulse when music is playing */
+        body.music-playing {
+            animation: bodyPulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes bodyPulse {
+            0%, 100% {
+                background-color: var(--black);
+            }
+            50% {
+                background-color: #0d0607; /* Slightly lighter black with red tint */
+            }
         }
 
         /* Background texture with animation */
@@ -258,6 +273,304 @@
             }
             100% {
                 transform: translateY(4px);
+            }
+        }
+
+        /* ========================================
+           NEW MOBILE-FRIENDLY VISUAL EFFECTS
+           ======================================== */
+        
+        /* Animated gradient waves - GUARANTEED to work on mobile */
+        .gradient-waves {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, 
+                rgba(227, 27, 35, 0.15) 0%, 
+                rgba(227, 27, 35, 0.05) 30%, 
+                transparent 60%);
+            animation: waveMove 20s ease-in-out infinite;
+            transform-origin: center;
+        }
+        
+        .wave:nth-child(1) {
+            top: -50%;
+            left: -50%;
+            animation-delay: 0s;
+        }
+        
+        .wave:nth-child(2) {
+            bottom: -50%;
+            right: -50%;
+            animation-delay: -7s;
+            animation-duration: 25s;
+        }
+        
+        .wave:nth-child(3) {
+            top: 20%;
+            left: 20%;
+            animation-delay: -14s;
+            animation-duration: 30s;
+        }
+        
+        @keyframes waveMove {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            33% {
+                transform: translate(10%, -10%) scale(1.1) rotate(120deg);
+            }
+            66% {
+                transform: translate(-10%, 10%) scale(0.9) rotate(240deg);
+            }
+        }
+        
+        /* Pulsing glow orbs - Simple and effective */
+        .glow-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--red-bright), transparent);
+            filter: blur(40px);
+            animation: orbPulse 4s ease-in-out infinite;
+        }
+        
+        .orb-1 {
+            top: 10%;
+            left: 10%;
+            width: 150px;
+            height: 150px;
+            animation-delay: 0s;
+        }
+        
+        .orb-2 {
+            top: 60%;
+            right: 15%;
+            width: 120px;
+            height: 120px;
+            animation-delay: -1.3s;
+        }
+        
+        .orb-3 {
+            bottom: 15%;
+            left: 20%;
+            width: 100px;
+            height: 100px;
+            animation-delay: -2.6s;
+        }
+        
+        @keyframes orbPulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
+        
+        /* Animated music bars - Fun and lively */
+        .music-bars {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 4px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+        .bar {
+            width: 4px;
+            background: linear-gradient(to top, var(--red-primary), var(--red-bright));
+            border-radius: 2px;
+            animation: barBounce 0.6s ease-in-out infinite;
+        }
+        
+        .bar:nth-child(1) {
+            height: 20px;
+            animation-delay: 0s;
+        }
+        
+        .bar:nth-child(2) {
+            height: 30px;
+            animation-delay: -0.15s;
+        }
+        
+        .bar:nth-child(3) {
+            height: 25px;
+            animation-delay: -0.3s;
+        }
+        
+        .bar:nth-child(4) {
+            height: 35px;
+            animation-delay: -0.45s;
+        }
+        
+        .bar:nth-child(5) {
+            height: 28px;
+            animation-delay: -0.6s;
+        }
+        
+        @keyframes barBounce {
+            0%, 100% {
+                transform: scaleY(0.3);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+        
+        /* Floating bubbles - Simpler than particles, more reliable */
+        .floating-bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255, 255, 255, 0.2), 
+                rgba(227, 27, 35, 0.1));
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+            animation: bubbleFloat 15s linear infinite;
+        }
+        
+        .bubble:nth-child(1) {
+            width: 60px;
+            height: 60px;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .bubble:nth-child(2) {
+            width: 40px;
+            height: 40px;
+            left: 30%;
+            animation-delay: -3s;
+        }
+        
+        .bubble:nth-child(3) {
+            width: 50px;
+            height: 50px;
+            left: 50%;
+            animation-delay: -6s;
+        }
+        
+        .bubble:nth-child(4) {
+            width: 70px;
+            height: 70px;
+            left: 70%;
+            animation-delay: -9s;
+        }
+        
+        .bubble:nth-child(5) {
+            width: 45px;
+            height: 45px;
+            left: 85%;
+            animation-delay: -12s;
+        }
+        
+        @keyframes bubbleFloat {
+            0% {
+                bottom: -100px;
+                transform: translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                bottom: 110%;
+                transform: translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Pulse rings - Expanding circles */
+        .pulse-rings {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            margin: -150px 0 0 -150px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .pulse-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--red-primary);
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulseExpand 3s ease-out infinite;
+        }
+        
+        .pulse-ring:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .pulse-ring:nth-child(2) {
+            animation-delay: 1s;
+        }
+        
+        .pulse-ring:nth-child(3) {
+            animation-delay: 2s;
+        }
+        
+        @keyframes pulseExpand {
+            0% {
+                transform: scale(0.3);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Hide on mobile if too performance-heavy */
+        @media (max-width: 768px) {
+            .pulse-rings {
+                display: none; /* Optional: remove if performance is OK */
             }
         }
 
@@ -917,6 +1230,15 @@
                 inset 0 0 30px rgba(0,0,0,0.9),
                 0 5px 15px rgba(0,0,0,0.5);
             animation: vinylSpin 4s linear infinite;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        /* Add glow when music is playing */
+        .vinyl-record:not(.paused) {
+            box-shadow: 
+                0 0 30px rgba(227, 27, 35, 0.4),
+                inset 0 0 30px rgba(0,0,0,0.9),
+                0 5px 20px rgba(227, 27, 35, 0.3);
         }
 
         .vinyl-record.paused {
@@ -2463,8 +2785,49 @@
     <div class="liquid-shape liquid-4"></div>
     <div class="scanlines"></div>
     
-    <!-- Floating particles -->
-    <div class="particles" id="particles"></div>
+    <!-- NEW MOBILE-FRIENDLY VISUAL EFFECTS -->
+    
+    <!-- Animated gradient waves -->
+    <div class="gradient-waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- Pulsing glow orbs -->
+    <div class="glow-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <!-- Floating bubbles -->
+    <div class="floating-bubbles">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+    
+    <!-- Pulse rings -->
+    <div class="pulse-rings">
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+    </div>
+    
+    <!-- Music bars (shown when music is playing) -->
+    <div class="music-bars" id="musicBars" style="opacity: 0;">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
+    
+    <!-- Old particles (keeping as fallback, can be removed) -->
+    <div class="particles" id="particles" style="display: none;"></div>
 
     <!-- Progress bar -->
     <div class="progress-container">
@@ -3459,6 +3822,13 @@
                     console.log('▶️ Audio playing successfully');
                     // Clear pending autoplay if successful
                     window.pendingAutoplaySong = null;
+                    
+                    // Show music bars animation
+                    const musicBars = document.getElementById('musicBars');
+                    if (musicBars) {
+                        musicBars.style.opacity = '1';
+                        musicBars.style.transition = 'opacity 0.3s ease';
+                    }
                 }).catch(err => {
                     console.warn('⚠️ Audio autoplay blocked:', err.message);
                     console.log('💡 Mobile browsers block autoplay - waiting for user interaction');
@@ -3532,18 +3902,45 @@
             isPlaying = false;
             miniPlayerIcon.innerHTML = playIcon;
             console.log('🎵 Song ended');
+            
+            // Hide music bars
+            const musicBars = document.getElementById('musicBars');
+            if (musicBars) {
+                musicBars.style.opacity = '0';
+            }
+            
+            // Remove body pulse animation
+            document.body.classList.remove('music-playing');
         });
 
         audioPlayer.addEventListener('pause', () => {
             if (!audioPlayer.ended) {
                 isPlaying = false;
                 miniPlayerIcon.innerHTML = playIcon;
+                
+                // Hide music bars
+                const musicBars = document.getElementById('musicBars');
+                if (musicBars) {
+                    musicBars.style.opacity = '0';
+                }
+                
+                // Remove body pulse animation
+                document.body.classList.remove('music-playing');
             }
         });
 
         audioPlayer.addEventListener('play', () => {
             isPlaying = true;
             miniPlayerIcon.innerHTML = pauseIcon;
+            
+            // Show music bars
+            const musicBars = document.getElementById('musicBars');
+            if (musicBars) {
+                musicBars.style.opacity = '1';
+            }
+            
+            // Add body pulse animation
+            document.body.classList.add('music-playing');
         });
 
         // Vinyl Record Control
@@ -5331,7 +5728,9 @@
         
 
                 // Initialize
-        createParticles();
+        // OLD: createParticles(); - Removed, using new CSS-based effects instead
+        // New effects are in HTML: gradient-waves, glow-orbs, floating-bubbles, pulse-rings, music-bars
+        console.log('✨ New visual effects loaded (CSS-based, mobile-optimized)');
         updateSlide();
         
         // Set random compliments for all 4 slides
