@@ -67,6 +67,15 @@
             z-index: 1;
             animation: morph 12s ease-in-out infinite;
             will-change: transform, border-radius;
+            transform: translateZ(0); /* Force hardware acceleration */
+        }
+        
+        /* Reduce blur on mobile for better performance */
+        @media (max-width: 768px) {
+            .liquid-shape {
+                filter: blur(50px);
+                opacity: 0.3;
+            }
         }
 
         .liquid-1 {
@@ -177,6 +186,15 @@
             opacity: 0;
             animation: particleFloat 15s infinite;
             box-shadow: 0 0 10px var(--red-bright);
+            will-change: transform, opacity;
+            transform: translateZ(0); /* Force hardware acceleration */
+        }
+        
+        /* Reduce particle effects on mobile for better performance */
+        @media (max-width: 768px) {
+            .particle {
+                box-shadow: 0 0 5px var(--red-bright); /* Lighter shadow */
+            }
         }
 
         @keyframes particleFloat {
@@ -3292,17 +3310,36 @@
 
         // Fade out intro music smoothly
         function fadeOutIntroMusic() {
-            if (!introMusicPlaying) return;
+            console.log('🔇 fadeOutIntroMusic called - current playing:', introMusicPlaying);
             
-            const fadeAudio = setInterval(() => {
+            if (!introMusicPlaying) {
+                console.log('⚠️ Intro music already stopped');
+                return;
+            }
+            
+            // Clear any existing fade interval
+            if (window.introFadeInterval) {
+                clearInterval(window.introFadeInterval);
+            }
+            
+            console.log('🎵 Starting fade out from volume:', introMusic.volume);
+            
+            window.introFadeInterval = setInterval(() => {
                 if (introMusic.volume > 0.05) {
                     introMusic.volume = Math.max(0, introMusic.volume - 0.05);
                 } else {
-                    clearInterval(fadeAudio);
+                    clearInterval(window.introFadeInterval);
                     introMusic.pause();
                     introMusic.currentTime = 0;
+                    introMusic.volume = 0.5; // Reset volume for next play
                     introMusicPlaying = false;
-                    console.log('🎵 Intro music faded out');
+                    
+                    // Also update global state if exists
+                    if (window.setIntroMusicPlaying) {
+                        window.setIntroMusicPlaying(false);
+                    }
+                    
+                    console.log('✅ Intro music fully stopped and reset');
                 }
             }, 50);
         }
@@ -3331,6 +3368,25 @@
 
         function playSong(song, autoPlay = false) {
             console.log('🎵 Playing song:', song);
+            
+            // CRITICAL: Ensure intro music is completely stopped before playing song
+            if (introMusicPlaying || introMusic.volume > 0) {
+                console.log('🛑 Forcing intro music to stop before playing song');
+                introMusic.pause();
+                introMusic.currentTime = 0;
+                introMusic.volume = 0.5;
+                introMusicPlaying = false;
+                
+                // Clear any fade interval
+                if (window.introFadeInterval) {
+                    clearInterval(window.introFadeInterval);
+                }
+                
+                // Also update global state if exists
+                if (window.setIntroMusicPlaying) {
+                    window.setIntroMusicPlaying(false);
+                }
+            }
             
             // Update current song
             currentPlayingSong = song;
@@ -3466,12 +3522,26 @@
         // Create floating particles
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
-            for (let i = 0; i < 30; i++) {
+            
+            // Detect mobile devices
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            
+            // Reduce particles on mobile for better performance
+            const particleCount = isMobile ? 15 : 30;
+            
+            console.log(`🎨 Creating ${particleCount} particles (${isMobile ? 'mobile' : 'desktop'} mode)`);
+            
+            for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
                 particle.style.left = Math.random() * 100 + '%';
                 particle.style.animationDelay = Math.random() * 15 + 's';
                 particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                
+                // Force hardware acceleration for better mobile performance
+                particle.style.willChange = 'transform, opacity';
+                particle.style.transform = 'translateZ(0)';
+                
                 particlesContainer.appendChild(particle);
             }
         }
@@ -3481,12 +3551,25 @@
             const splashParticles = document.getElementById('splashParticles');
             if (!splashParticles) return;
             
-            for (let i = 0; i < 20; i++) {
+            // Detect mobile devices
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            
+            // Reduce particles on mobile for better performance
+            const particleCount = isMobile ? 10 : 20;
+            
+            console.log(`✨ Creating ${particleCount} splash particles (${isMobile ? 'mobile' : 'desktop'} mode)`);
+            
+            for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
                 particle.style.left = Math.random() * 100 + '%';
                 particle.style.animationDelay = Math.random() * 10 + 's';
                 particle.style.animationDuration = (Math.random() * 8 + 10) + 's';
+                
+                // Force hardware acceleration for better mobile performance
+                particle.style.willChange = 'transform, opacity';
+                particle.style.transform = 'translateZ(0)';
+                
                 splashParticles.appendChild(particle);
             }
         }
@@ -3519,16 +3602,19 @@
                 }
             } else if (currentSlide === 3) {
                 // Slide 4: Top Song Details - Fade out intro music, auto-play top song
+                console.log('🎯 SLIDE 4: Stopping intro music and preparing top song');
+                
+                // CRITICAL: Force stop intro music immediately
                 fadeOutIntroMusic();
                 
                 const topSong = window.currentTopSongs?.[0];
                 if (topSong && !currentPlayingSong) {
                     console.log('🎵 Slide 4: Auto-playing top song #1');
-                    // Wait for intro music to fade out before playing song
+                    // Wait longer for intro music to fully fade out
                     setTimeout(() => {
                         playSong(topSong, true);
                         window.userChangedSong = false;
-                    }, 800); // Delay to allow fade out
+                    }, 1200); // Increased delay to ensure complete fade out
                 } else if (topSong && currentPlayingSong) {
                     console.log('🎵 Slide 4: Song already playing, continuing...');
                 }
