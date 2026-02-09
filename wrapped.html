@@ -4124,6 +4124,23 @@
             // Hide splash screen
             splashScreen.classList.add('hidden');
             
+            // MOBILE FIX: Unlock audio context by playing main audioPlayer briefly
+            const audioPlayer = document.getElementById('audioPlayer');
+            if (audioPlayer) {
+                console.log('🔓 Unlocking audio context for mobile...');
+                audioPlayer.volume = 0; // Mute it
+                audioPlayer.play()
+                    .then(() => {
+                        console.log('✅ Audio context unlocked');
+                        audioPlayer.pause();
+                        audioPlayer.currentTime = 0;
+                        audioPlayer.volume = 0.5; // Restore volume
+                    })
+                    .catch(err => {
+                        console.log('⚠️ Audio unlock failed:', err.message);
+                    });
+            }
+            
             // Try to play intro music if it's loaded
             if (introMusic && introMusic.src && window.introMusicUrl) {
                 console.log('🎵 Attempting to play intro music...');
@@ -4318,17 +4335,34 @@
                     }
                 }).catch(err => {
                     console.warn('⚠️ Audio autoplay blocked:', err.message);
-                    console.log('💡 Mobile browsers block autoplay - waiting for user interaction');
+                    console.log('💡 Mobile browsers block autoplay - retrying in 100ms...');
                     
-                    // MOBILE FIX: Reset play state since autoplay failed
-                    isPlaying = false;
-                    miniPlayerIcon.innerHTML = playIcon;
-                    
-                    // Keep song ready to play on next user interaction
-                    window.pendingAutoplaySong = song;
-                    
-                    // Show visual hint that song is ready
-                    console.log('👆 Tap anywhere to start playing');
+                    // MOBILE FIX: Auto-retry after brief delay (audio context might need a moment)
+                    setTimeout(() => {
+                        audioPlayer.play()
+                            .then(() => {
+                                console.log('✅ Audio playing after retry');
+                                isPlaying = true;
+                                miniPlayerIcon.innerHTML = pauseIcon;
+                                window.pendingAutoplaySong = null;
+                                
+                                const musicBars = document.getElementById('musicBars');
+                                if (musicBars) {
+                                    musicBars.style.opacity = '1';
+                                    musicBars.style.transition = 'opacity 0.3s ease';
+                                }
+                            })
+                            .catch(retryErr => {
+                                console.warn('⚠️ Retry failed, waiting for user tap');
+                                // Reset play state since autoplay failed
+                                isPlaying = false;
+                                miniPlayerIcon.innerHTML = playIcon;
+                                
+                                // Keep song ready to play on next user interaction
+                                window.pendingAutoplaySong = song;
+                                console.log('👆 Tap anywhere to start playing');
+                            });
+                    }, 100);
                 });
             }
         }
@@ -4758,17 +4792,29 @@
                 if (topSong && !currentPlayingSong) {
                     console.log('🎵 Slide 4: Auto-playing top song #1');
                     
-                    // MOBILE FIX: Try to play immediately, with fallback
+                    // MOBILE FIX: Aggressive retry strategy
                     const playWithFallback = () => {
                         playSong(topSong, true);
                         window.userChangedSong = false;
+                        
+                        // Store for manual play if autoplay blocked
+                        window.pendingAutoplaySong = topSong;
                     };
                     
-                    // Try immediate play (works on desktop and some mobile)
-                    setTimeout(playWithFallback, 1200);
+                    // Try immediate play (works on desktop)
+                    setTimeout(playWithFallback, 100);
                     
-                    // Store for manual play if autoplay blocked
-                    window.pendingAutoplaySong = topSong;
+                    // Retry every 200ms for 3 attempts (mobile fix)
+                    let retryCount = 0;
+                    const retryInterval = setInterval(() => {
+                        retryCount++;
+                        if (currentPlayingSong || retryCount >= 3) {
+                            clearInterval(retryInterval);
+                            return;
+                        }
+                        console.log(`🔄 Retry ${retryCount}: Attempting to play...`);
+                        playWithFallback();
+                    }, 200);
                 } else if (topSong && currentPlayingSong) {
                     console.log('🎵 Slide 4: Song already playing, continuing...');
                 }
@@ -5025,7 +5071,7 @@
             }
             
             // MOBILE FIX: Try to play pending song if autoplay was blocked
-            if (currentSlide === 3 && window.pendingAutoplaySong && !currentPlayingSong) {
+            if (window.pendingAutoplaySong && !currentPlayingSong) {
                 console.log('📱 Mobile: Attempting to play pending song after click');
                 playSong(window.pendingAutoplaySong, true);
                 window.pendingAutoplaySong = null; // Clear pending
