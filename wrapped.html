@@ -173,7 +173,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 1;
+            z-index: 10; /* Increased from 1 to ensure visibility */
             overflow: hidden;
         }
 
@@ -194,6 +194,26 @@
         @media (max-width: 768px) {
             .particle {
                 box-shadow: 0 0 5px var(--red-bright); /* Lighter shadow */
+                width: 4px; /* Slightly bigger on mobile */
+                height: 4px;
+            }
+            
+            /* Make particles more visible on mobile */
+            @keyframes particleFloat {
+                0% {
+                    transform: translateY(100vh) translateX(0) scale(0);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 0.8; /* More visible */
+                }
+                90% {
+                    opacity: 0.8; /* More visible */
+                }
+                100% {
+                    transform: translateY(-100vh) translateX(100px) scale(1);
+                    opacity: 0;
+                }
             }
         }
 
@@ -3294,9 +3314,16 @@
         // ========================================
         const introMusic = document.getElementById('introMusic');
         let introMusicPlaying = false;
+        let hasPassedIntroSection = false; // NEW: Track if user has passed intro slides
 
         // Auto-play intro music on first interaction
         function startIntroMusic() {
+            // CRITICAL: Don't play intro music if user has already passed intro section
+            if (hasPassedIntroSection) {
+                console.log('🚫 User has passed intro section - intro music disabled');
+                return;
+            }
+            
             if (!introMusicPlaying && currentSlide < 3) {
                 introMusic.volume = 0.4; // Set to comfortable volume
                 introMusic.play().then(() => {
@@ -3429,10 +3456,22 @@
                 
                 // Play audio with error handling
                 audioPlayer.play().then(() => {
-                    console.log('▶️ Audio playing');
+                    console.log('▶️ Audio playing successfully');
+                    // Clear pending autoplay if successful
+                    window.pendingAutoplaySong = null;
                 }).catch(err => {
-                    console.log('⚠️ Audio play failed (might need user interaction):', err.message);
-                    // Browser might block autoplay, but manual clicks will work
+                    console.warn('⚠️ Audio autoplay blocked:', err.message);
+                    console.log('💡 Mobile browsers block autoplay - waiting for user interaction');
+                    
+                    // MOBILE FIX: Reset play state since autoplay failed
+                    isPlaying = false;
+                    miniPlayerIcon.innerHTML = playIcon;
+                    
+                    // Keep song ready to play on next user interaction
+                    window.pendingAutoplaySong = song;
+                    
+                    // Show visual hint that song is ready
+                    console.log('👆 Tap anywhere to start playing');
                 });
             }
         }
@@ -3523,6 +3562,11 @@
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
             
+            if (!particlesContainer) {
+                console.error('❌ Particles container not found!');
+                return;
+            }
+            
             // Detect mobile devices
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
             
@@ -3530,6 +3574,8 @@
             const particleCount = isMobile ? 15 : 30;
             
             console.log(`🎨 Creating ${particleCount} particles (${isMobile ? 'mobile' : 'desktop'} mode)`);
+            console.log('📦 Particles container:', particlesContainer);
+            console.log('📐 Container dimensions:', particlesContainer.offsetWidth, 'x', particlesContainer.offsetHeight);
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
@@ -3542,14 +3588,32 @@
                 particle.style.willChange = 'transform, opacity';
                 particle.style.transform = 'translateZ(0)';
                 
+                // MOBILE FIX: Force visibility
+                particle.style.display = 'block';
+                particle.style.position = 'absolute';
+                
                 particlesContainer.appendChild(particle);
             }
+            
+            // Debug: Check if particles were created
+            const createdParticles = particlesContainer.querySelectorAll('.particle');
+            console.log('✅ Created', createdParticles.length, 'particles');
+            
+            // MOBILE FIX: Ensure container is visible
+            particlesContainer.style.display = 'block';
+            particlesContainer.style.visibility = 'visible';
+            particlesContainer.style.opacity = '1';
+            
+            console.log('✅ Particles container visibility set');
         }
 
         // Create particles for splash screen
         function createSplashParticles() {
             const splashParticles = document.getElementById('splashParticles');
-            if (!splashParticles) return;
+            if (!splashParticles) {
+                console.warn('⚠️ Splash particles container not found');
+                return;
+            }
             
             // Detect mobile devices
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
@@ -3570,8 +3634,21 @@
                 particle.style.willChange = 'transform, opacity';
                 particle.style.transform = 'translateZ(0)';
                 
+                // MOBILE FIX: Force visibility
+                particle.style.display = 'block';
+                particle.style.position = 'absolute';
+                
                 splashParticles.appendChild(particle);
             }
+            
+            // Debug: Check if particles were created
+            const createdParticles = splashParticles.querySelectorAll('.particle');
+            console.log('✅ Created', createdParticles.length, 'splash particles');
+            
+            // MOBILE FIX: Ensure container is visible
+            splashParticles.style.display = 'block';
+            splashParticles.style.visibility = 'visible';
+            splashParticles.style.opacity = '1';
         }
 
         // Initialize splash particles
@@ -3596,13 +3673,16 @@
 
             // Intro music control (slides 0-2 = slides 1-3 in UI)
             if (currentSlide >= 0 && currentSlide <= 2) {
-                // Start intro music if not playing
-                if (!introMusicPlaying) {
+                // Only try to start intro music if user hasn't passed intro section yet
+                if (!hasPassedIntroSection && !introMusicPlaying) {
                     startIntroMusic();
                 }
             } else if (currentSlide === 3) {
                 // Slide 4: Top Song Details - Fade out intro music, auto-play top song
-                console.log('🎯 SLIDE 4: Stopping intro music and preparing top song');
+                console.log('🎯 SLIDE 4: User reached main content - intro section passed');
+                
+                // CRITICAL: Mark that user has passed intro section
+                hasPassedIntroSection = true;
                 
                 // CRITICAL: Force stop intro music immediately
                 fadeOutIntroMusic();
@@ -3610,14 +3690,23 @@
                 const topSong = window.currentTopSongs?.[0];
                 if (topSong && !currentPlayingSong) {
                     console.log('🎵 Slide 4: Auto-playing top song #1');
-                    // Wait longer for intro music to fully fade out
-                    setTimeout(() => {
+                    
+                    // MOBILE FIX: Try to play immediately, with fallback
+                    const playWithFallback = () => {
                         playSong(topSong, true);
                         window.userChangedSong = false;
-                    }, 1200); // Increased delay to ensure complete fade out
+                    };
+                    
+                    // Try immediate play (works on desktop and some mobile)
+                    setTimeout(playWithFallback, 1200);
+                    
+                    // Store for manual play if autoplay blocked
+                    window.pendingAutoplaySong = topSong;
                 } else if (topSong && currentPlayingSong) {
                     console.log('🎵 Slide 4: Song already playing, continuing...');
                 }
+                
+                console.log('✅ hasPassedIntroSection = true - intro music will never play again');
             } else if (currentSlide === 4) {
                 // Slide 5: Top Artist Details - Continue playing
                 console.log('🎵 Slide 5: Top Artist continues playing');
@@ -3628,8 +3717,15 @@
                 // Slide 7: Top 5 Artists - Continue playing  
                 console.log('🎵 Slide 7: Top 5 Artists continues playing');
             } 
-            // === INTRO MUSIC DI SLIDE 9 (ENDING) ===
+            // === INTRO MUSIC DI SLIDE 9 (ENDING) - ONLY IF USER HASN'T PASSED INTRO ===
             else if (currentSlide === 8) {
+                // CRITICAL: Don't bring back intro music if user already passed intro section
+                if (hasPassedIntroSection) {
+                    console.log('🎵 Slide 9: Ending - continuing with current song (no intro music replay)');
+                    // Just let current song continue playing
+                    return;
+                }
+                
                 // Slide 9: Ending - fade out song music, fade in intro music
                 console.log('🎵 Slide 9: Ending - bringing back intro music');
                 
@@ -3861,8 +3957,16 @@
                 return;
             }
             
+            // MOBILE FIX: Try to play pending song if autoplay was blocked
+            if (currentSlide === 3 && window.pendingAutoplaySong && !currentPlayingSong) {
+                console.log('📱 Mobile: Attempting to play pending song after click');
+                playSong(window.pendingAutoplaySong, true);
+                window.pendingAutoplaySong = null; // Clear pending
+                return; // Don't navigate, just play
+            }
+            
             // Start intro music on first user interaction
-            if (currentSlide <= 2 && !introMusicPlaying) {
+            if (currentSlide <= 2 && !introMusicPlaying && !hasPassedIntroSection) {
                 startIntroMusic();
             }
             
@@ -3886,8 +3990,8 @@
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {
-            // Start intro music on first user interaction
-            if (currentSlide <= 2 && !introMusicPlaying) {
+            // Start intro music on first user interaction (only if not passed intro section)
+            if (currentSlide <= 2 && !introMusicPlaying && !hasPassedIntroSection) {
                 startIntroMusic();
             }
             
@@ -3922,8 +4026,8 @@
                 return;
             }
             
-            // Start intro music on first user interaction
-            if (currentSlide <= 2 && !introMusicPlaying) {
+            // Start intro music on first user interaction (only if not passed intro section)
+            if (currentSlide <= 2 && !introMusicPlaying && !hasPassedIntroSection) {
                 startIntroMusic();
             }
             
@@ -3941,6 +4045,13 @@
             if (e.target.closest('.splash-screen') || !splashScreen.classList.contains('hidden')) {
                 console.log('🚫 Touch end on splash screen - ignored');
                 return;
+            }
+            
+            // MOBILE FIX: Try to play pending song if on slide 4 and autoplay was blocked
+            if (currentSlide === 3 && window.pendingAutoplaySong && !currentPlayingSong) {
+                console.log('📱 Mobile: Attempting to play pending song after touch interaction');
+                playSong(window.pendingAutoplaySong, true);
+                window.pendingAutoplaySong = null; // Clear pending
             }
             
             // Don't handle swipe on scrollable areas
