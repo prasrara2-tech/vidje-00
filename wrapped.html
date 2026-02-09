@@ -507,6 +507,77 @@
                 transform: translateX(0) rotate(0deg);
                 opacity: 0;
             }
+
+        
+        /* MOBILE: Hide bubbles and show confetti instead */
+        @media (max-width: 768px) {
+            .floating-bubbles {
+                display: none !important;
+            }
+        }
+        
+        /* Confetti effect - Mobile only, guaranteed to work */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            overflow: hidden;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .confetti-container {
+                display: block !important;
+            }
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: -20px;
+            animation: confettiFall linear infinite;
+        }
+        
+        .confetti.square {
+            background: var(--red-bright);
+            border-radius: 0;
+        }
+        
+        .confetti.circle {
+            background: var(--red-primary);
+            border-radius: 50%;
+        }
+        
+        .confetti.triangle {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid #FFD700;
+            background: transparent;
+        }
+        
+        .confetti.star {
+            background: #FFFFFF;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
             10% {
                 opacity: 0.6;
             }
@@ -2810,6 +2881,10 @@
         <div class="bubble"></div>
     </div>
     
+    
+    <!-- Confetti container (mobile only) -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
     <!-- Pulse rings -->
     <div class="pulse-rings">
         <div class="pulse-ring"></div>
@@ -3082,24 +3157,27 @@
                 </svg>
             </button>
             <div class="title-large">RINGKASAN<br>MINGGU INI</div>
-            <div class="summary-grid" style="max-width: 600px;">
-                <div class="summary-card clickable" onclick="showOverlay('song')">
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                        <img id="summaryTopSongCover" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop" alt="Top Song" style="width: 120px; height: 120px; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 24px rgba(227, 27, 35, 0.4);">
-                        <div class="summary-label" style="margin: 0;">Lagu Teratas</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; width: 100%; max-width: 900px; margin-top: 30px;">
+                
+                <!-- Top 5 Songs Box -->
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(227, 27, 35, 0.3); border-radius: 20px; padding: 25px;">
+                    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--red-bright); margin-bottom: 20px; text-align: center;">TOP 5 LAGU</div>
+                    <div id="summaryTop5Songs">
+                        <!-- Will be populated by JavaScript -->
                     </div>
-                    <div style="font-size: 18px; font-weight: 600; margin-top: 15px; text-align: center;" id="summaryTopSong">Komala Pertama</div>
-                    <div class="item-stat" style="text-align: center;" id="summaryTopSongPlays">127 kali diputar</div>
                 </div>
-                <div class="summary-card clickable" onclick="showOverlay('artist')">
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                        <img id="summaryTopArtistCover" src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=400&fit=crop" alt="Top Artist" style="width: 120px; height: 120px; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 24px rgba(227, 27, 35, 0.4);">
-                        <div class="summary-label" style="margin: 0;">Artis Teratas</div>
+                
+                <!-- Top 5 Artists Box -->
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(227, 27, 35, 0.3); border-radius: 20px; padding: 25px;">
+                    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--red-bright); margin-bottom: 20px; text-align: center;">TOP 5 ARTIS</div>
+                    <div id="summaryTop5Artists">
+                        <!-- Will be populated by JavaScript -->
                     </div>
-                    <div style="font-size: 18px; font-weight: 600; margin-top: 15px; text-align: center;" id="summaryTopArtist">Dewa 19</div>
-                    <div class="item-stat" style="text-align: center;" id="summaryTopArtistPlays">245 lagu diputar</div>
                 </div>
+                
             </div>
+            
             <div class="summary-grid" style="margin-top: 30px;">
                 <div class="summary-card clickable" onclick="showOverlay('minutes')">
                     <div class="summary-number" id="summaryMinutes">8.4K</div>
@@ -6021,6 +6099,79 @@
                 });
             }
         });
+        
+        // ===== CONFETTI SYSTEM (Mobile Only) =====
+        function createConfettiMobile() {
+            // Only run on mobile
+            if (window.innerWidth > 768) return;
+            
+            const container = document.getElementById('confettiContainer');
+            if (!container) return;
+            
+            const shapes = ['square', 'circle', 'triangle', 'star'];
+            
+            setInterval(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti ' + shapes[Math.floor(Math.random() * shapes.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                
+                container.appendChild(confetti);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }, 150);
+        }
+        
+        // Start confetti on mobile
+        if (window.innerWidth <= 768) {
+            setTimeout(createConfettiMobile, 1000);
+        }
+        
+        // ===== POPULATE SUMMARY WITH TOP 5 =====
+        function populateSummaryTop5() {
+            // Top 5 Songs
+            const top5SongsContainer = document.getElementById('summaryTop5Songs');
+            if (top5SongsContainer && userData && userData.topSongs) {
+                top5SongsContainer.innerHTML = userData.topSongs.slice(0, 5).map((song, index) => `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; cursor: pointer; transition: all 0.3s ease;" 
+                         onmouseover="this.style.background='rgba(227, 27, 35, 0.1)'" 
+                         onmouseout="this.style.background='rgba(255, 255, 255, 0.02)'">
+                        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--red-bright); min-width: 25px; text-align: center;">${index + 1}</div>
+                        <img src="${song.cover_image_url || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100&h=100&fit=crop'}" 
+                             alt="${song.title}" 
+                             style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);">
+                        <div style="flex: 1; overflow: hidden;">
+                            <div style="font-size: 14px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${song.title}</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${song.artist}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Top 5 Artists with cover photos
+            const top5ArtistsContainer = document.getElementById('summaryTop5Artists');
+            if (top5ArtistsContainer && userData && userData.topArtists) {
+                top5ArtistsContainer.innerHTML = userData.topArtists.slice(0, 5).map((artist, index) => `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; cursor: pointer; transition: all 0.3s ease;" 
+                         onmouseover="this.style.background='rgba(227, 27, 35, 0.1)'" 
+                         onmouseout="this.style.background='rgba(255, 255, 255, 0.02)'">
+                        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--red-bright); min-width: 25px; text-align: center;">${index + 1}</div>
+                        <img src="${artist.artist_image_url || 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=100&h=100&fit=crop'}" 
+                             alt="${artist.artist}" 
+                             style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);">
+                        <div style="flex: 1; overflow: hidden;">
+                            <div style="font-size: 14px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${artist.artist}</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">${artist.play_count || 0} plays</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+
         
     </script>
 </body>
