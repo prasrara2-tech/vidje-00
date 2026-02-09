@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Vidje Tracking System -->
     <script src="vidje-tracking.js"></script>
+    <!-- html2canvas for screenshot -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --red-primary: #E31B23;
@@ -445,203 +447,114 @@
         }
         
         /* Floating bubbles - Simpler than particles, more reliable */
-        .floating-bubbles {
+        
+
+        /* ========================================
+           SPARKLE STARS EFFECT
+           ======================================== */
+        
+        .sparkle-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 3;
             pointer-events: none;
+            z-index: 11;
             overflow: hidden;
         }
-        
-        .bubble {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, 
-                rgba(255, 255, 255, 0.2), 
-                rgba(227, 27, 35, 0.1));
-            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
-            animation: bubbleFloat 15s linear infinite;
-        }
-        
-        .bubble:nth-child(1) {
-            width: 60px;
-            height: 60px;
-            left: 10%;
-            animation-delay: 0s;
-        }
-        
-        .bubble:nth-child(2) {
-            width: 40px;
-            height: 40px;
-            left: 30%;
-            animation-delay: -3s;
-        }
-        
-        .bubble:nth-child(3) {
-            width: 50px;
-            height: 50px;
-            left: 50%;
-            animation-delay: -6s;
-        }
-        
-        .bubble:nth-child(4) {
-            width: 70px;
-            height: 70px;
-            left: 70%;
-            animation-delay: -9s;
-        }
-        
-        .bubble:nth-child(5) {
-            width: 45px;
-            height: 45px;
-            left: 85%;
-            animation-delay: -12s;
-        }
-        
-        @keyframes bubbleFloat {
-            0% {
-                bottom: -100px;
-                transform: translateX(0) rotate(0deg);
-                opacity: 0;
-            }
 
-        
-        /* MOBILE: Hide bubbles and show confetti instead */
-        @media (max-width: 768px) {
-            .floating-bubbles {
-                display: none !important;
-            }
-        }
-        
-        /* Confetti effect - Mobile only, guaranteed to work */
-        .confetti-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 3;
-            overflow: hidden;
-            display: none;
-        }
-        
-        @media (max-width: 768px) {
-            .confetti-container {
-                display: block !important;
-            }
-        }
-        
-        .confetti {
+        .sparkle {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            top: -20px;
-            animation: confettiFall linear infinite;
-        }
-        
-        .confetti.square {
-            background: var(--red-bright);
-            border-radius: 0;
-        }
-        
-        .confetti.circle {
-            background: var(--red-primary);
-            border-radius: 50%;
-        }
-        
-        .confetti.triangle {
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 10px solid #FFD700;
-            background: transparent;
-        }
-        
-        .confetti.star {
-            background: #FFFFFF;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-        }
-        
-        @keyframes confettiFall {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(720deg);
-                opacity: 0;
-            }
-        }
-
-            10% {
-                opacity: 0.6;
-            }
-            90% {
-                opacity: 0.6;
-            }
-            100% {
-                bottom: 110%;
-                transform: translateX(100px) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Pulse rings - Expanding circles */
-        .pulse-rings {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 300px;
-            height: 300px;
-            margin: -150px 0 0 -150px;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .pulse-ring {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 2px solid var(--red-primary);
-            border-radius: 50%;
+            width: 6px;
+            height: 6px;
             opacity: 0;
-            animation: pulseExpand 3s ease-out infinite;
+            animation: sparkleAnim 2s ease-in-out infinite;
         }
-        
-        .pulse-ring:nth-child(1) {
-            animation-delay: 0s;
+
+        .sparkle::before,
+        .sparkle::after {
+            content: '';
+            position: absolute;
+            background: #fff;
         }
-        
-        .pulse-ring:nth-child(2) {
-            animation-delay: 1s;
+
+        .sparkle::before {
+            width: 6px;
+            height: 2px;
+            top: 2px;
+            left: 0;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
-        
-        .pulse-ring:nth-child(3) {
-            animation-delay: 2s;
+
+        .sparkle::after {
+            width: 2px;
+            height: 6px;
+            top: 0;
+            left: 2px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
+
+        @keyframes sparkleAnim {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1) rotate(180deg);
+            }
+        }
+
+        /* ========================================
+           MUSIC NOTES EFFECT
+           ======================================== */
         
-        @keyframes pulseExpand {
+        .music-notes-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .music-note {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0;
+            color: var(--red-primary);
+            animation: musicNoteFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes musicNoteFloat {
             0% {
-                transform: scale(0.3);
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+            }
+            80% {
                 opacity: 0.8;
             }
             100% {
-                transform: scale(1.5);
+                transform: translateY(-20vh) rotate(360deg);
                 opacity: 0;
             }
         }
+
+        /* ========================================
+           HIDE BALLOON ON MOBILE
+           ======================================== */
         
-        /* Hide on mobile if too performance-heavy */
         @media (max-width: 768px) {
-            .pulse-rings {
-                display: none; /* Optional: remove if performance is OK */
+            .balloon-container {
+                display: none !important;
             }
         }
 
@@ -2740,6 +2653,482 @@
                 transform: translateY(5px);
             }
         }
+
+        /* ========================================
+           SHARE BUTTON & MODAL STYLES
+           ======================================== */
+        
+        .share-button {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            padding: 15px 35px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: var(--white);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 0 20px rgba(76, 175, 80, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            margin: 20px 10px;
+        }
+
+        .share-button:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 30px rgba(76, 175, 80, 0.7),
+                0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .share-button:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .share-button {
+                margin: 15px auto;
+                display: block;
+                width: calc(100% - 40px);
+                max-width: 300px;
+                font-size: 1.1rem;
+                padding: 12px 25px;
+            }
+        }
+
+        /* Share Modal */
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+        }
+
+        .share-modal.active {
+            display: flex;
+        }
+
+        .share-content {
+            background: transparent;
+            border-radius: 20px;
+            padding: 0;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .share-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            z-index: 10;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .share-close:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: scale(1.1);
+        }
+
+        /* Share Preview Card - Spotify Wrapped Style with FIXED ASPECT RATIO */
+        .share-preview {
+            background: linear-gradient(135deg, #8B0000, #E31B23, #FF2D2D);
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        /* Fixed aspect ratio - 9:16 (story format) */
+        .share-preview::after {
+            content: '';
+            display: block;
+            padding-top: 177.78%; /* 16:9 inverted for portrait = 9:16 */
+        }
+        
+        .share-preview-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 20px 25px 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Decorative background pattern */
+        .share-preview-inner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 150px;
+            background: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px),
+                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);
+            z-index: 1;
+        }
+
+        .share-preview-inner > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .share-preview-logo {
+            display: none; /* Hidden - will use vidje records text at bottom instead */
+        }
+
+        .share-preview-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        /* Profile section with image */
+        .share-profile {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .share-profile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Stats grid - Side by side lists */
+        .share-lists-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            color: white;
+            flex: 1;
+        }
+
+        .share-list {
+            text-align: left;
+        }
+
+        .share-list h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            opacity: 0.7;
+            text-transform: none;
+        }
+
+        .share-list-item {
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .share-list-number {
+            font-weight: 700;
+            min-width: 15px;
+        }
+
+        .share-list-name {
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .share-list-detail {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Bottom stats */
+        .share-bottom-stats {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .share-stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .share-stat-label-bottom {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .share-stat-value-bottom {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        
+        /* Vidje Records branding at bottom center */
+        .share-vidje-branding {
+            text-align: center;
+            padding: 10px 0 5px;
+        }
+        
+        .share-vidje-text {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.95;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer */
+        .share-footer {
+            background: black;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .share-footer-logo {
+            width: 30px;
+            height: 30px;
+        }
+
+        .share-footer-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .share-buttons {
+            padding: 20px;
+            background: white;
+        }
+
+        .share-download-btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--red-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(227, 27, 35, 0.3);
+        }
+
+        .share-download-btn:hover {
+            background: var(--red-bright);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(227, 27, 35, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .share-modal {
+                padding: 10px;
+            }
+
+            .share-content {
+                max-width: 100%;
+            }
+
+            .share-preview-inner {
+                padding: 18px 20px 20px;
+            }
+
+            .share-preview-title {
+                font-size: 1.4rem;
+            }
+
+            .share-profile {
+                width: 160px;
+                height: 160px;
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+            }
+
+            .share-lists-container {
+                gap: 12px;
+            }
+
+            .share-list h3 {
+                font-size: 0.75rem;
+                margin-bottom: 10px;
+            }
+
+            .share-list-item {
+                font-size: 0.8rem;
+                margin-bottom: 10px;
+            }
+
+            .share-stat-label-bottom {
+                font-size: 0.75rem;
+            }
+
+            .share-stat-value-bottom {
+                font-size: 1.2rem;
+            }
+            
+            .share-vidje-text {
+                font-size: 0.8rem;
+                letter-spacing: 1.5px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .share-preview-inner {
+                padding: 15px 15px 15px;
+            }
+
+            .share-preview-title {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+            
+            .share-profile {
+                width: 140px;
+                height: 140px;
+                font-size: 2rem;
+                margin-bottom: 12px;
+            }
+            
+            .share-list h3 {
+                font-size: 0.7rem;
+                margin-bottom: 8px;
+            }
+            
+            .share-list-item {
+                font-size: 0.75rem;
+                margin-bottom: 8px;
+            }
+            
+            .share-stat-label-bottom {
+                font-size: 0.7rem;
+            }
+            
+            .share-stat-value-bottom {
+                font-size: 1.1rem;
+            }
+            
+            .share-vidje-text {
+                font-size: 0.75rem;
+                letter-spacing: 1px;
+            }
+        }
+        
+        /* Extra small phones (375px - iPhone SE, etc) */
+        @media (max-width: 375px) {
+            .share-preview-inner {
+                padding: 12px 12px 12px;
+            }
+            
+            .share-profile {
+                width: 130px;
+                height: 130px;
+                font-size: 1.8rem;
+                margin-bottom: 10px;
+            }
+            
+            .share-lists-container {
+                gap: 10px;
+            }
+            
+            .share-list h3 {
+                font-size: 0.65rem;
+                margin-bottom: 6px;
+            }
+            
+            .share-list-item {
+                font-size: 0.7rem;
+                margin-bottom: 6px;
+            }
+            
+            .share-list-number {
+                font-size: 0.7rem;
+                min-width: 12px;
+            }
+            
+            .share-stat-label-bottom {
+                font-size: 0.65rem;
+            }
+            
+            .share-stat-value-bottom {
+                font-size: 1rem;
+            }
+            
+            .share-vidje-text {
+                font-size: 0.7rem;
+                letter-spacing: 0.5px;
+            }
+        }
+
+            .share-profile {
+                width: 120px;
+                height: 120px;
+                font-size: 2.5rem;
+                margin-bottom: 20px;
+            }
+
+            .share-list-item {
+                font-size: 0.8rem;
+                margin-bottom: 10px;
+            }
+
+            .share-stat-value-bottom {
+                font-size: 1.3rem;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -2872,26 +3261,6 @@
         <div class="orb orb-3"></div>
     </div>
     
-    <!-- Floating bubbles -->
-    <div class="floating-bubbles">
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-    </div>
-    
-    
-    <!-- Confetti container (mobile only) -->
-    <div class="confetti-container" id="confettiContainer"></div>
-
-    <!-- Pulse rings -->
-    <div class="pulse-rings">
-        <div class="pulse-ring"></div>
-        <div class="pulse-ring"></div>
-        <div class="pulse-ring"></div>
-    </div>
-    
     <!-- Music bars (shown when music is playing) -->
     <div class="music-bars" id="musicBars" style="opacity: 0;">
         <div class="bar"></div>
@@ -2903,6 +3272,12 @@
     
     <!-- Old particles (keeping as fallback, can be removed) -->
     <div class="particles" id="particles" style="display: none;"></div>
+    
+    <!-- Sparkle Stars Container -->
+    <div class="sparkle-container" id="sparkleContainer"></div>
+    
+    <!-- Music Notes Container -->
+    <div class="music-notes-container" id="musicNotesContainer"></div>
 
     <!-- Progress bar -->
     <div class="progress-container">
@@ -2957,6 +3332,25 @@
             <div class="stat-large" id="totalSongs">1,248</div>
             <div class="stat-label">lagu berbeda</div>
             <div class="compliment-text" id="songsCompliment"></div>
+        </div>
+
+
+        <!-- Slide 3.5: Intro Music Visual -->
+        <div class="slide">
+            <a href="index.html" class="home-button" title="Kembali ke Beranda">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+            </a>
+            <button class="mute-button" id="muteButton" onclick="event.stopPropagation(); toggleMute(event);" title="Mute/Unmute Audio">
+                <svg id="muteIcon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+            </button>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
+                <h1 style="font-family: 'Bebas Neue', cursive; font-size: clamp(5rem, 20vw, 15rem); line-height: 0.9; margin-bottom: 30px; text-shadow: 0 0 40px var(--red-glow), 0 0 80px var(--red-glow); animation: glowPulse 2s ease-in-out infinite; letter-spacing: 10px;">2025</h1>
+                <p style="font-size: clamp(1.5rem, 4vw, 2.5rem); opacity: 0.9; font-weight: 300; letter-spacing: 5px; text-transform: uppercase;">Year of Music</p>
+            </div>
         </div>
 
         <!-- Slide 4: Top Song Details -->
@@ -3157,27 +3551,24 @@
                 </svg>
             </button>
             <div class="title-large">RINGKASAN<br>MINGGU INI</div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; width: 100%; max-width: 900px; margin-top: 30px;">
-                
-                <!-- Top 5 Songs Box -->
-                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(227, 27, 35, 0.3); border-radius: 20px; padding: 25px;">
-                    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--red-bright); margin-bottom: 20px; text-align: center;">TOP 5 LAGU</div>
-                    <div id="summaryTop5Songs">
-                        <!-- Will be populated by JavaScript -->
+            <div class="summary-grid" style="max-width: 600px;">
+                <div class="summary-card clickable" onclick="showOverlay('song')">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                        <img id="summaryTopSongCover" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop" alt="Top Song" style="width: 120px; height: 120px; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 24px rgba(227, 27, 35, 0.4);">
+                        <div class="summary-label" style="margin: 0;">Lagu Teratas</div>
                     </div>
+                    <div style="font-size: 18px; font-weight: 600; margin-top: 15px; text-align: center;" id="summaryTopSong">Komala Pertama</div>
+                    <div class="item-stat" style="text-align: center;" id="summaryTopSongPlays">127 kali diputar</div>
                 </div>
-                
-                <!-- Top 5 Artists Box -->
-                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(227, 27, 35, 0.3); border-radius: 20px; padding: 25px;">
-                    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--red-bright); margin-bottom: 20px; text-align: center;">TOP 5 ARTIS</div>
-                    <div id="summaryTop5Artists">
-                        <!-- Will be populated by JavaScript -->
+                <div class="summary-card clickable" onclick="showOverlay('artist')">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                        <img id="summaryTopArtistCover" src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=400&fit=crop" alt="Top Artist" style="width: 120px; height: 120px; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 24px rgba(227, 27, 35, 0.4);">
+                        <div class="summary-label" style="margin: 0;">Artis Teratas</div>
                     </div>
+                    <div style="font-size: 18px; font-weight: 600; margin-top: 15px; text-align: center;" id="summaryTopArtist">Dewa 19</div>
+                    <div class="item-stat" style="text-align: center;" id="summaryTopArtistPlays">245 lagu diputar</div>
                 </div>
-                
             </div>
-            
             <div class="summary-grid" style="margin-top: 30px;">
                 <div class="summary-card clickable" onclick="showOverlay('minutes')">
                     <div class="summary-number" id="summaryMinutes">8.4K</div>
@@ -3187,6 +3578,9 @@
                     <div class="summary-number" id="summarySongs">1.2K</div>
                     <div class="summary-label">Total Lagu</div>
                 </div>
+            </div>
+            <div style="margin-top: 40px; text-align: center;">
+                <button class="btn" id="shareButton">BAGIKAN</button>
             </div>
         </div>
 
@@ -3207,7 +3601,6 @@
             <div class="subtitle">Terima kasih telah menjadi bagian dari Vidje Minggu ini!<br>Minggu Depan akan lebih seru lagi! 🚀</div>
             <div style="margin-top: 30px;">
                 <a href="index.html" class="btn-home">KEMBALI KE BERANDA</a>
-                <button class="btn" onclick="share()">BAGIKAN</button>
                 <button class="btn btn-secondary" onclick="restart()">ULANG LAGI</button>
             </div>
         </div>
@@ -3505,6 +3898,22 @@
             
             // Store top songs globally for auto-play
             window.currentTopSongs = data.topSongs;
+            
+            // Store all wrapped data globally for sharing
+            window.wrappedData = {
+                topSongs: data.topSongs.map(song => ({
+                    title: song.name,
+                    artist: song.artist,
+                    count: song.plays
+                })),
+                topArtists: data.topArtists.map(artist => ({
+                    name: artist.name,
+                    plays: artist.plays,
+                    cover: artist.cover || `https://images.unsplash.com/photo-${1508700115892}?w=200&h=200&fit=crop`
+                })),
+                totalSongs: data.totalSongs,
+                topGenre: data.topGenre || 'Folk Indie'
+            };
             
             topSongsList.innerHTML = data.topSongs.map((song, index) => {
                 const coverUrl = song.cover || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop';
@@ -4079,8 +4488,191 @@
             particlesContainer.style.visibility = 'visible';
             particlesContainer.style.opacity = '1';
             
-            console.log('✅ Particles container visibility set');
         }
+
+        // Create Sparkle Stars
+        function createSparkles() {
+            const container = document.getElementById('sparkleContainer');
+            if (!container) return;
+            
+            const isMobile = window.innerWidth < 768;
+            const sparkleCount = isMobile ? 30 : 60; // BANYAK BANGET!
+            
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 2 + 's';
+                sparkle.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
+                container.appendChild(sparkle);
+            }
+            console.log('✨ Created', sparkleCount, 'sparkles');
+        }
+
+        // Create Music Notes
+        function createMusicNotes() {
+            const container = document.getElementById('musicNotesContainer');
+            if (!container) return;
+            
+            const noteSymbols = ['♪', '♫', '♬', '♩']; // Simbol musik yang bisa diwarnai merah
+            const isMobile = window.innerWidth < 768;
+            const noteCount = isMobile ? 15 : 30; // LEBIH BANYAK!
+            
+            for (let i = 0; i < noteCount; i++) {
+                const note = document.createElement('div');
+                note.className = 'music-note';
+                note.textContent = noteSymbols[Math.floor(Math.random() * noteSymbols.length)];
+                note.style.left = Math.random() * 100 + '%';
+                note.style.animationDelay = Math.random() * 4 + 's';
+                note.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                note.style.fontSize = (Math.random() * 15 + 20) + 'px'; // Lebih besar
+                container.appendChild(note);
+            }
+            console.log('🎵 Created', noteCount, 'music notes');
+        }
+
+        // Share Modal Functions
+        function openShareModal() {
+            const modal = document.getElementById('shareModal');
+            if (!modal) return;
+            
+            modal.classList.add('active');
+            
+            // Populate share preview with current data
+            const summaryMinutes = document.getElementById('summaryMinutes')?.textContent || '0';
+            
+            document.getElementById('shareMinutes').textContent = summaryMinutes;
+            
+            // Get top 5 artists and album cover
+            const shareTopArtists = document.getElementById('shareTopArtists');
+            const shareProfile = document.getElementById('shareProfile');
+            
+            if (window.wrappedData && window.wrappedData.topArtists) {
+                // Display top 5 artists
+                shareTopArtists.innerHTML = window.wrappedData.topArtists.slice(0, 5).map((artist, index) => `
+                    <div class="share-list-item">
+                        <span class="share-list-number">${index + 1}</span>
+                        <span class="share-list-name">${artist.name}</span>
+                    </div>
+                `).join('');
+                
+                // Get cover album from top artist
+                if (window.wrappedData.topArtists[0] && window.wrappedData.topArtists[0].cover) {
+                    shareProfile.innerHTML = `<img src="${window.wrappedData.topArtists[0].cover}" alt="Top Artist" crossorigin="anonymous">`;
+                } else {
+                    shareProfile.innerHTML = '🎵';
+                }
+            } else {
+                // Fallback dummy data
+                shareTopArtists.innerHTML = `
+                    <div class="share-list-item"><span class="share-list-number">1</span><span class="share-list-name">Artist 1</span></div>
+                    <div class="share-list-item"><span class="share-list-number">2</span><span class="share-list-name">Artist 2</span></div>
+                    <div class="share-list-item"><span class="share-list-number">3</span><span class="share-list-name">Artist 3</span></div>
+                    <div class="share-list-item"><span class="share-list-number">4</span><span class="share-list-name">Artist 4</span></div>
+                    <div class="share-list-item"><span class="share-list-number">5</span><span class="share-list-name">Artist 5</span></div>
+                `;
+                shareProfile.innerHTML = '🎵';
+            }
+            
+            // Get top 5 songs
+            const shareTopSongs = document.getElementById('shareTopSongs');
+            
+            if (window.wrappedData && window.wrappedData.topSongs) {
+                shareTopSongs.innerHTML = window.wrappedData.topSongs.slice(0, 5).map((song, index) => `
+                    <div class="share-list-item">
+                        <span class="share-list-number">${index + 1}</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="share-list-name">${song.title}</div>
+                            <div class="share-list-detail">${song.artist || ''}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else if (window.currentTopSongs) {
+                shareTopSongs.innerHTML = window.currentTopSongs.slice(0, 5).map((song, index) => `
+                    <div class="share-list-item">
+                        <span class="share-list-number">${index + 1}</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="share-list-name">${song.name}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                // Fallback dummy data
+                shareTopSongs.innerHTML = `
+                    <div class="share-list-item"><span class="share-list-number">1</span><div style="flex: 1;"><div class="share-list-name">Song Title 1</div></div></div>
+                    <div class="share-list-item"><span class="share-list-number">2</span><div style="flex: 1;"><div class="share-list-name">Song Title 2</div></div></div>
+                    <div class="share-list-item"><span class="share-list-number">3</span><div style="flex: 1;"><div class="share-list-name">Song Title 3</div></div></div>
+                    <div class="share-list-item"><span class="share-list-number">4</span><div style="flex: 1;"><div class="share-list-name">Song Title 4</div></div></div>
+                    <div class="share-list-item"><span class="share-list-number">5</span><div style="flex: 1;"><div class="share-list-name">Song Title 5</div></div></div>
+                `;
+            }
+            
+            // Set total songs (changed from top genre)
+            const shareTopGenre = document.getElementById('shareTopGenre');
+            if (window.wrappedData && window.wrappedData.totalSongs) {
+                shareTopGenre.textContent = window.wrappedData.totalSongs;
+            } else {
+                const summarySongs = document.getElementById('summarySongs')?.textContent || '0';
+                shareTopGenre.textContent = summarySongs;
+            }
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('active');
+        }
+
+        async function downloadShareImage() {
+            const preview = document.getElementById('sharePreview');
+            
+            if (!window.html2canvas) {
+                alert('Library html2canvas belum dimuat. Silakan coba lagi.');
+                return;
+            }
+            
+            try {
+                const canvas = await html2canvas(preview, {
+                    backgroundColor: '#0A0A0A',
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                });
+                
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = 'vidje-wrapped-2025.png';
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                });
+            } catch (error) {
+                console.error('Error generating image:', error);
+                alert('Gagal membuat gambar. Silakan coba lagi.');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', () => {
+            // Share button event listener
+            const shareButton = document.getElementById('shareButton');
+            if (shareButton) {
+                shareButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openShareModal();
+                });
+            }
+            
+            const shareModal = document.getElementById('shareModal');
+            if (shareModal) {
+                shareModal.addEventListener('click', (e) => {
+                    if (e.target.id === 'shareModal') {
+                        closeShareModal();
+                    }
+                });
+            }
+        });
 
         // Create particles for splash screen
         function createSplashParticles() {
@@ -5809,6 +6401,8 @@
         // OLD: createParticles(); - Removed, using new CSS-based effects instead
         // New effects are in HTML: gradient-waves, glow-orbs, floating-bubbles, pulse-rings, music-bars
         console.log('✨ New visual effects loaded (CSS-based, mobile-optimized)');
+        createSparkles();
+        createMusicNotes();
         updateSlide();
         
         // Set random compliments for all 4 slides
@@ -6100,79 +6694,65 @@
             }
         });
         
-        // ===== CONFETTI SYSTEM (Mobile Only) =====
-        function createConfettiMobile() {
-            // Only run on mobile
-            if (window.innerWidth > 768) return;
-            
-            const container = document.getElementById('confettiContainer');
-            if (!container) return;
-            
-            const shapes = ['square', 'circle', 'triangle', 'star'];
-            
-            setInterval(() => {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti ' + shapes[Math.floor(Math.random() * shapes.length)];
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
-                
-                container.appendChild(confetti);
-                
-                // Remove after animation
-                setTimeout(() => {
-                    confetti.remove();
-                }, 5000);
-            }, 150);
-        }
-        
-        // Start confetti on mobile
-        if (window.innerWidth <= 768) {
-            setTimeout(createConfettiMobile, 1000);
-        }
-        
-        // ===== POPULATE SUMMARY WITH TOP 5 =====
-        function populateSummaryTop5() {
-            // Top 5 Songs
-            const top5SongsContainer = document.getElementById('summaryTop5Songs');
-            if (top5SongsContainer && userData && userData.topSongs) {
-                top5SongsContainer.innerHTML = userData.topSongs.slice(0, 5).map((song, index) => `
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; cursor: pointer; transition: all 0.3s ease;" 
-                         onmouseover="this.style.background='rgba(227, 27, 35, 0.1)'" 
-                         onmouseout="this.style.background='rgba(255, 255, 255, 0.02)'">
-                        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--red-bright); min-width: 25px; text-align: center;">${index + 1}</div>
-                        <img src="${song.cover_image_url || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100&h=100&fit=crop'}" 
-                             alt="${song.title}" 
-                             style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);">
-                        <div style="flex: 1; overflow: hidden;">
-                            <div style="font-size: 14px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${song.title}</div>
-                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${song.artist}</div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            // Top 5 Artists with cover photos
-            const top5ArtistsContainer = document.getElementById('summaryTop5Artists');
-            if (top5ArtistsContainer && userData && userData.topArtists) {
-                top5ArtistsContainer.innerHTML = userData.topArtists.slice(0, 5).map((artist, index) => `
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding: 10px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; cursor: pointer; transition: all 0.3s ease;" 
-                         onmouseover="this.style.background='rgba(227, 27, 35, 0.1)'" 
-                         onmouseout="this.style.background='rgba(255, 255, 255, 0.02)'">
-                        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--red-bright); min-width: 25px; text-align: center;">${index + 1}</div>
-                        <img src="${artist.artist_image_url || 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=100&h=100&fit=crop'}" 
-                             alt="${artist.artist}" 
-                             style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);">
-                        <div style="flex: 1; overflow: hidden;">
-                            <div style="font-size: 14px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${artist.artist}</div>
-                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">${artist.play_count || 0} plays</div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-        
-
-        
     </script>
+
+    <!-- Share Modal -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-content">
+            <button class="share-close" onclick="closeShareModal()">✕</button>
+            
+            <div class="share-preview" id="sharePreview">
+                <div class="share-preview-inner">
+                    <img src="https://qkruoywwqdpkdjlajbpl.supabase.co/storage/v1/object/public/vidje/assets/logo.png" alt="Vidje" class="share-preview-logo">
+                    
+                    <!-- Profile Image / Icon -->
+                    <div class="share-profile" id="shareProfile">
+                        🎵
+                    </div>
+                    
+                    <!-- Two columns: Artists and Songs -->
+                    <div class="share-lists-container">
+                        <!-- Left: Top Artists -->
+                        <div class="share-list">
+                            <h3>Artis Teratas</h3>
+                            <div id="shareTopArtists">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Top Songs -->
+                        <div class="share-list">
+                            <h3>Lagu Teratas</h3>
+                            <div id="shareTopSongs">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Stats -->
+                    <div class="share-bottom-stats">
+                        <div class="share-stat-row">
+                            <span class="share-stat-label-bottom">Menit Mendengarkan</span>
+                            <span class="share-stat-value-bottom" id="shareMinutes">0</span>
+                        </div>
+                        <div class="share-stat-row">
+                            <span class="share-stat-label-bottom">Total Lagu</span>
+                            <span class="share-stat-value-bottom" id="shareTopGenre">0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Vidje Records branding at bottom center -->
+                    <div class="share-vidje-branding">
+                        <span class="share-vidje-text">VIDJE RECORDS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="share-buttons">
+                <button class="share-download-btn" onclick="downloadShareImage()">💾 Download Gambar</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
