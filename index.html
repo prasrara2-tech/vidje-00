@@ -10594,6 +10594,115 @@ if (document.readyState === 'loading') {
     </div>
 
     <!-- FIREBASE & LOGIC -->
+
+    <!-- 
+        FIX: goBackFromAlbum fallback — didefinisikan di script biasa (non-module)
+        agar langsung tersedia SEBELUM Firebase module selesai dimuat.
+        Script type="module" berjalan async, sehingga fungsi di dalamnya
+        belum ada saat user klik tombol back sesaat setelah refresh.
+    -->
+    <script>
+        window.goBackFromAlbum = function() {
+            var previousView = window.albumPreviousView || 'home';
+            // Coba pakai switchView jika sudah tersedia (module sudah load)
+            if (typeof window.switchView === 'function') {
+                if (previousView === 'chat') {
+                    var lastChatFriendUid = window.lastClosedChatFriendUid;
+                    window.switchView('home');
+                    if (lastChatFriendUid && typeof window.openChat === 'function') {
+                        setTimeout(function() { window.openChat(lastChatFriendUid); }, 100);
+                    }
+                } else {
+                    window.switchView(previousView);
+                }
+                window.albumPreviousView = null;
+            } else {
+                // Module belum selesai load — retry tiap 200ms, max 10x
+                var retries = 0;
+                var interval = setInterval(function() {
+                    retries++;
+                    if (typeof window.switchView === 'function') {
+                        clearInterval(interval);
+                        window.goBackFromAlbum(); // panggil ulang setelah siap
+                    } else if (retries >= 10) {
+                        clearInterval(interval);
+                        history.back(); // last resort
+                    }
+                }, 200);
+            }
+        };
+    </script>
+
+    <!--
+        FIX: Album Cards Cache — restore HTML dari sessionStorage SEBELUM module selesai load.
+        Karena data album (nama + gambar) adalah statis, kita bisa cache HTML-nya
+        dan tampilkan langsung saat refresh tanpa menunggu Firebase/module.
+        Module akan update ulang cache setelah selesai render.
+    -->
+    <script>
+        (function restoreAlbumCache() {
+            var CACHE_KEY = 'vidje_album_cards_v1';
+            var CACHE_TTL = 24 * 60 * 60 * 1000; // 24 jam
+
+            var containerIds = [
+                'popular-bands-container',
+                'popular-artists-container',
+                'foreign-artists-container',
+                'foreign-bands-container',
+                'trending-container',
+                'indonesian-bands-extra-container',
+                'indonesian-artists-extra-container',
+                'foreign-artists-extra-container',
+                'foreign-bands-extra-container'
+            ];
+
+            // Fungsi untuk menyimpan cache (dipanggil module setelah render)
+            window.__saveAlbumCache = function() {
+                try {
+                    var cache = { ts: Date.now(), containers: {} };
+                    containerIds.forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if (el && el.innerHTML.trim().length > 50) {
+                            cache.containers[id] = el.innerHTML;
+                        }
+                    });
+                    sessionStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+                } catch(e) { /* storage penuh atau private mode */ }
+            };
+
+            // Restore cache jika ada dan masih segar
+            try {
+                var raw = sessionStorage.getItem(CACHE_KEY);
+                if (!raw) return;
+                var cache = JSON.parse(raw);
+                if (!cache || !cache.ts || (Date.now() - cache.ts) > CACHE_TTL) return;
+
+                // Tunggu DOM siap lalu inject
+                function inject() {
+                    var restored = false;
+                    containerIds.forEach(function(id) {
+                        if (cache.containers[id]) {
+                            var el = document.getElementById(id);
+                            if (el && el.innerHTML.trim().length < 10) { // kosong/belum dirender
+                                el.innerHTML = cache.containers[id];
+                                restored = true;
+                            }
+                        }
+                    });
+                    if (restored) {
+                        console.log('[Cache] Album cards restored from sessionStorage');
+                    }
+                }
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', inject);
+                } else {
+                    inject();
+                }
+            } catch(e) { /* JSON parse error atau storage disabled */ }
+        })();
+    </script>
+
     <script type="module">
 
 // ===== FRIEND DATA CACHE FOR PERFORMANCE =====
@@ -15038,6 +15147,13 @@ console.log('   getCurrentSong() - Check what song is detected');
                             renderPopularArtists();
                             renderForeignSoloArtists();
                             renderForeignBands();
+
+                            // Update album card cache setelah render terbaru
+                            setTimeout(function() {
+                                if (typeof window.__saveAlbumCache === 'function') {
+                                    window.__saveAlbumCache();
+                                }
+                            }, 300);
 
                             // Defer any non-critical re-renders
                             if (window.requestIdleCallback) {
@@ -23351,12 +23467,27 @@ async function loadImportedSongs() {
 
 
         // --- INITIALIZATION ---
+        // FIX: Render album cards segera — data ini statis, tidak butuh auth.
+        // Gunakan requestAnimationFrame agar browser render frame pertama dulu
+        // baru lakukan komputasi berat, supaya halaman terasa lebih responsif.
         renderTrendingPlaylists();
         renderTrending();
-        renderPopularBands();
-        renderPopularArtists();
-        renderForeignSoloArtists();
-        renderForeignBands();
+
+        // Render album grids secara bertahap agar tidak block UI sekaligus
+        requestAnimationFrame(function() {
+            renderPopularBands();
+            renderPopularArtists();
+            requestAnimationFrame(function() {
+                renderForeignSoloArtists();
+                renderForeignBands();
+                // Simpan ke cache setelah semua selesai render
+                setTimeout(function() {
+                    if (typeof window.__saveAlbumCache === 'function') {
+                        window.__saveAlbumCache();
+                    }
+                }, 500);
+            });
+        });
         // loadSong(songs[0]); // DISABLED - no auto-load on page load
 
         // ? TAMBAHKAN: Load imported songs saat user login
@@ -28031,5 +28162,3 @@ window.ltCloseInviteFriends = function() {
     setTimeout(fixAlbumWrappers, 1500);
 })();
 </script>
-
-
